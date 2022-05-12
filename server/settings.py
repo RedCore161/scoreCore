@@ -167,6 +167,7 @@ CORS_ALLOWED_ORIGINS = [
     f"{PROTOCOL}://api.scoring.local",
     f"{PROTOCOL}://api.scoring.local:8000",
     f"{PROTOCOL}://{HARD_IP}:8000",
+    f"{PROTOCOL}://localhost.localdomain",
 ]
 
 CSRF_COOKIE_NAME = "csrftoken"

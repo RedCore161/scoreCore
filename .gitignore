@@ -11,6 +11,8 @@ frontend/node_modules
 
 docker/backend/django.env
 
+docker-compose.yml
+
 .env
 django.env
 dev.py

@@ -14,7 +14,8 @@ let csrftoken = Cookies.get('csrftoken');
 if (csrftoken) {
   instance.defaults.headers.common['X-CSRFToken'] = `csrftoken ${ csrftoken }`;
 }
-// instance.defaults.headers.common["Access-Control-Allow-Origin"] = "*"
-// instance.defaults.headers.common["Access-Control-Allow-Headers"] = "X-Requested-With"
+
+instance.defaults.headers.common["Access-Control-Allow-Origin"] = process.env.REACT_APP_BACKEND_RAW_URL
+instance.defaults.headers.common["Access-Control-Allow-Headers"] = "*"
 
 export default instance;
