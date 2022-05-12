@@ -1,0 +1,46 @@
+//See https://bootswatch.com/darkly/
+@import "~bootswatch/dist/darkly/variables";
+@import "~bootstrap/scss/bootstrap";
+@import "~bootswatch/dist/darkly/bootswatch";
+
+@import "~bootstrap-icons/font/bootstrap-icons.css";
+
+.card-body {
+  padding: 0 !important;
+}
+
+.card-text {
+  padding: 1rem;
+}
+
+.table-icon {
+  font-size: 35px;
+}
+
+.table-content {
+  font-size: 20px;
+}
+
+/* Set black background color, white text and some padding */
+footer {
+  background-color: #555;
+  color: white;
+  padding: 15px;
+}
+
+/* On small screens, set height to 'auto' for sidenav and grid */
+@media screen and (max-width: 767px) {
+  .sidenav {
+    height: auto;
+    padding: 25px 5px 15px 15px;
+  }
+
+  .row.content {
+    height: auto;
+    padding-top: 10px;
+  }
+}
+
+div.container-fluid {
+  width: 95% !important;
+}

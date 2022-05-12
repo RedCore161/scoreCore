@@ -1,0 +1,32 @@
+.project-Card {
+    padding: 0 12px 15px 12px;
+    border: white 2px solid;
+    border-radius: 5px;
+}
+
+.project-Card-Header {
+    font-size: 25px;
+    padding-bottom: 8px;
+    border-bottom: white 2px solid;
+    color: white;
+}
+.project-Card-Header :hover{
+    color: darkblue;
+}
+
+.project-Card-Item {
+    font-weight: bold;
+}
+
+.project-Card-Content {
+
+}
+
+.huge-icon {
+    font-size: 60px;
+}
+
+.score-Info {
+    position: absolute;
+    bottom: 35px;
+}

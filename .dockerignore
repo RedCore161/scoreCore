@@ -1,0 +1,8 @@
+.idea
+
+venv
+media
+frontend/node_modules
+
+docker-compose.yml
+

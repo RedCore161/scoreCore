@@ -1,0 +1,17 @@
+.idea
+
+
+__pycache__/
+ *.pyc
+
+venv
+!media
+media/*
+frontend/node_modules
+
+docker/backend/django.env
+
+.env
+django.env
+dev.py
+

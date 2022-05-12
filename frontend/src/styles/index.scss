@@ -1,0 +1,157 @@
+@import "./bootstrap.scss";
+
+/* Set black background color, white text and some padding */
+footer {
+  background-color: #555;
+  color: white;
+  padding: 15px;
+}
+
+/* On small screens, set height to 'auto' for sidenav and grid */
+@media screen and (max-width: 767px) {
+  .sidenav {
+    height: auto;
+    padding: 25px 5px 15px 15px;
+  }
+
+  .row.content {
+    height: auto;
+    padding-top: 10px;
+  }
+}
+
+div.container-fluid {
+  width: 95% !important;
+}
+
+input.input-left-100 {
+  position: absolute;
+  left: 140px;
+  margin: 0 15px 10px;
+  padding: 8px 12px 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(46, 45, 43, 1);
+}
+
+.block {
+  position: relative;
+}
+
+.block .overlay {
+  width: 90%;
+  display: inline-block;
+}
+
+.connectedSortable {
+  min-height: 370px;
+}
+
+#sortableOptions li, {
+  margin: 0 5px 5px 5px;
+  padding: 5px;
+  font-size: 1.2em;
+}
+
+div.scrollable {
+  border: 0;
+  padding: 10px 0 10px 0;
+  //margin:4px, 4px;
+  height: 290px;
+  max-height: 300px;
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
+}
+
+tr.selected {
+  background: cadetblue;
+}
+
+.custom-thumbnail {
+  width: 300px;
+  height: 200px;
+}
+
+#carouselControls {
+  min-height: 250px;
+  border: 1px solid rgba(206, 206, 206, 0.5);
+}
+
+img.d-block {
+  line-height: 17;
+  text-align: center;
+}
+
+.navbar-brand::before {
+  color: #ccc;
+}
+
+.navbar-brand {
+  color: white;
+}
+
+.list-group-item {
+  margin: 2px;
+  border: 1px solid rgba(206, 206, 206, 0.5) !important;
+}
+
+#sampleImage {
+  display: block;
+  max-width: 100%;
+}
+
+button.btnCreateFlow {
+  margin: 20px 0 20px 30px;
+  padding: 6px 20px 6px 20px;
+}
+
+.notransition {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  -ms-transition: none !important;
+  transition: none !important;
+}
+
+.media-header {
+  position: relative;
+  width: auto;
+  display: block;
+  height: 40px;
+}
+
+// CyberMV
+
+.option-button {
+  margin: 10px;
+  padding: 30px;
+}
+
+// Bank
+.b-tag {
+  font-size: 25px !important;
+}
+
+div.spaced-row {
+  margin-top: 25px;
+  margin-bottom: 50px;
+}
+
+div.b-income-content {
+  overflow: auto;
+  min-width: min-content;
+}
+
+.sticky-top {
+  position: fixed;
+  top: 15px;
+  width: 75%;
+}
+
+span.form-navi {
+  //top: 25px;
+  //right: 5%;
+  position: absolute;
+  padding-top: 55px;
+  font-size: 48px;
+  color: dodgerblue;
+}

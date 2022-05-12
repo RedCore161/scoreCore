@@ -1,0 +1,97 @@
+version: '3.7'
+
+services:
+
+  postgres:
+    image: postgres:13.4-alpine
+    container_name: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    env_file:
+      - django.env
+    networks:
+      defaultnet:
+
+  # Used for django websocket connections
+  scoring-redis:
+    image: "redis:6.2.5"
+    container_name: scoring-redis
+    restart: always
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "6380:6379"
+    networks:
+      defaultnet:
+
+  # Django backend (using REST-API)
+  scoring-backend:
+    container_name: scoring-backend
+    restart: unless-stopped
+    env_file:
+      - django.env
+    environment:
+      - BACKEND_URL=${BASE_URL}
+      - BACKEND_PORT=${BACKEND_PORT}
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+      args:
+        BACKEND_PORT: ${BACKEND_PORT}
+        DB_HOST: postgres   # TODO unify django.env and .env
+        DB_PORT: 5432               # TODO unify django.env and .env
+    depends_on:
+      - postgres
+      - scoring-redis
+    ports:
+      - ${BACKEND_PORT}:${BACKEND_PORT}
+    volumes:
+      - ./media:/usr/src/app/media
+    networks:
+      defaultnet:
+        aliases:
+          - scoring-backend
+
+
+  scoring-frontend:
+    container_name: scoring-frontend
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+      args:
+        BASE_URL: ${BASE_URL}
+        BACKEND_PORT: ${BACKEND_PORT}
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=8196
+      - MAX_OLD_SPACE_SIZE=8196
+    ports:
+      - "3000:80"
+    networks:
+      defaultnet:
+        aliases:
+          - scoring-frontend
+
+
+  scoring-nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+    container_name: scoring-nginx
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - scoring-frontend
+      - scoring-backend
+    networks:
+      defaultnet:
+        aliases:
+          - scoring.local
+          - api.scoring.local
+
+networks:
+  defaultnet:
