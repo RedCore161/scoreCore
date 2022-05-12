@@ -20,7 +20,6 @@ DEBUG = os.getenv("DEBUG") == "1"
 
 ADB_BASE = os.getenv("ADB_BASE")
 
-
 ALLOWED_HOSTS = [os.getenv("DJANGO_ALLOWED_HOSTS")]
 
 INSTALLED_APPS = [
@@ -88,7 +87,6 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.middleware.common.CommonMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -158,17 +156,18 @@ AUTH_PASSWORD_VALIDATORS = [
 PROTOCOL = os.getenv('PROTOCOL', 'http')
 HARD_IP = os.getenv('HARD_IP', 'ignore.local')
 
-CORS_ALLOWED_ORIGINS = [
-    f"{PROTOCOL}://localhost:3000",
-    f"{PROTOCOL}://localhost:3003",
-    f"{PROTOCOL}://scoring.local",
-    f"{PROTOCOL}://scoring.local:3000",
-    f"{PROTOCOL}://{HARD_IP}:3000",
-    f"{PROTOCOL}://api.scoring.local",
-    f"{PROTOCOL}://api.scoring.local:8000",
-    f"{PROTOCOL}://{HARD_IP}:8000",
-    f"{PROTOCOL}://localhost.localdomain",
-]
+CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOWED_ORIGINS = [
+#     f"{PROTOCOL}://localhost:3000",
+#     f"{PROTOCOL}://localhost:3003",
+#     f"{PROTOCOL}://scoring.local",
+#     f"{PROTOCOL}://scoring.local:3000",
+#     f"{PROTOCOL}://{HARD_IP}:3000",
+#     f"{PROTOCOL}://api.scoring.local",
+#     f"{PROTOCOL}://api.scoring.local:8000",
+#     f"{PROTOCOL}://{HARD_IP}:8000",
+#     f"{PROTOCOL}://localhost.localdomain",
+# ]
 
 CSRF_COOKIE_NAME = "csrftoken"
 
