@@ -32,7 +32,7 @@ services:
     env_file:
       - django.env
     environment:
-      - BACKEND_URL=${BASE_URL}
+      - BACKEND_URL=${HARD_IP}
       - BACKEND_PORT=${BACKEND_PORT}
     build:
       context: .
@@ -61,8 +61,8 @@ services:
       context: .
       dockerfile: docker/frontend/Dockerfile
       args:
-        BASE_URL: ${BASE_URL}
         BACKEND_PORT: ${BACKEND_PORT}
+        HARD_IP: ${HARD_IP}
     environment:
       - NODE_OPTIONS=--max-old-space-size=8196
       - MAX_OLD_SPACE_SIZE=8196

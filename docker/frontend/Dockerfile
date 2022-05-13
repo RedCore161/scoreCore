@@ -1,22 +1,22 @@
-ARG BASE_URL
 ARG BACKEND_PORT
+ARG HARD_IP
 
 FROM node:16.3.0 as node
 
-ARG BASE_URL
 ARG BACKEND_PORT
+ARG HARD_IP
 
 WORKDIR /home/scoring/scoring-frontend
 ENV PATH /home/scoring/scoring-frontend/node_modules/.bin:$PATH
 
-COPY ./docker/frontend/.env.production .
 COPY ./frontend .
+COPY ./docker/frontend/.env.production .
 
-RUN sed -i -r "s/URL-TEMPLATE/${BASE_URL}:${BACKEND_PORT}/g" ./.env.production
+RUN sed -i -r "s/BASE-URL-TEMPLATE/${HARD_IP}/g" ./.env.production
+RUN sed -i -r "s/URL-TEMPLATE-WITH-PORT/${HARD_IP}:${BACKEND_PORT}/g" ./.env.production
 
 RUN npm install
 RUN npm run build
-
 
 FROM nginx:stable-alpine
 RUN adduser -S -D -h /home/testing testing
