@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import axiosConfig from "../../axiosConfig";
-import { Row } from "react-bootstrap";
 
-import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
 import { useSnackbar } from "notistack";
+import { Row } from "react-bootstrap";
 import { Gallery } from "react-photoswipe-gallery";
 import BoxContainer from "../ui/BoxContainer";
 import ImageGalleryHolder from "../ui/ImageGalleryHolder";
 
 import 'photoswipe/dist/photoswipe.css';
 import 'photoswipe/dist/default-skin/default-skin.css';
+import axiosConfig from "../../axiosConfig";
 
 const UselessImageFilesView = () => {
 
@@ -19,7 +18,7 @@ const UselessImageFilesView = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   async function fetchData() {
-    const result = await axiosConfig.get(`/api/project/${ id }/get-useless`);
+    const result = await axiosConfig.holder.get(`/api/project/${ id }/get-useless`);
     setImageFiles(result.data);
     console.log("Found Images:", result.data);
   }

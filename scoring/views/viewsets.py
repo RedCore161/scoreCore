@@ -4,10 +4,10 @@ import re
 
 from django.utils import timezone
 from rest_framework import viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
 
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from scoring.helper import get_media_path, build_abs_path
@@ -15,6 +15,8 @@ from scoring.models import Project, ImageScore, ImageFile
 from scoring.serializers import ProjectSerializer, ImageScoreSerializer, ImageFileSerializer
 from server.settings import BASE_DIR
 from server.views import RequestSuccess, RequestFailed
+
+
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -35,9 +37,9 @@ class StandardResultsSetPagination(PageNumberPagination):
 def parse_info_file(project, _path, get_or_create_amount=2):
 
     regex = re.compile("^\d{5}\.png")
-    _path = os.path.join(_path, "infofile.txt")
-    if os.path.exists(_path):
-        with open(_path, 'r') as f:
+    _path_infofile = os.path.join(_path, "infofile.txt")
+    if os.path.exists(_path_infofile):
+        with open(_path_infofile, 'r') as f:
             lines = f.readlines()
             images = lines[3:]
 
@@ -72,14 +74,15 @@ def parse_info_file(project, _path, get_or_create_amount=2):
 class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
-    permission_classes = [IsAuthenticated]
 
+    @permission_classes([IsAuthenticated])
     @action(detail=False, url_path="list", methods=["GET"])
     def list_projects(self, request):
         serializer = ProjectSerializer(Project.objects.filter(users=request.user), context={"user": request.user.pk},
                                        many=True)
         return Response(serializer.data)
 
+    @permission_classes([IsAuthenticated])
     @action(detail=True, url_path="images", methods=["GET"])
     def get_images(self, request, pk):
 
@@ -90,12 +93,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer = ImageFileSerializer(images, many=True)
         return Response(serializer.data)
 
+    @permission_classes([IsAdminUser])
     @action(detail=True, url_path="get-useless", methods=["GET"])
     def get_useless_image_files(self, request, pk):
         images = ImageFile.objects.filter(project=pk, useless=True, hidden=False).order_by("order")
         serializer = ImageFileSerializer(images, many=True)
         return Response(serializer.data)
 
+    @permission_classes([IsAdminUser])
     @action(detail=True, url_path="read-images", methods=["GET"])
     def read_images(self, request, pk):
 
@@ -114,11 +119,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return RequestSuccess()
 
     @action(detail=True, url_path="scores", methods=["GET"])
+    @permission_classes([IsAdminUser])
     def get_scores(self, request, pk):
         images = ImageScore.objects.filter(project=pk).exclude(file__useless=True)
         serializer = ImageScoreSerializer(images, many=True)
         return Response(serializer.data)
 
+    @permission_classes([IsAdminUser])
     @action(detail=True, url_path="evaluate", methods=["GET"])
     def evaluate(self, request, pk):
         files = ImageFile.objects.filter(project=pk).exclude(useless=True)
@@ -197,8 +204,17 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
 
         return RequestSuccess()
 
+
 # ######################################################################################################################
 
 # ######################################################################################################################
 # ##########  H E L P E R  #############################################################################################
 # ######################################################################################################################
+
+
+class EmptyViewSet(viewsets.ModelViewSet):
+    queryset = None
+
+    @action(detail=False, url_path="empty", methods=["GET"])
+    def empty(self, request=None):
+        return RequestFailed()

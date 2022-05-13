@@ -1,6 +1,7 @@
 import os
 
 from django.contrib.auth.models import User
+from rest_auth.models import TokenModel
 from rest_framework import serializers
 
 from scoring.models import Project, ImageScore, ImageFile
@@ -10,7 +11,33 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username"]
+        fields = ("id", "username")
+
+
+class TokenSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Token model.
+    """
+
+    is_staff = serializers.SerializerMethodField("get_is_staff")
+    is_superuser = serializers.SerializerMethodField("get_is_superuser")
+    is_active = serializers.SerializerMethodField("get_is_active")
+
+    class Meta:
+        model = TokenModel
+        fields = ("key", "is_staff", "is_superuser", "is_active")
+
+    @staticmethod
+    def get_is_staff(obj: TokenModel):
+        return obj.user.is_staff
+
+    @staticmethod
+    def get_is_superuser(obj: TokenModel):
+        return obj.user.is_superuser
+
+    @staticmethod
+    def get_is_active(obj: TokenModel):
+        return obj.user.is_active
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -49,7 +76,7 @@ class ImageScoreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ImageScore
-        exclude = ["date", "project", "file"]
+        exclude = ("date", "project", "file")
 
     @staticmethod
     def get_filename(obj: ImageScore):
@@ -73,16 +100,3 @@ class ImageFileSerializer(serializers.ModelSerializer):
         # remove '../media/'
         index = obj.path.find("media")
         return obj.path[index+6:]
-
-
-# class ProductSerializer(serializers.ModelSerializer):
-#     product = serializers.SerializerMethodField()
-#
-#     class Meta:
-#         model = Product
-#         fields = "__all__"
-#
-#     @staticmethod
-#     def get_product(obj: Product):
-#         return obj.get_product_name()
-

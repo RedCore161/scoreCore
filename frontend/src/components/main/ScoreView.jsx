@@ -1,7 +1,7 @@
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useLayoutEffect, useReducer, useState } from "react";
 import { useParams } from "react-router";
+
 import { defaultStateScore, reducerScore } from "../reducer/reducerScore";
-import axiosConfig from "../../axiosConfig";
 import { Button, ButtonGroup, Col, Row } from "react-bootstrap";
 import useWindowSize from 'react-use/lib/useWindowSize';
 import Confetti from 'react-confetti';
@@ -10,6 +10,7 @@ import * as actionTypes from "../reducer/reducerTypes";
 import ScoreGroup from "../ui/ScoreGroup";
 import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
 import { useSnackbar } from "notistack";
+import axiosConfig from "../../axiosConfig";
 
 const ScoreView = () => {
 
@@ -24,13 +25,13 @@ const ScoreView = () => {
   const actions = ["eye", "nose", "cheek", "ear", "whiskas"];
 
   async function fetchData() {
-    const result = await axiosConfig.get(`/api/project/${ id }/images`);
+    const result = await axiosConfig.holder.get(`/api/project/${ id }/images`);
     setImages(result.data);
     setLoadingDone(true);
     console.log("Found Images:", result.data);
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     console.log("fetchData");
     fetchData();
 
@@ -41,9 +42,9 @@ const ScoreView = () => {
     dispatch({ type: actionTypes.SET_SCORE, payload: { "action": action, "value": value } });
   };
 
-  function confirmScore() {
+  async function confirmScore() {
     let image = images.shift();
-    axiosConfig.post(`/api/imagescore/${ image.id }/confirm/`, {
+    await axiosConfig.holder.post(`/api/imagescore/${ image.id }/confirm/`, {
       'eye': state.eye,
       'nose': state.nose,
       'cheek': state.cheek,
@@ -75,12 +76,11 @@ const ScoreView = () => {
     setUpdateUi(!updateUi)
   }
 
-  function markAsUseless() {
+  async function markAsUseless() {
     let image = images.shift();
-    axiosConfig.post(`/api/imagescore/${ image.id }/useless/`, {
+    await axiosConfig.holder.post(`/api/imagescore/${ image.id }/useless/`, {
       "project": id
-    })
-      .then((response) => {
+    }).then((response) => {
         if (response.data) {
           if (response.data.success) {
             showSuccessBar(enqueueSnackbar, "Image marked as Useless!");

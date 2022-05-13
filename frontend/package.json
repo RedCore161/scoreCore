@@ -1,6 +1,6 @@
 {
   "name": "scoring",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

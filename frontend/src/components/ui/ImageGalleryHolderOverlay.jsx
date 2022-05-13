@@ -1,19 +1,19 @@
 import React from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
-import axiosConfig from "../../axiosConfig";
 import { showErrorBar, showSuccessBar } from "./Snackbar";
 import { useSnackbar } from "notistack";
 
+
 import "./css/ImageGalleryHolder.css"
+import axiosConfig from "../../axiosConfig";
 
 
 const ImageGalleryHolderOverlay = ({ imageId, reloadCallback }) => {
 
   const { enqueueSnackbar } = useSnackbar();
 
-  function removeUseless(imageId) {
-
-    axiosConfig.post(`/api/imagescore/${ imageId }/restore/`, )
+  async function removeUseless(imageId) {
+    await axiosConfig.holder.post(`/api/imagescore/${ imageId }/restore/`,)
       .then((response) => {
         if (response.data) {
           if (response.data.success) {
@@ -32,9 +32,8 @@ const ImageGalleryHolderOverlay = ({ imageId, reloadCallback }) => {
       });
   }
 
-  function acceptAsUseless(imageId) {
-
-    axiosConfig.post(`/api/imagescore/${ imageId }/hide/`, )
+  async function acceptAsUseless(imageId) {
+    await axiosConfig.holder.post(`/api/imagescore/${ imageId }/hide/`,)
       .then((response) => {
         if (response.data) {
           if (response.data.success) {

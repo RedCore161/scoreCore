@@ -1,4 +1,4 @@
-import React, { Component, useEffect } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import { connect, useDispatch } from 'react-redux';
 import { Col, Container, Row } from "react-bootstrap";
 
@@ -9,20 +9,20 @@ import { ModalProvider } from "./components/modal/coreModalContext";
 
 import Navbar from "./components/navbar/Navbar";
 import ScoreView from "./components/main/ScoreView";
-
-import * as actions from './store/actions/auth';
-
-import "./style.scss";
 import LoadingIcon from "./components/ui/LoadingIcon";
 import IndexView from "./components/main/IndexView";
-import { WebSocketProvider } from "./components/ws/websocketContext";
 import UselessImageFilesView from "./components/main/UselessImageFilesView";
+import * as actions from './store/actions/auth';
+import "./style.scss";
 
-
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   return {
-    isAuthenticated: state.token !== null,
-    isLoading: state.loading
+    isAuthenticated: !!state.token,
+    isLoading: state.loading,
+    error: state.error,
+    is_staff: state.is_staff,
+    is_superuser: state.is_superuser,
+    is_active: state.is_active
   };
 };
 

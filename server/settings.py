@@ -97,6 +97,7 @@ REST_FRAMEWORK = {
 
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
+        "scoring.permissions.HasSuperUserPermission",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.BasicAuthentication",
@@ -106,6 +107,10 @@ REST_FRAMEWORK = {
     "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",
     ]
+}
+
+REST_AUTH_SERIALIZERS = {
+    'TOKEN_SERIALIZER': 'scoring.serializers.TokenSerializer',
 }
 
 ROOT_URLCONF = "server.urls"
@@ -161,6 +166,7 @@ CORS_ALLOWED_ORIGINS = [
     f"{PROTOCOL}://localhost:8000",
     f"{PROTOCOL}://scoring.local",
     f"{PROTOCOL}://api.scoring.local",
+    f"{PROTOCOL}://scoring-backend:8000",
 ]
 CSRF_COOKIE_NAME = "csrftoken"
 

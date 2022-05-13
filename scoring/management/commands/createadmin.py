@@ -25,8 +25,8 @@ class Command(BaseCommand):
                 user.objects.create_superuser(username, mail, pw)
                 self.stdout.write(self.style.SUCCESS('Created Admin!'))
 
-            # Create a Token for watch-dog
-            _user = user.objects.get(username=username)
-            token, _ = Token.objects.get_or_create(user=_user)
-            with open(os.path.join(BASE_DIR, "token"), 'w') as f:
-                f.write(token.key)
+            # # Create a Token for watch-dog
+            # _user = user.objects.get(username=username)
+            # token, _ = Token.objects.get_or_create(user=_user)
+            # with open(os.path.join(BASE_DIR, "token"), 'w') as f:
+            #     f.write(token.key)

@@ -11,10 +11,13 @@ export const authStart = () => {
   };
 };
 
-export const authSuccess = token => {
+export const authSuccess = ({key, is_staff=false, is_superuser=false, is_active=false}) => {
   return {
     type: actionTypes.AUTH_SUCCESS,
-    token: token
+    token: key,
+    is_staff: is_staff || false,
+    is_superuser: is_superuser || false,
+    is_active: is_active || false,
   };
 };
 
@@ -45,23 +48,25 @@ export const authLogin = (username, password, enqueueSnackbar) => {
 
   return dispatch => {
     dispatch(authStart());
-    axiosConfig.post('/rest-auth/login/', {
+    axiosConfig.holder.post('/rest-auth/login/', {
       username: username,
       password: password
     }, {
       timeout: 1000,
     })
       .then(res => {
-        const token = res.data.key;
         const expirationDate = new Date(new Date().getTime() + SESSION_EXPIRE * 1000);
-        localStorage.setItem('token', token);
-        localStorage.setItem('expirationDate', expirationDate.getTime().toString());
-        dispatch(authSuccess(token));
+        localStorage.setItem("is_staff", res.data.is_staff);
+        localStorage.setItem("is_superuser", res.data.is_superuser);
+        localStorage.setItem("is_active", res.data.is_active);
+        localStorage.setItem("token", res.data.key);
+        localStorage.setItem("expirationDate", expirationDate.getTime().toString());
+        dispatch(authSuccess(res.data));
         dispatch(checkAuthTimeout(SESSION_EXPIRE));
       })
       .catch(err => {
         dispatch(authFail(err));
-        console.log({err});
+        console.log({ err });
         console.error(err);
         showErrorBar(enqueueSnackbar, "Login failed!")
       });
@@ -80,8 +85,12 @@ export const authCheckState = () => {
       } else {
         const expirationDate = new Date(new Date().getTime() + SESSION_EXPIRE * 1000);
         localStorage.setItem('expirationDate', expirationDate.getTime().toString());
-        dispatch(authSuccess(token));
-        dispatch(checkAuthTimeout(( expirationDate.getTime() - new Date().getTime() ) / 1000));
+        dispatch(authSuccess({"key": token,
+                                                       "is_staff": localStorage.getItem('is_staff'),
+                                                       "is_superuser": localStorage.getItem('is_superuser'),
+                                                       "is_active": localStorage.getItem('is_active')
+        }));
+        // dispatch(checkAuthTimeout(( expirationDate.getTime() - new Date().getTime() ) / 1000));
       }
     }
   };

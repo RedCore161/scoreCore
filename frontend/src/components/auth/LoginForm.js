@@ -41,10 +41,15 @@ const LoginForm = (props) => {
 
 };
 
+
 const mapStateToProps = (state) => {
   return {
-    loading: state.loading,
-    error: state.error
+    isAuthenticated: !!state.token,
+    isLoading: state.loading,
+    error: state.error,
+    is_staff: state.is_staff,
+    is_superuser: state.is_superuser,
+    is_active: state.is_active
   };
 };
 
