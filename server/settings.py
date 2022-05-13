@@ -97,7 +97,8 @@ REST_FRAMEWORK = {
 
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
-        "scoring.permissions.HasSuperUserPermission",
+        # "rest_framework.permissions.IsAdminUser",
+        # "scoring.permissions.HasSuperUserPermission",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.BasicAuthentication",

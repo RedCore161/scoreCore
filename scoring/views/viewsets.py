@@ -75,15 +75,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
 
-    @permission_classes([IsAuthenticated])
     @action(detail=False, url_path="list", methods=["GET"])
+    @permission_classes([IsAuthenticated])
     def list_projects(self, request):
         serializer = ProjectSerializer(Project.objects.filter(users=request.user), context={"user": request.user.pk},
                                        many=True)
         return Response(serializer.data)
 
-    @permission_classes([IsAuthenticated])
     @action(detail=True, url_path="images", methods=["GET"])
+    @permission_classes([IsAuthenticated])
     def get_images(self, request, pk):
 
         images = ImageFile.objects.filter(project=pk)\
@@ -93,15 +93,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer = ImageFileSerializer(images, many=True)
         return Response(serializer.data)
 
-    @permission_classes([IsAdminUser])
     @action(detail=True, url_path="get-useless", methods=["GET"])
+    @permission_classes([IsAdminUser])
     def get_useless_image_files(self, request, pk):
         images = ImageFile.objects.filter(project=pk, useless=True, hidden=False).order_by("order")
         serializer = ImageFileSerializer(images, many=True)
         return Response(serializer.data)
 
-    @permission_classes([IsAdminUser])
     @action(detail=True, url_path="read-images", methods=["GET"])
+    @permission_classes([IsAdminUser])
     def read_images(self, request, pk):
 
         project = Project.objects.get(pk=pk)
