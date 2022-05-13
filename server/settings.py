@@ -74,12 +74,12 @@ Q_CLUSTER = {
     # }
 }
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': 'uitests-control-cache:11211',
-    }
-}
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#         'LOCATION': 'uitests-control-cache:11211',
+#     }
+# }
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -111,7 +111,6 @@ REST_FRAMEWORK = {
 ROOT_URLCONF = "server.urls"
 
 ASGI_APPLICATION = "server.routing.application"
-
 
 TEMPLATES = [
     {
@@ -157,11 +156,11 @@ PROTOCOL = os.getenv('PROTOCOL', 'http')
 HARD_IP = os.getenv('HARD_IP', 'ignore.local')
 
 CORS_ALLOWED_ORIGINS = [
-    f"{PROTOCOL}://{HARD_IP}:8000",
-    # f"{PROTOCOL}://localhost",
-    # f"{PROTOCOL}://scoring.local",
-    # f"{PROTOCOL}://api.scoring.local",
-    # f"{PROTOCOL}://localhost.localdomain",
+    # f"{PROTOCOL}://{HARD_IP}",
+    f"{PROTOCOL}://localhost:3000",
+    f"{PROTOCOL}://localhost:8000",
+    f"{PROTOCOL}://scoring.local",
+    f"{PROTOCOL}://api.scoring.local",
 ]
 CSRF_COOKIE_NAME = "csrftoken"
 
