@@ -162,7 +162,7 @@ PROTOCOL = os.getenv('PROTOCOL', 'http')
 HARD_IP = os.getenv('HARD_IP', 'ignore.local')
 
 CORS_ALLOWED_ORIGINS = [
-    # f"{PROTOCOL}://{HARD_IP}",
+    f"{PROTOCOL}://{HARD_IP}",
     f"{PROTOCOL}://localhost:3000",
     f"{PROTOCOL}://localhost:8000",
     f"{PROTOCOL}://scoring.local",
