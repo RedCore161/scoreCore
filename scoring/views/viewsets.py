@@ -34,43 +34,6 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 # ######################################################################################################################
 
-def parse_info_file(project, _path, get_or_create_amount=2):
-
-    regex = re.compile("^\d{5}\.png")
-    _path_infofile = os.path.join(_path, "infofile.txt")
-    if os.path.exists(_path_infofile):
-        with open(_path_infofile, 'r') as f:
-            lines = f.readlines()
-            images = lines[3:]
-
-            for img in images:
-
-                if not regex.match(img):
-                    break
-
-                if get_or_create_amount == 0:
-                    return True
-
-                _file = img.rstrip("\n")
-
-                image_file, created = ImageFile.objects.get_or_create(project=project,
-                                                                      filename=_file,
-                                                                      path=_path)
-
-                if created:
-                    print("Created IMAGEFILE", _file, get_or_create_amount, _path)
-                    image_file.order = random.randint(0, 5000000)
-                    image_file.date = timezone.now()
-                    image_file.save()
-                    get_or_create_amount -= 1
-
-                else:
-                    if not image_file.useless and not image_file.hidden:
-                        print("Existing IMAGEFILE", _file, get_or_create_amount, _path)
-                        get_or_create_amount -= 1
-    return False
-
-
 class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
@@ -108,13 +71,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if not project.image_dir:
             return RequestFailed({"reason": f"No 'image-dir' on project '{project}'!"})
 
-        _path = os.path.join(get_media_path(), project.image_dir)
-
-        for root, _, files in os.walk(_path):
-            if len(files):
-                for _file in files:
-                    if _file[-4:] == ".txt":    # TODO check file-type
-                        parse_info_file(project, os.path.join(BASE_DIR, root))
+        project.read_images()
 
         return RequestSuccess()
 
@@ -175,6 +132,8 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
                                           date=timezone.now())
         score.save()
 
+        image_file.calc_kappa()
+
         return RequestSuccess()
 
     @action(detail=True, url_path="useless", methods=["POST"])
@@ -188,10 +147,11 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
         _project = Project.objects.get(pk=project)
 
         # Load new Imagefile
-        result = parse_info_file(_project, build_abs_path([image_file_old.path]))
-        if result:
-            return RequestSuccess()
-        return RequestFailed()
+        result = _project.parse_info_file(build_abs_path([image_file_old.path]))
+        return RequestSuccess()
+        # if result:
+        #     return RequestSuccess()
+        # return RequestFailed()
 
     @action(detail=True, url_path="hide", methods=["POST"])
     def hide_useless(self, request, pk):

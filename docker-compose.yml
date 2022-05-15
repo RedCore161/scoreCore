@@ -39,8 +39,8 @@ services:
       dockerfile: docker/backend/Dockerfile
       args:
         BACKEND_PORT: ${BACKEND_PORT}
-        DB_HOST: postgres   # TODO unify django.env and .env
-        DB_PORT: 5432               # TODO unify django.env and .env
+        DB_HOST: postgres   # TODO unify django.env and .env.docker
+        DB_PORT: 5432               # TODO unify django.env and .env.docker
     depends_on:
       - postgres
       - scoring-redis

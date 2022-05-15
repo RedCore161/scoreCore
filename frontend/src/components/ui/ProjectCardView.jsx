@@ -5,15 +5,21 @@ import { useNavigate } from "react-router-dom";
 
 const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, scoresOwn, users }) => {
   let navigate = useNavigate();
+  const isAdmin = localStorage.getItem("is_staff")
 
   return (
     <Col key={ id } md={ 4 }>
       <div className={"project-Card bg-secondary m-1"} >
         <Row>
-          <Col md={10}
-               className={`project-Card-Header bg-info`}
-               onClick={ () => navigate(`/project/${ id }/score`) }><i>{ name }</i></Col>
-          <Col className={`project-Card-Header bg-info`}><i className="bi bi-clipboard-x-fill" onClick={() => navigate(`/project/${ id }/useless`)}/></Col>
+          <Col className={`project-Card-Header bg-info`}>
+            <i className={"project-Card-Header-Content"} onClick={ () => navigate(`/project/${ id }/score`) }>{ name }</i>
+            {isAdmin && (
+              <div className={"float-end"}>
+                <i className="project-Card-Header-Content bi bi-clipboard-x-fill p-1" onClick={() => navigate(`/project/${ id }/useless`)}/>
+                <i className="project-Card-Header-Content bi bi-calculator-fill" onClick={() => navigate(`/project/${ id }/kappa`)}/>
+              </div>
+            )}
+          </Col>
         </Row>
         <Row className={"pt-2"}>
           <Col md={8}>

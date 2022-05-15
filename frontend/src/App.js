@@ -16,6 +16,7 @@ import * as actions from './store/actions/auth';
 import "./style.scss";
 import ProjectEvaluateView from "./components/main/ProjectEvaluateView";
 import BackupView from "./components/main/BackupView";
+import ProjectKappaView from "./components/main/ProjectKappaView";
 
 const mapStateToProps = (state) => {
   return {
@@ -65,6 +66,7 @@ const App = props => {
                         <Route exact path="/project/backup/" element={ <BackupView /> }/>
                         <Route exact path="/project/:id/score" element={ <ScoreView /> }/>
                         <Route exact path="/project/:id/useless" element={ <UselessImageFilesView /> }/>
+                        <Route exact path="/project/:id/kappa" element={ <ProjectKappaView /> }/>
                         {/*<Route exact path="/stack/" element={ <WebSocketProvider url={ "/ws/stack/" }><StackTestsView /></WebSocketProvider> }/>*/ }
                         {/*<Route exact path="/app/" element={ <WebSocketProvider url={ "/ws/product/test/" }><AppTestsView /></WebSocketProvider> }/>*/ }
                         {/*<Route exact path="/app/:product/:version" element={ <WebSocketProvider url={ "/ws/product/test/" }><AppAllTestsView /></WebSocketProvider> }/>*/ }

@@ -7,6 +7,12 @@ export async function fetchProjects() {
   return result.data
 }
 
+export async function fetchImages(id) {
+  const result = await axiosConfig.holder.get(`/api/project/${ id }/images`);
+  console.log("Found Images:", result.data);
+  return result.data
+}
+
 export function SelectListened({ options, onChange, disabled }) {
   return (
     <select className={ "form-select mb-3" } disabled={ disabled || null } onChange={ onChange }>

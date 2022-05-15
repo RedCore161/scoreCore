@@ -17,6 +17,7 @@ const Navbar = () => {
         <>
           <Button href="/project/evaluate/" variant="info" className="w-100 mt-2" size="lg">Evaluate</Button>
           <Button href="/project/backup/" variant="info" className="w-100 mt-2" size="lg">Backup</Button>
+          <Button href={`${process.env.REACT_APP_BACKEND_URL}/admin`} variant="primary" className="w-100 mt-2" size="lg">Admin</Button>
         </>
       ) }
 

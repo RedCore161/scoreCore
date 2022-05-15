@@ -5,7 +5,7 @@ node_modules
 build
 
 .env.local
-.env
+.env.docker
 
 # misc
 .DS_Store

@@ -11,6 +11,8 @@ import ScoreGroup from "../ui/ScoreGroup";
 import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
 import { useSnackbar } from "notistack";
 import axiosConfig from "../../axiosConfig";
+import { fetchImages } from "../../helper";
+import LoadingIcon from "../ui/LoadingIcon";
 
 const ScoreView = () => {
 
@@ -24,16 +26,12 @@ const ScoreView = () => {
 
   const actions = ["eye", "nose", "cheek", "ear", "whiskas"];
 
-  async function fetchData() {
-    const result = await axiosConfig.holder.get(`/api/project/${ id }/images`);
-    setImages(result.data);
-    setLoadingDone(true);
-    console.log("Found Images:", result.data);
-  }
-
   useLayoutEffect(() => {
     console.log("fetchData");
-    fetchData();
+    fetchImages(id).then((images) => {
+      setImages(images);
+      setLoadingDone(true);
+    })
 
   }, []);
 
@@ -106,7 +104,7 @@ const ScoreView = () => {
 
   return (
     <>
-      { loadingDone && (
+      { loadingDone ? (
         images.length === 0 ? (
             <>
               <h1 className={ "pt-3" }>Congratulations! You scored everything in this project!</h1>
@@ -161,12 +159,10 @@ const ScoreView = () => {
                 <Col>
                   <ScoreGroup callback={ selectCallback } action={ state.active }/>
                 </Col>
-
               </Row>
-
             </>
           )
-      ) }
+      ) : <Row><LoadingIcon /></Row> }
     </>
 
   );

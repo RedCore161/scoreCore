@@ -9,8 +9,8 @@ venv
 media/*
 
 frontend/node_moduless
-frontend/.env
-frontend/.env.local
+.env
+.env
 
 docker/backend/django.env
 

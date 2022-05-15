@@ -10,7 +10,12 @@
     border-bottom: white 2px solid;
     color: white;
 }
-.project-Card-Header :hover{
+
+.project-Card-Header-Content {
+    color: white;
+}
+
+.project-Card-Header-Content:hover{
     color: darkblue;
 }
 

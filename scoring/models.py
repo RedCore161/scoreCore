@@ -1,12 +1,18 @@
 import datetime
 import json
 import os
+import random
+import re
 
 from django.db import models
 from django.contrib.auth.models import User
-from rest_framework.response import Response
+from django.utils import timezone
 
-from scoring.helper import get_project_evaluation_dir
+from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir, fleissKappa
+import pandas as pd
+import numpy as np
+
+from server.settings import BASE_DIR
 
 
 class Project(models.Model):
@@ -16,12 +22,100 @@ class Project(models.Model):
 
     def evaluate_data(self, data):
         _path = get_project_evaluation_dir(str(self.pk))
-        with open(os.path.join(_path, f'{datetime.datetime.now().strftime ("%Y-%m-%d_-_%H%M%S")}.json'), "w") as _file:
+
+        _file_template = datetime.datetime.now().strftime("%Y-%m-%d_-_%H%M%S")
+        with open(os.path.join(_path, f"{_file_template}.json"), "w") as _file:
             json.dump(data, _file, ensure_ascii=True, indent=4)
+
+        df = pd.read_json(data)
+        df.to_csv(f"{_file_template}.csv", encoding='utf-8', index=False)
 
     def get_existing_evaluations(self) -> dict:
         files = os.listdir(get_project_evaluation_dir(str(self.pk)))
         return {"files": files}
+
+    def get_images_dir(self):
+        return os.path.join(get_media_path(), self.image_dir)
+
+    def check_create_infofiles(self):
+        _path = self.get_images_dir()
+        for root, _, files in os.walk(_path):
+            if len(files):
+                if not ("infofile.txt" in files):
+                    self.create_infofile(root, files)
+
+    def create_infofile(self, _path, _files):
+        with open(os.path.join(_path, "infofile.txt"), "w") as _file:
+            _file.write("\n")
+            _file.write("\n")
+            _file.write("\n")
+            for image in _files:
+                if image == "infofile.txt":
+                    continue
+                _file.write(f"{image}\n")
+
+    def create_script(self):
+        _path = self.get_images_dir()
+        for root, _, files in os.walk(_path):
+            if len(files):
+                print("CREATE SCRIPT", root, files)
+                group_trigger = False
+                dir_count = 0
+                for _file in files:
+                    group_trigger = not group_trigger
+                    if group_trigger:
+                        dir_count += 1
+                        save_check_dir(os.path.join(root, str(dir_count)))
+
+                    os.rename(os.path.join(root, _file),
+                              os.path.join(root, str(dir_count), _file))
+
+    def read_images(self):
+        _path = self.get_images_dir()
+        for root, _, files in os.walk(_path):
+            if len(files):
+                print("READ IMAGES", root, files)
+                for _file in files:
+                    if _file[-4:] == ".txt":    # TODO check file-type
+                        self.parse_info_file(os.path.join(BASE_DIR, root))
+
+        return True
+
+    def parse_info_file(self, _path, get_or_create_amount=2):
+
+        regex = re.compile("^\d{5}\.png")
+        _path_infofile = os.path.join(_path, "infofile.txt")
+        if os.path.exists(_path_infofile):
+            with open(_path_infofile, 'r') as f:
+                lines = f.readlines()
+                images = lines[3:]
+
+                for img in images:
+
+                    if not regex.match(img):
+                        break
+
+                    if get_or_create_amount == 0:
+                        return True
+
+                    _file = img.rstrip("\n")
+
+                    image_file, created = ImageFile.objects.get_or_create(project=self,
+                                                                          filename=_file,
+                                                                          path=_path)
+
+                    if created:
+                        print("Created IMAGEFILE", _file, get_or_create_amount, _path)
+                        image_file.order = random.randint(0, 5000000)
+                        image_file.date = timezone.now()
+                        image_file.save()
+                        get_or_create_amount -= 1
+
+                    else:
+                        if not image_file.useless and not image_file.hidden:
+                            print("Existing IMAGEFILE", _file, get_or_create_amount, _path)
+                            get_or_create_amount -= 1
+        return False
 
     def __str__(self):
         _id = ""
@@ -30,14 +124,34 @@ class Project(models.Model):
         return f"{_id} Project: {self.name}"
 
 
+
 class ImageFile(models.Model):
     project = models.ForeignKey(Project, related_name='files', on_delete=models.CASCADE)
     filename = models.CharField(max_length=50, null=False)
     path = models.CharField(max_length=500, null=False)
     useless = models.BooleanField(default=False)
     hidden = models.BooleanField(default=False)
+    kappa = models.FloatField(default=None, null=True, blank=True)
+
     date = models.DateTimeField(blank=True, null=True)
     order = models.IntegerField(default=0, blank=True)
+
+    def calc_kappa(self):
+        _params = ["s_eye", "s_nose", "s_cheek", "s_ear", "s_whiskas"]
+        n = self.scores.all().distinct("user").count()
+        if n >= 5:
+
+            scores = self.scores.all().values_list("s_eye", "s_nose", "s_cheek", "s_ear", "s_whiskas")
+            print("Scores", scores)
+            scores_cleaned = []
+            for score in scores:
+                s_eye, s_nose, s_cheek, s_ear, s_whiskas = score
+                scores_cleaned.append([s_eye, s_nose, s_cheek, s_ear, s_whiskas])
+
+            summed_scores = np.sum(scores_cleaned, axis=0)
+            self.kappa = fleissKappa(scores_cleaned, 10)
+            self.save()
+
 
     def __str__(self):
         _id = ""
