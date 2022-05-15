@@ -6,7 +6,7 @@ if [ "$(id -u)" -ne "0" ]
 fi
 
 printf "Create Backup"
-python3 manage.py dbbackup
+python manage.py dbbackup
 
 printf "Rebuild Docker"
 docker-compose down
@@ -16,4 +16,4 @@ printf "Wait..."
 sleep 30
 
 printf "Restore Backup"
-python3 manage.py dbrestore --noinput
+python manage.py dbrestore --noinput
