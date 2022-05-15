@@ -1,8 +1,6 @@
 # dependencies
 node_modules
 
-.env.local
-
 # production
 build
 

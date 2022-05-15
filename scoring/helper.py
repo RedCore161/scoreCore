@@ -15,6 +15,12 @@ def get_media_path() -> str:
     return "media"
 
 
+def get_project_evaluation_dir(project_id) -> str:
+    _path = build_abs_path(["evaluations", project_id])
+    save_check_dir(_path)
+    return _path
+
+
 def build_abs_path(path_list: list) -> str:
     _abs_path = os.path.abspath(MEDIA_ROOT)
     return os.path.join(_abs_path, *path_list)

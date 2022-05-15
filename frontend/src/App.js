@@ -14,6 +14,8 @@ import IndexView from "./components/main/IndexView";
 import UselessImageFilesView from "./components/main/UselessImageFilesView";
 import * as actions from './store/actions/auth';
 import "./style.scss";
+import ProjectEvaluateView from "./components/main/ProjectEvaluateView";
+import BackupView from "./components/main/BackupView";
 
 const mapStateToProps = (state) => {
   return {
@@ -53,12 +55,14 @@ const App = props => {
                 </Col>
               ) : (
                 <>
-                  <Navbar dispatch={ dispatch }/>
+                  <Navbar />
                   <Col md={ 10 } className={ "ps-3" }>
                     <Router>
                       <Routes>
                         {/*Authenticated-Routes*/ }
                         <Route exact path="/project/overview/" element={ <IndexView /> }/>
+                        <Route exact path="/project/evaluate/" element={ <ProjectEvaluateView /> }/>
+                        <Route exact path="/project/backup/" element={ <BackupView /> }/>
                         <Route exact path="/project/:id/score" element={ <ScoreView /> }/>
                         <Route exact path="/project/:id/useless" element={ <UselessImageFilesView /> }/>
                         {/*<Route exact path="/stack/" element={ <WebSocketProvider url={ "/ws/stack/" }><StackTestsView /></WebSocketProvider> }/>*/ }

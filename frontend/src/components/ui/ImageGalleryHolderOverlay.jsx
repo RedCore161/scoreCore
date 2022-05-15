@@ -3,9 +3,8 @@ import { Button, Col, Container, Row } from "react-bootstrap";
 import { showErrorBar, showSuccessBar } from "./Snackbar";
 import { useSnackbar } from "notistack";
 
-
-import "./css/ImageGalleryHolder.css"
 import axiosConfig from "../../axiosConfig";
+import "./css/ImageGalleryHolder.css"
 
 
 const ImageGalleryHolderOverlay = ({ imageId, reloadCallback }) => {

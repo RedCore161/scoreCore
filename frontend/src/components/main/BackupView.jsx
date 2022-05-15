@@ -3,17 +3,18 @@ import React, { useLayoutEffect, useState } from "react";
 import BoxContainer from "../ui/BoxContainer";
 import { Row } from "react-bootstrap";
 import ProjectCardView from "../ui/ProjectCardView";
-import { fetchProjects } from "../../helper";
+import axiosConfig from "../../axiosConfig";
 
-const IndexView = () => {
+const BackupView = () => {
 
   const [data, setData] = useState([]);
 
-  useLayoutEffect(() => {
-    fetchProjects().then((projects) => {
-      setData(projects)
-    })
-  }, []);
+  // useLayoutEffect(() => {
+  //   axiosConfig.refreshData()
+  //   fetchProjects();
+  // }, []);
+
+
 
   return (
     <BoxContainer title="Available Projects">
@@ -26,4 +27,4 @@ const IndexView = () => {
   );
 };
 
-export default IndexView;
+export default BackupView;

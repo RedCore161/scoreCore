@@ -126,11 +126,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @permission_classes([IsAdminUser])
-    @action(detail=True, url_path="evaluate", methods=["GET"])
+    @action(detail=True, url_path="evaluate", methods=["POST"])
     def evaluate(self, request, pk):
         files = ImageFile.objects.filter(project=pk).exclude(useless=True)
         serializer = ImageFileSerializer(files, many=True)
-        return Response(serializer.data)
+
+        project = Project.objects.get(pk=pk)
+
+        project_serializer = ProjectSerializer(project)
+        project.evaluate_data({"imagefiles": serializer.data,
+                               "project": project_serializer.data})
+
+        return RequestSuccess(project.get_existing_evaluations())
 
 
 class ImageScoreViewSet(viewsets.ModelViewSet):

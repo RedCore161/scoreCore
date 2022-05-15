@@ -1,13 +1,27 @@
+import datetime
+import json
 import os
 
 from django.db import models
 from django.contrib.auth.models import User
+from rest_framework.response import Response
+
+from scoring.helper import get_project_evaluation_dir
 
 
 class Project(models.Model):
     name = models.CharField(max_length=100, null=False)
     image_dir = models.CharField(max_length=500, null=True, blank=True)
     users = models.ManyToManyField(User)
+
+    def evaluate_data(self, data):
+        _path = get_project_evaluation_dir(str(self.pk))
+        with open(os.path.join(_path, f'{datetime.datetime.now().strftime ("%Y-%m-%d_-_%H%M%S")}.json'), "w") as _file:
+            json.dump(data, _file, ensure_ascii=True, indent=4)
+
+    def get_existing_evaluations(self) -> dict:
+        files = os.listdir(get_project_evaluation_dir(str(self.pk)))
+        return {"files": files}
 
     def __str__(self):
         _id = ""

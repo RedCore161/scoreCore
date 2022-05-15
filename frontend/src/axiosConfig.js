@@ -11,16 +11,26 @@ export default class axiosConfig {
     }
     return this.instance;
   }
+
   static get holder() {
     return axiosConfig.getInstance.axiosHolder;
   }
-  static get refreshData() {
-    axiosConfig.instance = new axiosConfig();
-    return axiosConfig.getInstance.axiosHolder;
+
+  refreshData() {
+    const holder = axiosConfig.getInstance.axiosHolder
+    let token = localStorage.getItem("token");
+    if (token) {
+      holder.defaults.headers.common['Authorization'] = `token ${ token }`;
+    }
+
+    let csrftoken = Cookies.get('csrftoken');
+    if (csrftoken) {
+      holder.defaults.headers.common['X-CSRFToken'] = `csrftoken ${ csrftoken }`;
+    }
+
   }
 
   constructor() {
-    console.log("Construct axiosHolder")
     this.axiosHolder = axios.create({
       baseURL: process.env.REACT_APP_BACKEND_URL
     });

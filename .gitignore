@@ -7,13 +7,14 @@ __pycache__/
 venv
 !media
 media/*
-frontend/node_modules
+frontend/node_moduless
+frontend/.env
+frontend/.env.local
 
 docker/backend/django.env
 
 docker-compose.yml
 
-.env
 django.env
 dev.py
 
