@@ -15,9 +15,11 @@ COPY ./docker/frontend/.env.production .
 RUN sed -i -r "s/BASE-URL-TEMPLATE/${HARD_IP}/g" ./.env.production
 RUN sed -i -r "s/URL-TEMPLATE-WITH-PORT/${HARD_IP}:${BACKEND_PORT}/g" ./.env.production
 
+RUN npm install -g npm@8.10.0
 RUN npm install
 RUN npm run build
 
+#CMD ["tail", "-f", "/dev/null"]
 FROM nginx:stable-alpine
 RUN adduser -S -D -h /home/scoring scoring
 

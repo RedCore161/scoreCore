@@ -77,7 +77,7 @@ class Project(models.Model):
         _path = self.get_images_dir()
         for root, _, files in os.walk(_path):
             if len(files):
-                print("READ IMAGES", root, files)
+                # print("READ IMAGES", root, files)
                 for _file in files:
                     if _file[-4:] == ".txt":  # TODO check file-type
                         self.parse_info_file(os.path.join(BASE_DIR, root))

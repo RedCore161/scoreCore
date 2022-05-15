@@ -4,5 +4,6 @@ venv
 media
 frontend/node_modules
 
+Dockerfile
 docker-compose.yml
 

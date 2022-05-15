@@ -90,7 +90,7 @@ export const authCheckState = () => {
                                                        "is_superuser": localStorage.getItem('is_superuser'),
                                                        "is_active": localStorage.getItem('is_active')
         }));
-        // dispatch(checkAuthTimeout(( expirationDate.getTime() - new Date().getTime() ) / 1000));
+        dispatch(checkAuthTimeout(( expirationDate.getTime() - new Date().getTime() ) / 1000));
       }
     }
   };

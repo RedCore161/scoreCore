@@ -172,6 +172,8 @@ CSRF_COOKIE_NAME = "csrftoken"
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
+# print("DATABASES", DATABASES)
+# print("CORS_ALLOWED_ORIGINS", CORS_ALLOWED_ORIGINS)
 
 # This is only set in IDE (Intellij)
 if os.getenv("LOCAL-DEV"):
