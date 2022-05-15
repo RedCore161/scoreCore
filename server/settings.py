@@ -218,6 +218,7 @@ EXPORT_DIR = os.path.join(MEDIA_ROOT, os.getenv("EXPORT_DIR", "export"))
 
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = {'location': BACKUP_DIR}
+DBBACKUP_HOSTNAME = HARD_IP
 
 SCREENSHOT_FILENAME = "current.png"
 
