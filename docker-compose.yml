@@ -2,9 +2,9 @@ version: '3.7'
 
 services:
 
-  postgres:
+  scoring-database:
     image: postgres:13.4-alpine
-    container_name: postgres
+    container_name: scoring-database
     restart: unless-stopped
     ports:
       - "5432:5432"
@@ -39,10 +39,10 @@ services:
       dockerfile: docker/backend/Dockerfile
       args:
         BACKEND_PORT: ${BACKEND_PORT}
-        DB_HOST: postgres   # TODO unify django.env and .env.docker
+        DB_HOST: scoring-database   # TODO unify django.env and .env.docker
         DB_PORT: 5432               # TODO unify django.env and .env.docker
     depends_on:
-      - postgres
+      - scoring-database
       - scoring-redis
     ports:
       - ${BACKEND_PORT}:${BACKEND_PORT}

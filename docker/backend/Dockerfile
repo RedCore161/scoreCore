@@ -44,9 +44,8 @@ RUN apt update && \
 ENV DOMAIN="${DB_HOST}:${DB_PORT}"
 ENV PORT=${BACKEND_PORT}
 
-RUN crontab -l > backUpJob
-RUN echo "0 5 * * * python manage.py dbbackup" >> backUpJob
-RUN crontab backUpJob
+RUN echo "0 5 * * * python manage.py dbbackup --servername scoring-database" >> /tmp/backUpJob
+RUN crontab /tmp/backUpJob
 
 #USER scoring # Fix later
 CMD ./wait-for-it.sh $DOMAIN -- ./run-server.sh "${PORT}"
