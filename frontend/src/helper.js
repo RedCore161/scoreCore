@@ -7,6 +7,12 @@ export async function fetchProjects() {
   return result.data
 }
 
+export async function fetchEvaluations() {
+  const result = await axiosConfig.holder.get("/api/project/evaluations/");
+  console.log("Found Evaluations:", result.data);
+  return result.data
+}
+
 export async function fetchImages(id) {
   const result = await axiosConfig.holder.get(`/api/project/${ id }/images/`);
   console.log("Found Images:", result.data);

@@ -5,7 +5,7 @@ export const defaultStateScore = {
   "nose": "",
   "cheek": "",
   "ear": "",
-  "whiskas": "",
+  "whiskers": "",
 
   "key": false,
 
@@ -22,8 +22,8 @@ export const reducerScore = (state, action) => {
         case "eye": return { ...state, eye: action.payload.value, active: "nose" };
         case "nose": return { ...state, nose: action.payload.value, active: "cheek" };
         case "cheek": return { ...state, cheek: action.payload.value, active: "ear" };
-        case "ear": return { ...state, ear: action.payload.value, active: "whiskas" };
-        case "whiskas": return { ...state, whiskas: action.payload.value, active: "" };
+        case "ear": return { ...state, ear: action.payload.value, active: "whiskers" };
+        case "whiskers": return { ...state, whiskers: action.payload.value, active: "" };
         default: return { ...state, active: ""};
       }
 

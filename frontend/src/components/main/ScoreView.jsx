@@ -24,7 +24,7 @@ const ScoreView = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { width, height } = useWindowSize();
 
-  const actions = ["eye", "nose", "cheek", "ear", "whiskas"];
+  const actions = ["eye", "nose", "cheek", "ear", "whiskers"];
 
   useLayoutEffect(() => {
     console.log("fetchData");
@@ -47,7 +47,7 @@ const ScoreView = () => {
       'nose': state.nose,
       'cheek': state.cheek,
       'ear': state.ear,
-      'whiskas': state.whiskas,
+      'whiskers': state.whiskers,
     }).then((response) => {
       if (response.data) {
         if (response.data.success) {
@@ -132,25 +132,25 @@ const ScoreView = () => {
                 <Col md={ 5 }>
                   <ButtonGroup size="lg">
                     <Button variant={ state.active === actions[0] ? "info" : "primary" }
-                            onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[0] }) }>Eye
+                            onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[0] }) }>Eyes
                       ({ state.eye || "?" })</Button>
                     <Button variant={ state.active === actions[1] ? "info" : "primary" }
                             onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[1] }) }>Nose
                       ({ state.nose || "?" })</Button>
                     <Button variant={ state.active === actions[2] ? "info" : "primary" }
-                            onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[2] }) }>Cheek
+                            onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[2] }) }>Cheeks
                       ({ state.cheek || "?" })</Button>
                     <Button variant={ state.active === actions[3] ? "info" : "primary" }
-                            onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[3] }) }>Ear
+                            onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[3] }) }>Ears
                       ({ state.ear || "?" })</Button>
                     <Button variant={ state.active === actions[4] ? "info" : "primary" }
-                            onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[4] }) }>Whiskas
-                      ({ state.whiskas || "?" })</Button>
+                            onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[4] }) }>Whiskers
+                      ({ state.whiskers || "?" })</Button>
                   </ButtonGroup>
                 </Col>
                 <Col>
                   <Button size="lg" variant={ "success" } onClick={ () => confirmScore() }
-                          disabled={ ( state.eye + state.nose + state.cheek + state.ear + state.whiskas ).length !== 5 }>Confirm</Button>
+                          disabled={ ( state.eye + state.nose + state.cheek + state.ear + state.whiskers ).length !== 5 }>Confirm</Button>
                   <Button className={"ms-2"} size="lg" variant={ "primary" } onClick={ () => skipImage() }>Skip</Button>
                   <Button className={"ms-2"} size="lg" variant={ "danger" } onClick={ () => markAsUseless() }>Mark as Useless</Button>
                 </Col>

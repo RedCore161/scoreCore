@@ -1,5 +1,3 @@
-import os
-
 from django.contrib.auth.models import User
 from rest_auth.models import TokenModel
 from rest_framework import serializers
@@ -123,7 +121,12 @@ class ImageFileSerializer(serializers.ModelSerializer):
 
 
 class BackupSerializer(serializers.ModelSerializer):
+    clazz = serializers.SerializerMethodField("get_clazz_name")
 
     class Meta:
         model = Backup
         fields = "__all__"
+
+    @staticmethod
+    def get_clazz_name(obj: ImageScore):
+        return "backup"

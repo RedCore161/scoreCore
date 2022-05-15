@@ -2,11 +2,9 @@ import React, { useLayoutEffect, useState } from "react";
 
 import BoxContainer from "../ui/BoxContainer";
 import { Button, Col, Row } from "react-bootstrap";
-import ProjectCardView from "../ui/ProjectCardView";
 import axiosConfig from "../../axiosConfig";
 import { fetchProjects, SelectListened } from "../../helper";
 import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
-import * as actionTypes from "../reducer/reducerTypes";
 import { useSnackbar } from "notistack";
 
 const ProjectEvaluateView = () => {

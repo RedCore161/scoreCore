@@ -7,10 +7,10 @@ import re
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from statsmodels.stats import inter_rater as irr
 
-from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir, fleissKappa
-import pandas as pd
-import numpy as np
+from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir
+
 
 from server.settings import BASE_DIR
 
@@ -26,7 +26,6 @@ class Project(models.Model):
         _file_template = datetime.datetime.now().strftime("%Y-%m-%d_-_%H%M%S")
         with open(os.path.join(_path, f"{_file_template}.json"), "w") as _file:
             json.dump(data, _file, ensure_ascii=True, indent=4)
-
 
         with open(os.path.join(_path, f"{_file_template}.json"), "r") as _file:
             data = json.load(_file)
@@ -80,7 +79,7 @@ class Project(models.Model):
             if len(files):
                 print("READ IMAGES", root, files)
                 for _file in files:
-                    if _file[-4:] == ".txt":    # TODO check file-type
+                    if _file[-4:] == ".txt":  # TODO check file-type
                         self.parse_info_file(os.path.join(BASE_DIR, root))
 
         return True
@@ -128,7 +127,6 @@ class Project(models.Model):
         return f"{_id} Project: {self.name}"
 
 
-
 class ImageFile(models.Model):
     project = models.ForeignKey(Project, related_name='files', on_delete=models.CASCADE)
     filename = models.CharField(max_length=50, null=False)
@@ -141,21 +139,76 @@ class ImageFile(models.Model):
     order = models.IntegerField(default=0, blank=True)
 
     def calc_kappa(self):
-        _params = ["s_eye", "s_nose", "s_cheek", "s_ear", "s_whiskas"]
+        _params = ["s_eye", "s_nose", "s_cheek", "s_ear", "s_whiskers"]
         n = self.scores.all().distinct("user").count()
-        if n >= 5:
 
-            scores = self.scores.all().values_list("s_eye", "s_nose", "s_cheek", "s_ear", "s_whiskas")
-            print("Scores", scores)
-            scores_cleaned = []
-            for score in scores:
-                s_eye, s_nose, s_cheek, s_ear, s_whiskas = score
-                scores_cleaned.append([s_eye, s_nose, s_cheek, s_ear, s_whiskas])
+        if True:  # n >= 3:
+            values = {"0": [self.scores.filter(s_eye=0).count(),
+                            self.scores.filter(s_nose=0).count(),
+                            self.scores.filter(s_cheek=0).count(),
+                            self.scores.filter(s_ear=0).count(),
+                            self.scores.filter(s_whiskers=0).count()
+                            ],
+                      "1": [self.scores.filter(s_eye=1).count(),
+                            self.scores.filter(s_nose=1).count(),
+                            self.scores.filter(s_cheek=1).count(),
+                            self.scores.filter(s_ear=1).count(),
+                            self.scores.filter(s_whiskers=1).count()
+                            ],
+                      "2": [self.scores.filter(s_eye=2).count(),
+                            self.scores.filter(s_nose=2).count(),
+                            self.scores.filter(s_cheek=2).count(),
+                            self.scores.filter(s_ear=2).count(),
+                            self.scores.filter(s_whiskers=2).count()
+                            ],
+                      "None": [self.scores.filter(s_eye__isnull=True).count(),
+                               self.scores.filter(s_nose__isnull=True).count(),
+                               self.scores.filter(s_cheek__isnull=True).count(),
+                               self.scores.filter(s_ear__isnull=True).count(),
+                               self.scores.filter(s_whiskers__isnull=True).count()
+                               ],
+                      }
 
-            summed_scores = np.sum(scores_cleaned, axis=0)
-            self.kappa = fleissKappa(scores_cleaned, 10)
+            values2 = {
+                "s_eye": [
+                    self.scores.filter(s_eye=0).count(),
+                    self.scores.filter(s_eye=1).count(),
+                    self.scores.filter(s_eye=2).count(),
+                    self.scores.filter(s_eye__isnull=True).count(),
+                ],
+                "s_nose": [
+                    self.scores.filter(s_nose=0).count(),
+                    self.scores.filter(s_nose=1).count(),
+                    self.scores.filter(s_nose=2).count(),
+                    self.scores.filter(s_nose__isnull=True).count(),
+                ],
+                "s_cheek": [
+                    self.scores.filter(s_cheek=0).count(),
+                    self.scores.filter(s_cheek=1).count(),
+                    self.scores.filter(s_cheek=2).count(),
+                    self.scores.filter(s_cheek__isnull=True).count(),
+                ],
+                "s_ear": [
+                    self.scores.filter(s_ear=0).count(),
+                    self.scores.filter(s_ear=1).count(),
+                    self.scores.filter(s_ear=2).count(),
+                    self.scores.filter(s_ear__isnull=True).count()
+                ],
+                "s_whiskers": [
+                    self.scores.filter(s_whiskers=0).count(),
+                    self.scores.filter(s_whiskers=1).count(),
+                    self.scores.filter(s_whiskers=2).count(),
+                    self.scores.filter(s_whiskers__isnull=True).count()
+                ],
+            }
+            # final = [values.get(val) for val in _params]
+            final = [values.get(val) for val in ["0", "1", "2", "None"]]
+
+            agg = irr.aggregate_raters(final)
+            kappa = irr.fleiss_kappa(agg[0], method='fleiss')
+            print("RESULT", kappa, final)
+            self.kappa = kappa
             self.save()
-
 
     def __str__(self):
         _id = ""
@@ -174,13 +227,13 @@ class ImageScore(models.Model):
     s_nose = models.IntegerField(default=None, null=True, blank=True)
     s_cheek = models.IntegerField(default=None, null=True, blank=True)
     s_ear = models.IntegerField(default=None, null=True, blank=True)
-    s_whiskas = models.IntegerField(default=None, null=True, blank=True)
+    s_whiskers = models.IntegerField(default=None, null=True, blank=True)
 
     def __str__(self):
         _id = ""
         if os.getenv("DEBUG"):
             _id = f"[{self.pk}] "
-        return f"{_id} Score: {self.s_eye}{self.s_nose}{self.s_cheek}{self.s_ear}{self.s_whiskas} for '{self.file.filename}' by {self.user.username}"
+        return f"{_id} Score: {self.s_eye}{self.s_nose}{self.s_cheek}{self.s_ear}{self.s_whiskers} for '{self.file.filename}' by {self.user.username}"
 
 
 class Backup(models.Model):
@@ -191,4 +244,3 @@ class Backup(models.Model):
         if os.getenv("DEBUG"):
             _id = f"[{self.pk}] "
         return f"{_id} {self.name}"
-

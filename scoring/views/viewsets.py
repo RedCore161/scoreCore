@@ -83,7 +83,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @permission_classes([IsAdminUser])
-    @action(detail=True, url_path="evaluate", methods=["POST"])
+    @action(detail=True, url_path="evaluations", methods=["POST"])
     def evaluate(self, request, pk):
         files = ImageFile.objects.filter(project=pk).exclude(useless=True).exclude(scores__isnull=True)
         serializer = ImageFileSerializer(files, many=True)
@@ -117,7 +117,7 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
         nose = self.replaceNoneValue(request.data.get("nose"))
         cheek = self.replaceNoneValue(request.data.get("cheek"))
         ear = self.replaceNoneValue(request.data.get("ear"))
-        whiskas = self.replaceNoneValue(request.data.get("whiskas"))
+        whiskers = self.replaceNoneValue(request.data.get("whiskers"))
 
         image_file = ImageFile.objects.get(pk=pk)
 
@@ -128,7 +128,7 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
                                           s_nose=nose,
                                           s_cheek=cheek,
                                           s_ear=ear,
-                                          s_whiskas=whiskas,
+                                          s_whiskers=whiskers,
                                           date=timezone.now())
         score.save()
 
