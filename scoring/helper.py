@@ -1,7 +1,7 @@
 import os
 import pathlib
 
-from server.settings import MEDIA_ROOT
+from server.settings import MEDIA_ROOT, BACKUP_DIR
 
 
 def save_check_dir(*dirs):
@@ -13,6 +13,10 @@ def save_check_dir(*dirs):
 
 def get_media_path() -> str:
     return "media"
+
+
+def get_backup_path() -> str:
+    return BACKUP_DIR
 
 
 def get_project_evaluation_dir(project_id) -> str:

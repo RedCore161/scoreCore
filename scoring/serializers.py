@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from rest_auth.models import TokenModel
 from rest_framework import serializers
 
-from scoring.models import Project, ImageScore, ImageFile
+from scoring.models import Project, ImageScore, ImageFile, Backup
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -120,3 +120,10 @@ class ImageFileSerializer(serializers.ModelSerializer):
         # remove '../media/'
         index = obj.path.find("media")
         return obj.path[index+6:]
+
+
+class BackupSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Backup
+        fields = "__all__"

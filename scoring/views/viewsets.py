@@ -10,9 +10,9 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
-from scoring.helper import get_media_path, build_abs_path
-from scoring.models import Project, ImageScore, ImageFile
-from scoring.serializers import ProjectSerializer, ImageScoreSerializer, ImageFileSerializer
+from scoring.helper import get_media_path, build_abs_path, get_backup_path
+from scoring.models import Project, ImageScore, ImageFile, Backup
+from scoring.serializers import ProjectSerializer, ImageScoreSerializer, ImageFileSerializer, BackupSerializer
 from server.settings import BASE_DIR
 from server.views import RequestSuccess, RequestFailed
 
@@ -85,7 +85,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @permission_classes([IsAdminUser])
     @action(detail=True, url_path="evaluate", methods=["POST"])
     def evaluate(self, request, pk):
-        files = ImageFile.objects.filter(project=pk).exclude(useless=True)
+        files = ImageFile.objects.filter(project=pk).exclude(useless=True).exclude(scores__isnull=True)
         serializer = ImageFileSerializer(files, many=True)
 
         project = Project.objects.get(pk=pk)
@@ -171,6 +171,37 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
 
         return RequestSuccess()
 
+
+class BackupViewSet(viewsets.ModelViewSet):
+    pagination_class = StandardResultsSetPagination
+    serializer_class = BackupSerializer
+    queryset = Backup.objects.all()
+    permission_classes = [IsAdminUser]
+
+    @action(detail=False, url_path="readin", methods=["POST"])
+    def read_backups(self, request):
+        _files = os.listdir(get_backup_path())
+        for _f in _files:
+            try:
+                Backup.objects.get(name=_f)
+            except Backup.DoesNotExist:
+                backup = Backup.objects.create(name=_f)
+                backup.save()
+
+        return RequestSuccess()
+
+    # @action(detail=False, url_path="list", methods=["GET"])
+    # @permission_classes([IsAdminUser])
+    # def list_backups(self, request):
+    #     queryset = self.filter_queryset(self.get_queryset())
+    #     page = self.paginate_queryset(queryset)
+    #
+    #     if page is not None:
+    #         serializer = self.get_serializer(page, many=True)
+    #         return self.get_paginated_response(serializer.data)
+    #
+    #     serializer = self.get_serializer(queryset, many=True)
+    #     return Response(serializer.data)
 
 # ######################################################################################################################
 

@@ -27,8 +27,12 @@ class Project(models.Model):
         with open(os.path.join(_path, f"{_file_template}.json"), "w") as _file:
             json.dump(data, _file, ensure_ascii=True, indent=4)
 
-        df = pd.read_json(data)
-        df.to_csv(f"{_file_template}.csv", encoding='utf-8', index=False)
+
+        with open(os.path.join(_path, f"{_file_template}.json"), "r") as _file:
+            data = json.load(_file)
+            print("DATA", data.get("imagefiles"))
+            # df = pd.read_json(data.get("imagefiles"))
+            # df.to_csv(f"{os.path.join(_path, _file_template)}.csv", encoding="utf-8", index=False, errors="ignore")
 
     def get_existing_evaluations(self) -> dict:
         files = os.listdir(get_project_evaluation_dir(str(self.pk)))
@@ -177,3 +181,14 @@ class ImageScore(models.Model):
         if os.getenv("DEBUG"):
             _id = f"[{self.pk}] "
         return f"{_id} Score: {self.s_eye}{self.s_nose}{self.s_cheek}{self.s_ear}{self.s_whiskas} for '{self.file.filename}' by {self.user.username}"
+
+
+class Backup(models.Model):
+    name = models.CharField(max_length=100, null=False)
+
+    def __str__(self):
+        _id = ""
+        if os.getenv("DEBUG"):
+            _id = f"[{self.pk}] "
+        return f"{_id} {self.name}"
+

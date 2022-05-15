@@ -8,8 +8,14 @@ export async function fetchProjects() {
 }
 
 export async function fetchImages(id) {
-  const result = await axiosConfig.holder.get(`/api/project/${ id }/images`);
+  const result = await axiosConfig.holder.get(`/api/project/${ id }/images/`);
   console.log("Found Images:", result.data);
+  return result.data
+}
+
+export async function fetchBackups() {
+  const result = await axiosConfig.holder.get(`/api/backup/`);
+  console.log("Found Backups:", result.data);
   return result.data
 }
 

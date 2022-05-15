@@ -1,14 +1,13 @@
 from django.conf.urls import url
 from django.urls import include
 from rest_framework.routers import DefaultRouter
-from django.views.static import serve
 
-from scoring.views.viewsets import ProjectViewSet, ImageScoreViewSet, EmptyViewSet
-from server.settings import MEDIA_ROOT
+from scoring.views.viewsets import ProjectViewSet, ImageScoreViewSet, BackupViewSet
 
 router = DefaultRouter()
 router.register(r'project', ProjectViewSet, basename='project')
 router.register(r'imagescore', ImageScoreViewSet, basename='scoreimage')
+router.register(r'backup', BackupViewSet, basename='backup')
 
 urlpatterns = [
     url(r'^api/', include(router.urls)),

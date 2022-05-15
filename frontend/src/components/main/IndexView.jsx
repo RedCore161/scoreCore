@@ -1,9 +1,10 @@
 import React, { useLayoutEffect, useState } from "react";
 
 import BoxContainer from "../ui/BoxContainer";
-import { Row } from "react-bootstrap";
+import { Button, Row } from "react-bootstrap";
 import ProjectCardView from "../ui/ProjectCardView";
 import { fetchProjects } from "../../helper";
+import LoadingIcon from "../ui/LoadingIcon";
 
 const IndexView = () => {
 
@@ -11,19 +12,23 @@ const IndexView = () => {
 
   useLayoutEffect(() => {
     fetchProjects().then((projects) => {
-      setData(projects)
-    })
+      setData(projects);
+    });
   }, []);
 
   return (
-    <BoxContainer title="Available Projects">
-      <Row>
-        { data && data.map((project) => {
-          return <ProjectCardView key={project.id} { ...project } />;
-        }) }
-      </Row>
-    </BoxContainer>
+    data ? (
+      <BoxContainer title="Available Projects">
+        <Row>
+          { data.map((project) => {
+            return <ProjectCardView key={ project.id } { ...project } />;
+          }) }
+        </Row>
+      </BoxContainer>
+    ) : ( <Row><LoadingIcon/></Row> )
   );
+
+
 };
 
 export default IndexView;
