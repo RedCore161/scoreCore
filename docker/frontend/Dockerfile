@@ -19,7 +19,7 @@ RUN npm install
 RUN npm run build
 
 FROM nginx:stable-alpine
-RUN adduser -S -D -h /home/testing testing
+RUN adduser -S -D -h /home/scoring scoring
 
 RUN rm /etc/nginx/conf.d/default.conf
 COPY --from=node /home/scoring/scoring-frontend/build /usr/share/nginx/html

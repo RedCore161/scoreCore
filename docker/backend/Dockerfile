@@ -44,5 +44,5 @@ RUN apt update && \
 ENV DOMAIN="${DB_HOST}:${DB_PORT}"
 ENV PORT=${BACKEND_PORT}
 
-#USER testing # Fix later
+#USER scoring # Fix later
 CMD ./wait-for-it.sh $DOMAIN -- ./run-server.sh "${PORT}"

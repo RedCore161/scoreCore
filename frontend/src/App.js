@@ -80,7 +80,7 @@ const App = props => {
                 </>
               )
             ) }
-
+            {process.env.REACT_APP_BACKEND_URL}
           </Row>
         </Container>
       </ModalProvider>
