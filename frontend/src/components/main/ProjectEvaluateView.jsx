@@ -37,6 +37,7 @@ const ProjectEvaluateView = () => {
         if (response.data.success) {
           showSuccessBar(enqueueSnackbar, "Evaluation File was created!");
           console.log(response.data.files);
+          setEvaluations(response.data.files);
         }
       } else {
         showErrorBar(enqueueSnackbar, "Couldn't create evaluation File");

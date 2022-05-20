@@ -13,7 +13,7 @@ const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, sco
         <Row>
           <Col className={`project-Card-Header bg-info`}>
             <i className={"project-Card-Header-Content"} onClick={ () => navigate(`/project/${ id }/score`) }>{ name }</i>
-            {isAdmin && (
+            { isAdmin === "true" && (
               <div className={"float-end"}>
                 <i className="project-Card-Header-Content bi bi-clipboard-x-fill p-1" onClick={() => navigate(`/project/${ id }/useless`)}/>
                 <i className="project-Card-Header-Content bi bi-calculator-fill" onClick={() => navigate(`/project/${ id }/kappa`)}/>

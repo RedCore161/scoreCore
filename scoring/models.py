@@ -13,7 +13,6 @@ from django.utils import timezone
 
 from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir
 
-
 from server.settings import BASE_DIR
 
 
@@ -34,6 +33,25 @@ class Project(models.Model):
             print("DATA", data.get("imagefiles"))
 
     def evaluate_data_as_xlsx(self, data):
+
+        def get_cell(value) -> str:
+
+            if value < 65:
+                raise Exception("Unexpected value", value)
+            if value <= 90:
+                return chr(value)
+
+            init = 64  # pre char 'A'
+
+            while value > 90:
+                value -= 26
+                init += 1
+
+            if init == 64:
+                return chr(value)
+            else:
+                return f"{chr(init)}{chr(value)}"
+
         _path = get_project_evaluation_dir(str(self.pk))
         project = Project.objects.get(name=data.get("project").get("name"))
         user_ids = project.scores.all().distinct("user").values_list("user__id", flat=True)
@@ -76,21 +94,27 @@ class Project(models.Model):
             for score in image_file.scores.all().order_by("user__pk"):
                 pos = user_id_dict.get(score.user_id)
 
-                start_col = chr(68 + (pos * 7))
-                end_col = chr(72 + (pos * 7))
+                start_col = get_cell(65 + 3 + (pos * 7))
                 ws.write(line, 3 + (pos * 7), score.s_eye)
                 ws.write(line, 4 + (pos * 7), score.s_nose)
                 ws.write(line, 5 + (pos * 7), score.s_cheek)
                 ws.write(line, 6 + (pos * 7), score.s_ear)
                 ws.write(line, 7 + (pos * 7), score.s_whiskers)
-                ws.write_formula(line, 8 + (pos * 7), f"=SUM({start_col}{line+1}:{end_col}{line+1})")
-                ws.write_formula(line, 9 + (pos * 7), f"=AVERAGE({start_col}{line+1}:{end_col}{line+1})")
+                end_col = get_cell(65 + 7 + (pos * 7))
+
+                if score.s_eye is not None or \
+                   score.s_nose is not None or \
+                   score.s_cheek is not None or \
+                   score.s_ear is not None or \
+                   score.s_whiskers is not None:
+                    ws.write_formula(line, 8 + (pos * 7), f"=SUM({start_col}{line + 1}:{end_col}{line + 1})")
+                    ws.write_formula(line, 9 + (pos * 7), f"=AVERAGE({start_col}{line + 1}:{end_col}{line + 1})")
+
             line += 1
 
         writer.save()
 
         return target
-
 
     def get_existing_evaluations(self) -> dict:
         files = os.listdir(get_project_evaluation_dir(str(self.pk)))
@@ -218,7 +242,9 @@ class ImageFile(models.Model):
             diversity = 0.
             for score in self.scores.all():
                 for val in _params:
-                    diversity += abs(getattr(score, val) - average.get(val))
+                    score_value = getattr(score, val)
+                    if score_value:
+                        diversity += abs(score_value - average.get(val))
 
             self.diversity = math.floor(diversity * 100) / 100.0
             self.save()
