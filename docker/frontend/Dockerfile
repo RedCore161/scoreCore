@@ -17,7 +17,7 @@ RUN sed -i -r "s/URL-TEMPLATE-WITH-PORT/${HARD_IP}:${BACKEND_PORT}/g" ./.env.pro
 
 #RUN npm install -g npm@8.10.0
 RUN npm install
-RUN npm audit fix
+#RUN npm audit fix
 RUN npm run build
 
 #CMD ["tail", "-f", "/dev/null"]
