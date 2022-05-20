@@ -5,6 +5,7 @@ import os
 import random
 import re
 import pandas as pd
+from django.core.validators import RegexValidator
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -17,8 +18,11 @@ from server.settings import BASE_DIR
 
 
 class Project(models.Model):
-    name = models.CharField(max_length=100, null=False)
-    image_dir = models.CharField(max_length=500, null=True, blank=True)
+    name = models.CharField(max_length=100, unique=True, null=False)
+    image_dir = models.CharField(max_length=500,
+                                 validators=[RegexValidator('^(?!setup$|backup$|evaluations$).*$')],
+                                 null=True,
+                                 blank=True)
     users = models.ManyToManyField(User)
 
     def evaluate_data(self, data):
