@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useReducer, useState } from "react";
 import { useParams } from "react-router";
 
 import { defaultStateScore, reducerScore } from "../reducer/reducerScore";
-import { Button, ButtonGroup, Col, Row } from "react-bootstrap";
+import { Form, Button, ButtonGroup, Col, Row } from "react-bootstrap";
 import useWindowSize from 'react-use/lib/useWindowSize';
 import Confetti from 'react-confetti';
 
@@ -48,6 +48,7 @@ const ScoreView = () => {
       'cheek': state.cheek,
       'ear': state.ear,
       'whiskers': state.whiskers,
+      'comment': state.comment,
     }).then((response) => {
       if (response.data) {
         if (response.data.success) {
@@ -100,6 +101,10 @@ const ScoreView = () => {
 
   function getImathPath() {
     return [process.env.REACT_APP_BACKEND_URL, "media", images[0].rel_path, images[0].filename].join("/")
+  }
+
+  function changeCommentListener(event) {
+    dispatch({ type: actionTypes.SET_COMMENT, payload: event.target.value });
   }
 
   return (
@@ -158,6 +163,16 @@ const ScoreView = () => {
               <Row md={ 7 }>
                 <Col>
                   <ScoreGroup callback={ selectCallback } action={ state.active }/>
+                </Col>
+              </Row>
+              <Row>
+                <Col md={5}>
+                  <Form.Group controlId="formComment">
+                    <Form.Control type="text" className={"input-form"}
+                                  placeholder="Comment (optional)"
+                                  value={ state.comment }
+                                  onChange={ changeCommentListener } />
+                  </Form.Group>
                 </Col>
               </Row>
             </>

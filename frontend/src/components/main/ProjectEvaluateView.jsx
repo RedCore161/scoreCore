@@ -29,6 +29,27 @@ const ProjectEvaluateView = () => {
     setEvaluations(selected.evaluations.files)
   }
 
+  async function exportAsExcel() {
+    await axiosConfig.holder.post(`/api/project/${ selectedProject.id }/export/xlsx/`, {
+      "project": selectedProject.id
+    }).then((response) => {
+      if (response.data) {
+        if (response.data.success) {
+          showSuccessBar(enqueueSnackbar, "Evaluation File was created!");
+          console.log(response.data.files);
+        }
+      } else {
+        showErrorBar(enqueueSnackbar, "Couldn't create evaluation File");
+      }
+    }, (error) => {
+      if (error.response) {
+        console.error(error.response.data);
+      } else {
+        console.error(error);
+      }
+    });
+  }
+
   async function evaluateProject() {
     console.log(selectedProject);
     await axiosConfig.holder.post(`/api/project/${ selectedProject.id }/evaluate/`, {
@@ -65,8 +86,11 @@ const ProjectEvaluateView = () => {
           </Row>
 
           <Row>
+            {/*<Col md={3} >*/}
+            {/*  <Button onClick={ () => evaluateProject() }>Evaluate</Button>*/}
+            {/*</Col>*/}
             <Col>
-              <Button onClick={ () => evaluateProject() }>Evaluate</Button>
+              <Button onClick={ () => exportAsExcel() }>Export as Xlsx</Button>
             </Col>
           </Row>
         </BoxContainer>

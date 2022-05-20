@@ -1,6 +1,4 @@
 import os
-import random
-import re
 
 from django.utils import timezone
 from rest_framework import viewsets
@@ -10,13 +8,10 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
-from scoring.helper import get_media_path, build_abs_path, get_backup_path
+from scoring.helper import build_abs_path, get_backup_path
 from scoring.models import Project, ImageScore, ImageFile, Backup
 from scoring.serializers import ProjectSerializer, ImageScoreSerializer, ImageFileSerializer, BackupSerializer
-from server.settings import BASE_DIR
 from server.views import RequestSuccess, RequestFailed
-
-
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -96,6 +91,20 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         return RequestSuccess(project.get_existing_evaluations())
 
+    @permission_classes([IsAdminUser])
+    @action(detail=True, url_path="export/xlsx", methods=["POST"])
+    def export_as_xlsx(self, request, pk):
+        files = ImageFile.objects.filter(project=pk).exclude(useless=True).exclude(scores__isnull=True)
+        serializer = ImageFileSerializer(files, many=True)
+
+        project = Project.objects.get(pk=pk)
+
+        project_serializer = ProjectSerializer(project)
+        project.evaluate_data_as_xlsx({"imagefiles": serializer.data,
+                                       "project": project_serializer.data})
+
+        return RequestSuccess(project.get_existing_evaluations())
+
 
 class ImageScoreViewSet(viewsets.ModelViewSet):
     serializer_class = ImageScoreSerializer
@@ -118,6 +127,7 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
         cheek = self.replaceNoneValue(request.data.get("cheek"))
         ear = self.replaceNoneValue(request.data.get("ear"))
         whiskers = self.replaceNoneValue(request.data.get("whiskers"))
+        comment = request.data.get("comment", "")
 
         image_file = ImageFile.objects.get(pk=pk)
 
@@ -129,10 +139,11 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
                                           s_cheek=cheek,
                                           s_ear=ear,
                                           s_whiskers=whiskers,
+                                          comment=comment,
                                           date=timezone.now())
         score.save()
 
-        image_file.calc_kappa()
+        image_file.calc_similarity()
 
         return RequestSuccess()
 

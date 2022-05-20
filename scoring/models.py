@@ -1,13 +1,15 @@
 import datetime
 import json
+import math
 import os
 import random
 import re
+import pandas as pd
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Avg
 from django.utils import timezone
-from statsmodels.stats import inter_rater as irr
 
 from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir
 
@@ -30,8 +32,65 @@ class Project(models.Model):
         with open(os.path.join(_path, f"{_file_template}.json"), "r") as _file:
             data = json.load(_file)
             print("DATA", data.get("imagefiles"))
-            # df = pd.read_json(data.get("imagefiles"))
-            # df.to_csv(f"{os.path.join(_path, _file_template)}.csv", encoding="utf-8", index=False, errors="ignore")
+
+    def evaluate_data_as_xlsx(self, data):
+        _path = get_project_evaluation_dir(str(self.pk))
+        project = Project.objects.get(name=data.get("project").get("name"))
+        user_ids = project.scores.all().distinct("user").values_list("user__id", flat=True)
+        user_id_dict = {}
+
+        _file_template = datetime.datetime.now().strftime("%Y-%m-%d_-_%H%M%S")
+
+        df = pd.DataFrame()
+
+        project_name = project.name
+        target = os.path.join(_path, f"{_file_template}.xlsx")
+        writer = pd.ExcelWriter(target, engine='xlsxwriter')
+        df.to_excel(writer, sheet_name=project_name)
+
+        ws = writer.sheets[project_name]
+
+        header = ["ID", "Path", "Filename"]
+        i = 0
+        for u_id in user_ids:
+            user_id_dict.update({u_id: i})
+            header.extend([f"Eyes_Scorer{u_id}",
+                           f"Nose_Scorer{u_id}",
+                           f"Cheeks_Scorer{u_id}",
+                           f"Ears_Scorer{u_id}",
+                           f"Whiskers_Scorer{u_id}",
+                           f"Sum_Scorer{u_id}",
+                           f"Mean_Scorer{u_id}"])
+            i += 1
+
+        for i, name in enumerate(header, start=0):
+            ws.write(0, i, name)
+
+        line = 1
+
+        for image_file in project.files.filter(scores__gt=0):
+            ws.write(line, 0, line)
+            ws.write(line, 1, image_file.path)
+            ws.write(line, 2, image_file.filename)
+
+            for score in image_file.scores.all().order_by("user__pk"):
+                pos = user_id_dict.get(score.user_id)
+
+                start_col = chr(68 + (pos * 7))
+                end_col = chr(72 + (pos * 7))
+                ws.write(line, 3 + (pos * 7), score.s_eye)
+                ws.write(line, 4 + (pos * 7), score.s_nose)
+                ws.write(line, 5 + (pos * 7), score.s_cheek)
+                ws.write(line, 6 + (pos * 7), score.s_ear)
+                ws.write(line, 7 + (pos * 7), score.s_whiskers)
+                ws.write_formula(line, 8 + (pos * 7), f"=SUM({start_col}{line+1}:{end_col}{line+1})")
+                ws.write_formula(line, 9 + (pos * 7), f"=AVERAGE({start_col}{line+1}:{end_col}{line+1})")
+            line += 1
+
+        writer.save()
+
+        return target
+
 
     def get_existing_evaluations(self) -> dict:
         files = os.listdir(get_project_evaluation_dir(str(self.pk)))
@@ -48,6 +107,9 @@ class Project(models.Model):
                     self.create_infofile(root, files)
 
     def create_infofile(self, _path, _files):
+        if len(_files) == 0:
+            return False
+
         with open(os.path.join(_path, "infofile.txt"), "w") as _file:
             _file.write("\n")
             _file.write("\n")
@@ -56,6 +118,8 @@ class Project(models.Model):
                 if image == "infofile.txt":
                     continue
                 _file.write(f"{image}\n")
+
+        return True
 
     def create_script(self):
         _path = self.get_images_dir()
@@ -133,82 +197,33 @@ class ImageFile(models.Model):
     path = models.CharField(max_length=500, null=False)
     useless = models.BooleanField(default=False)
     hidden = models.BooleanField(default=False)
-    kappa = models.FloatField(default=None, null=True, blank=True)
+    diversity = models.FloatField(default=0, null=True, blank=True)
 
     date = models.DateTimeField(blank=True, null=True)
     order = models.IntegerField(default=0, blank=True)
 
-    def calc_kappa(self):
+    def calc_similarity(self):
         _params = ["s_eye", "s_nose", "s_cheek", "s_ear", "s_whiskers"]
         n = self.scores.all().distinct("user").count()
 
-        if True:  # n >= 3:
-            values = {"0": [self.scores.filter(s_eye=0).count(),
-                            self.scores.filter(s_nose=0).count(),
-                            self.scores.filter(s_cheek=0).count(),
-                            self.scores.filter(s_ear=0).count(),
-                            self.scores.filter(s_whiskers=0).count()
-                            ],
-                      "1": [self.scores.filter(s_eye=1).count(),
-                            self.scores.filter(s_nose=1).count(),
-                            self.scores.filter(s_cheek=1).count(),
-                            self.scores.filter(s_ear=1).count(),
-                            self.scores.filter(s_whiskers=1).count()
-                            ],
-                      "2": [self.scores.filter(s_eye=2).count(),
-                            self.scores.filter(s_nose=2).count(),
-                            self.scores.filter(s_cheek=2).count(),
-                            self.scores.filter(s_ear=2).count(),
-                            self.scores.filter(s_whiskers=2).count()
-                            ],
-                      "None": [self.scores.filter(s_eye__isnull=True).count(),
-                               self.scores.filter(s_nose__isnull=True).count(),
-                               self.scores.filter(s_cheek__isnull=True).count(),
-                               self.scores.filter(s_ear__isnull=True).count(),
-                               self.scores.filter(s_whiskers__isnull=True).count()
-                               ],
-                      }
-
-            values2 = {
-                "s_eye": [
-                    self.scores.filter(s_eye=0).count(),
-                    self.scores.filter(s_eye=1).count(),
-                    self.scores.filter(s_eye=2).count(),
-                    self.scores.filter(s_eye__isnull=True).count(),
-                ],
-                "s_nose": [
-                    self.scores.filter(s_nose=0).count(),
-                    self.scores.filter(s_nose=1).count(),
-                    self.scores.filter(s_nose=2).count(),
-                    self.scores.filter(s_nose__isnull=True).count(),
-                ],
-                "s_cheek": [
-                    self.scores.filter(s_cheek=0).count(),
-                    self.scores.filter(s_cheek=1).count(),
-                    self.scores.filter(s_cheek=2).count(),
-                    self.scores.filter(s_cheek__isnull=True).count(),
-                ],
-                "s_ear": [
-                    self.scores.filter(s_ear=0).count(),
-                    self.scores.filter(s_ear=1).count(),
-                    self.scores.filter(s_ear=2).count(),
-                    self.scores.filter(s_ear__isnull=True).count()
-                ],
-                "s_whiskers": [
-                    self.scores.filter(s_whiskers=0).count(),
-                    self.scores.filter(s_whiskers=1).count(),
-                    self.scores.filter(s_whiskers=2).count(),
-                    self.scores.filter(s_whiskers__isnull=True).count()
-                ],
+        if n >= 2:
+            average = {
+                "s_eye": self.scores.aggregate(Avg('s_eye')).get('s_eye__avg'),
+                "s_nose": self.scores.aggregate(Avg('s_nose')).get('s_nose__avg'),
+                "s_cheek": self.scores.aggregate(Avg('s_cheek')).get('s_cheek__avg'),
+                "s_ear": self.scores.aggregate(Avg('s_ear')).get('s_ear__avg'),
+                "s_whiskers": self.scores.aggregate(Avg('s_whiskers')).get('s_whiskers__avg')
             }
-            # final = [values.get(val) for val in _params]
-            final = [values.get(val) for val in ["0", "1", "2", "None"]]
 
-            agg = irr.aggregate_raters(final)
-            kappa = irr.fleiss_kappa(agg[0], method='fleiss')
-            print("RESULT", kappa, final)
-            self.kappa = kappa
+            diversity = 0.
+            for score in self.scores.all():
+                for val in _params:
+                    diversity += abs(getattr(score, val) - average.get(val))
+
+            self.diversity = math.floor(diversity * 100) / 100.0
             self.save()
+            return self.diversity
+        return 0
 
     def __str__(self):
         _id = ""
@@ -222,6 +237,7 @@ class ImageScore(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     file = models.ForeignKey(ImageFile, related_name='scores', on_delete=models.CASCADE)
     project = models.ForeignKey(Project, related_name='scores', on_delete=models.CASCADE)
+    comment = models.CharField(max_length=255, null=True, default="", blank=True)
 
     s_eye = models.IntegerField(default=None, null=True, blank=True)
     s_nose = models.IntegerField(default=None, null=True, blank=True)
