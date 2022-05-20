@@ -41,13 +41,14 @@ services:
         BACKEND_PORT: ${BACKEND_PORT}
         DB_HOST: scoring-database   # TODO unify django.env and .env.docker
         DB_PORT: 5432               # TODO unify django.env and .env.docker
+        MEDIA_VOLUME: ${MEDIA_VOLUME}
     depends_on:
       - scoring-database
       - scoring-redis
     ports:
       - ${BACKEND_PORT}:${BACKEND_PORT}
     volumes:
-      - ./media:/usr/src/app/media
+      - ${MEDIA_VOLUME}:/usr/src/app/media
     networks:
       defaultnet:
         aliases:

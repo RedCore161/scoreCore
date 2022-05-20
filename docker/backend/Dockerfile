@@ -1,6 +1,7 @@
 ARG BACKEND_PORT
 ARG DB_HOST
 ARG DB_PORT
+ARG MEDIA_VOLUME
 
 FROM solutiance/django-opencv:1.0.0
 RUN useradd -rm -d /home/scoring -s /bin/sh -g root -G sudo -u 1001 scoring
@@ -8,6 +9,7 @@ RUN useradd -rm -d /home/scoring -s /bin/sh -g root -G sudo -u 1001 scoring
 ARG BACKEND_PORT
 ARG DB_HOST
 ARG DB_PORT
+ARG MEDIA_VOLUME
 
 ENV PROJECT_ROOT /usr/src/app
 WORKDIR ${PROJECT_ROOT}
@@ -19,7 +21,7 @@ COPY ./docker/backend/ .
 COPY ./scoring ./scoring
 COPY ./server ./server
 
-VOLUME ./media
+VOLUME ${MEDIA_VOLUME}
 
 COPY ./manage.py ./manage.py
 COPY ./requirements.txt ./requirements.txt
@@ -44,7 +46,7 @@ RUN apt update && \
 ENV DOMAIN="${DB_HOST}:${DB_PORT}"
 ENV PORT=${BACKEND_PORT}
 
-RUN echo "0 5 * * * python manage.py dbbackup" >> /tmp/backUpJob
+RUN echo "0 5 * * * python /home/grimsu/scoreCore/manage.py dbbackup" >> /tmp/backUpJob
 RUN crontab /tmp/backUpJob
 
 #USER scoring # Fix later
