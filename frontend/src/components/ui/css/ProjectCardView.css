@@ -31,7 +31,11 @@
     font-size: 60px;
 }
 
+.score-Info-Container {
+    display: table;
+}
+
 .score-Info {
-    position: absolute;
-    bottom: 35px;
+    display: table-cell;
+    vertical-align: bottom;
 }

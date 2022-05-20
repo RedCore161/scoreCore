@@ -8,7 +8,7 @@ const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, sco
   const isAdmin = localStorage.getItem("is_staff")
 
   return (
-    <Col key={ id } md={ 4 }>
+    <Col key={ id } md={ 4 } className={"pb-4"}>
       <div className={"project-Card bg-secondary m-1"} >
         <Row>
           <Col className={`project-Card-Header bg-info`}>
@@ -44,9 +44,9 @@ const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, sco
               <Col md={3} className={"project-Card-Content"}>{ scoresOwn }</Col>
             </Row>
           </Col>
-          <Col>
+          <Col className={"score-Info-Container"}>
             { imagesTotal === scoresOwn ? (
-              imagesTotal > 0 && <i className="bi bi-check-lg text-success huge-icon"/>
+              imagesTotal > 0 && <i className="bi bi-check-lg text-success huge-icon score-Info"/>
             ) : (
               <span className={"score-Info"}>You finished:<br/> {((scoresOwn / imagesTotal) * 100).toFixed(2)}%</span>
             )}
