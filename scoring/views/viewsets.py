@@ -42,6 +42,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
                                        many=True)
         return Response(serializer.data)
 
+    @action(detail=True, url_path="recalc", methods=["GET"])
+    @permission_classes([IsAuthenticated])
+    def recalc(self, request, pk):
+        images = ImageFile.objects.filter(project=pk, useless=False, hidden=False)
+        for image in images:
+            image.calc_similarity()
+        return RequestSuccess()
+
     @action(detail=True, url_path="images", methods=["GET"])
     @permission_classes([IsAuthenticated])
     def get_images(self, request, pk):
@@ -73,11 +81,28 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         return RequestSuccess({"files_left": count})
 
+    @action(detail=True, url_path="images/all", methods=["GET"])
+    @permission_classes([IsAuthenticated])
+    def get_images_all(self, request, pk):
+        project = Project.objects.get(pk=pk)
+
+        images = ImageFile.objects\
+                            .filter(project=pk) \
+                            .exclude(hidden=True) \
+                            .exclude(useless=True) \
+                            .exclude(diversity=0) \
+                            .order_by("-diversity")
+
+        serializer = ImageFileSerializer(images, many=True)
+
+        return RequestSuccess({"images": serializer.data, "project": project.name})
+
+
 
     @action(detail=True, url_path="get-useless", methods=["GET"])
     @permission_classes([IsAdminUser])
     def get_useless_image_files(self, request, pk):
-        images = ImageFile.objects.filter(project=pk, useless=True, hidden=False).order_by("order")
+        images = ImageFile.objects.filter(project=pk, useless=True, hidden=False)
         serializer = ImageFileSerializer(images, many=True)
         return Response(serializer.data)
 

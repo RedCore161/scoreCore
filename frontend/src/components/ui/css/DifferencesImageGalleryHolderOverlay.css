@@ -1,0 +1,47 @@
+.imageHolder {
+    position: relative;
+    z-index: 1;
+    height: 340px;
+}
+
+.drawLayer {
+    position: absolute !important;
+    z-index: 2;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-color: rgb(25, 25, 25);
+}
+
+.actionOpener {
+    padding-left: 6px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 50px;
+    width: 50px;
+    background-color: rgba(225, 225, 225, 0.75);
+    z-index: 10;
+    border-radius: 25%;
+}
+
+.imageOverLay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 340px !important;
+    height: 340px;
+    font-size: 22px;
+    background-color: rgba(25, 25, 25, 0.75);
+}
+
+.actionOpener .hiddenContent {
+    visibility: hidden;
+}
+
+.actionOpener:hover .hiddenContent {
+    visibility: visible;
+}
+
+.table-icon {
+    font-size: 35px;
+}

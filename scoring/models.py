@@ -2,7 +2,6 @@ import datetime
 import json
 import math
 import os
-import random
 import re
 import pandas as pd
 from django.core.validators import RegexValidator
@@ -79,7 +78,7 @@ class Project(models.Model):
         # workbook = writer.book
         # format_OK = workbook.add_format({'bg_color': '#00a077'})
 
-        header = ["ID", "Path", "Filename"]
+        header = ["ID", "Path", "Filename", "Useless"]
         i = 0
         for u_id in user_ids:
             user_id_dict.update({u_id: i})
@@ -112,10 +111,11 @@ class Project(models.Model):
             ws.write(line, 0, line)
             ws.write(line, 1, image_file.path)
             ws.write(line, 2, image_file.filename)
+            ws.write(line, 3, image_file.useless)
 
             # Write user-comments
             pos = user_id_dict.get(max(user_id_dict, key=user_id_dict.get))
-            last_pos = 9 + (pos * 7)
+            last_pos = 10 + (pos * 7)
             i = last_pos + 1
             for score in queryset:
                 ws.write(line, i, score.comment)
@@ -147,21 +147,21 @@ class Project(models.Model):
             for score in queryset:
                 pos = user_id_dict.get(score.user_id)
 
-                start_col = get_cell(65 + 3 + (pos * 7))
-                ws.write(line, 3 + (pos * 7), score.s_eye)
-                ws.write(line, 4 + (pos * 7), score.s_nose)
-                ws.write(line, 5 + (pos * 7), score.s_cheek)
-                ws.write(line, 6 + (pos * 7), score.s_ear)
-                ws.write(line, 7 + (pos * 7), score.s_whiskers)
-                end_col = get_cell(65 + 7 + (pos * 7))
+                start_col = get_cell(65 + 4 + (pos * 7))
+                ws.write(line, 4 + (pos * 7), score.s_eye)
+                ws.write(line, 5 + (pos * 7), score.s_nose)
+                ws.write(line, 6 + (pos * 7), score.s_cheek)
+                ws.write(line, 7 + (pos * 7), score.s_ear)
+                ws.write(line, 8 + (pos * 7), score.s_whiskers)
+                end_col = get_cell(65 + 8 + (pos * 7))
 
                 if score.s_eye is not None or \
                    score.s_nose is not None or \
                    score.s_cheek is not None or \
                    score.s_ear is not None or \
                    score.s_whiskers is not None:
-                    ws.write_formula(line, 8 + (pos * 7), f"=SUM({start_col}{line + 1}:{end_col}{line + 1})")
-                    ws.write_formula(line, 9 + (pos * 7), f"=AVERAGE({start_col}{line + 1}:{end_col}{line + 1})")
+                    ws.write_formula(line,  9 + (pos * 7), f"=SUM({start_col}{line + 1}:{end_col}{line + 1})")
+                    ws.write_formula(line, 10 + (pos * 7), f"=AVERAGE({start_col}{line + 1}:{end_col}{line + 1})")
 
             line += 1
 
@@ -250,7 +250,6 @@ class Project(models.Model):
 
                     if created:
                         print("Created IMAGEFILE", _file, get_or_create_amount, _path)
-                        image_file.order = random.randint(0, 5000000)
                         image_file.date = timezone.now()
                         image_file.save()
                         get_or_create_amount -= 1
@@ -283,7 +282,6 @@ class ImageFile(models.Model):
     diversity_whiskers = models.FloatField(default=None, null=True, blank=True)
 
     date = models.DateTimeField(blank=True, null=True)
-    order = models.IntegerField(default=0, blank=True)
 
     def calc_similarity(self):
         _params = ["s_eye", "s_nose", "s_cheek", "s_ear", "s_whiskers"]
@@ -311,13 +309,15 @@ class ImageFile(models.Model):
                     score_value = getattr(score, val)
                     if score_value is not None:
                         div = math.floor(abs(score_value - average.get(val)) * 100) / 100.0
-                        diversity += div
+                        #diversity += div
                         diversity_list.update({val: diversity_list.get(val) + div})
 
             for key, value in diversity_list.items():
+                diversity += value
+                print("key, value", key, value)
                 setattr(self, f"diversity_{key[2:]}", value)
             self.diversity = math.floor((diversity * 100)) / 100.0
-
+            print("diversity", self.diversity, "\n")
             self.save()
             return self.diversity
         return 0

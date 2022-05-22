@@ -3,12 +3,12 @@ import { Col } from "react-bootstrap";
 import { Item } from "react-photoswipe-gallery";
 import { Element } from "react-scroll";
 
-import ImageGalleryHolderOverlay from "./ImageGalleryHolderOverlay";
+import UselessImageGalleryHolderOverlay from "./UselessImageGalleryHolderOverlay";
 
 import "./css/ImageGalleryHolder.css";
 
 
-const ImageGalleryHolder = ({ overlaySetter, imagefile }) => {
+const UselessImageGalleryHolder = ({ overlaySetter, imagefile }) => {
 
   const path = [process.env.REACT_APP_BACKEND_URL, "media", imagefile.rel_path, imagefile.filename].join("/")
 
@@ -32,9 +32,9 @@ const ImageGalleryHolder = ({ overlaySetter, imagefile }) => {
                          ref={ ref } onClick={ open } title={ `${ imagefile.filename }` } alt={ imagefile.id }
                          width={ 340 } height={ 340 }/>
 
-                    <ImageGalleryHolderOverlay imageId={ imagefile.id }
-                                               overlaySetter={ overlaySetter }
-                                               reloadCallback={ reloadCallback }
+                    <UselessImageGalleryHolderOverlay imageId={ imagefile.id }
+                                                      overlaySetter={ overlaySetter }
+                                                      reloadCallback={ reloadCallback }
 
                     />
 
@@ -47,4 +47,4 @@ const ImageGalleryHolder = ({ overlaySetter, imagefile }) => {
   );
 };
 
-export default ImageGalleryHolder;
+export default UselessImageGalleryHolder;

@@ -7,7 +7,7 @@ import axiosConfig from "../../axiosConfig";
 import "./css/ImageGalleryHolder.css"
 
 
-const ImageGalleryHolderOverlay = ({ imageId, reloadCallback }) => {
+const UselessImageGalleryHolderOverlay = ({ imageId, reloadCallback }) => {
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -70,4 +70,4 @@ const ImageGalleryHolderOverlay = ({ imageId, reloadCallback }) => {
   );
 };
 
-export default ImageGalleryHolderOverlay;
+export default UselessImageGalleryHolderOverlay;

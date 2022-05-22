@@ -5,7 +5,7 @@ import { useSnackbar } from "notistack";
 import { Row } from "react-bootstrap";
 import { Gallery } from "react-photoswipe-gallery";
 import BoxContainer from "../ui/BoxContainer";
-import ImageGalleryHolder from "../ui/ImageGalleryHolder";
+import UselessImageGalleryHolder from "../ui/UselessImageGalleryHolder";
 
 import 'photoswipe/dist/photoswipe.css';
 import 'photoswipe/dist/default-skin/default-skin.css';
@@ -36,8 +36,8 @@ const UselessImageFilesView = () => {
         <Row>
           <Gallery>
             { imageFiles.map((imagefile) => {
-              return <ImageGalleryHolder  key={ imagefile.id }
-                                          imagefile={ imagefile }
+              return <UselessImageGalleryHolder key={ imagefile.id }
+                                                imagefile={ imagefile }
                                           />;
             }) }
           </Gallery>
