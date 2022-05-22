@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import "../ui/css/ProjectCardView.css";
 import { useNavigate } from "react-router-dom";
 
-const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, scoresOwn, users }) => {
+const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, scoresOwn, users, wanted_scores_per_user, wanted_scores_per_image }) => {
   let navigate = useNavigate();
   const isAdmin = localStorage.getItem("is_staff")
 
@@ -22,30 +22,38 @@ const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, sco
           </Col>
         </Row>
         <Row className={"pt-2"}>
-          <Col md={8}>
+          <Col md={9}>
             <Row>
-              <Col md={7} className={"project-Card-Item"}>Assigned Users:</Col>
-              <Col md={3} className={"project-Card-Content"}>{ users.length }</Col>
+              <Col md={8} className={"project-Card-Item"}>Assigned Users:</Col>
+              <Col className={"project-Card-Content"}>{ users.length }</Col>
             </Row>
             <Row>
-              <Col md={7} className={"project-Card-Item"}>Scoreable Images:</Col>
-              <Col md={3} className={"project-Card-Content"}>{ imagesTotal }</Col>
+              <Col md={8} className={"project-Card-Item"}>Scoreable Images:</Col>
+              <Col className={"project-Card-Content"}>{ imagesTotal }</Col>
             </Row>
             <Row>
-              <Col md={7} className={"project-Card-Item"}>Useless Images:</Col>
-              <Col md={3} className={"project-Card-Content"}>{ uselessCount }</Col>
+              <Col md={8} className={"project-Card-Item"}>Target Scores / Image:</Col>
+              <Col className={"project-Card-Content"}>{ wanted_scores_per_image }</Col>
             </Row>
             <Row>
-              <Col md={7} className={"project-Card-Item"}>Total Score-Count:</Col>
-              <Col md={3} className={"project-Card-Content"}>{ scoresCount }</Col>
+              <Col md={8} className={"project-Card-Item"}>Target Scores / User:</Col>
+              <Col className={"project-Card-Content"}>{ wanted_scores_per_user }</Col>
             </Row>
             <Row>
-              <Col md={7} className={"project-Card-Item"}>Your Score-Count:</Col>
-              <Col md={3} className={"project-Card-Content"}>{ scoresOwn }</Col>
+              <Col md={8} className={"project-Card-Item"}>Useless Images:</Col>
+              <Col className={"project-Card-Content"}>{ uselessCount }</Col>
+            </Row>
+            <Row>
+              <Col md={8} className={"project-Card-Item"}>Total Score-Count:</Col>
+              <Col className={"project-Card-Content"}>{ scoresCount }</Col>
+            </Row>
+            <Row>
+              <Col md={8} className={"project-Card-Item"}>Your Score-Count:</Col>
+              <Col className={"project-Card-Content"}>{ scoresOwn }</Col>
             </Row>
           </Col>
           <Col className={"score-Info-Container"}>
-            { imagesTotal === scoresOwn ? (
+            { wanted_scores_per_user === scoresOwn ? (
               imagesTotal > 0 && <i className="bi bi-check-lg text-success huge-icon score-Info"/>
             ) : (
               <span className={"score-Info"}>You finished:<br/> {((scoresOwn / imagesTotal) * 100).toFixed(2)}%</span>

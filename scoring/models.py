@@ -17,6 +17,8 @@ from scoring.helper import get_project_evaluation_dir, get_media_path, save_chec
 from server.settings import BASE_DIR
 
 
+
+
 class Project(models.Model):
     name = models.CharField(max_length=100, unique=True, null=False)
     image_dir = models.CharField(max_length=500,
@@ -24,6 +26,9 @@ class Project(models.Model):
                                  null=True,
                                  blank=True)
     users = models.ManyToManyField(User)
+
+    wanted_scores_per_user = models.IntegerField(default=100, null=True, blank=True)
+    wanted_scores_per_image = models.IntegerField(default=2, null=True, blank=True)
 
     def evaluate_data(self, data):
         _path = get_project_evaluation_dir(str(self.pk))
@@ -71,6 +76,8 @@ class Project(models.Model):
         df.to_excel(writer, sheet_name=project_name)
 
         ws = writer.sheets[project_name]
+        # workbook = writer.book
+        # format_OK = workbook.add_format({'bg_color': '#00a077'})
 
         header = ["ID", "Path", "Filename"]
         i = 0
@@ -85,17 +92,59 @@ class Project(models.Model):
                            f"Mean_Scorer{u_id}"])
             i += 1
 
+        for u_id in user_ids:
+            header.append(f"Comment_Scorer{u_id}")
+        header.extend([f"oDiff-Eyes",
+                       f"oDiff-Nose",
+                       f"oDiff-Cheeks",
+                       f"oDiff-Ears",
+                       f"oDiff-Whiskers",
+                       f"oDiff (SUM)"])
+
         for i, name in enumerate(header, start=0):
             ws.write(0, i, name)
 
         line = 1
 
         for image_file in project.files.filter(scores__gt=0):
+            queryset = image_file.scores.all().order_by("user__pk")
+
             ws.write(line, 0, line)
             ws.write(line, 1, image_file.path)
             ws.write(line, 2, image_file.filename)
 
-            for score in image_file.scores.all().order_by("user__pk"):
+            # Write user-comments
+            pos = user_id_dict.get(max(user_id_dict, key=user_id_dict.get))
+            last_pos = 9 + (pos * 7)
+            i = last_pos + 1
+            for score in queryset:
+                ws.write(line, i, score.comment)
+                i += 1
+
+            # Write diversity
+            ws.write(line, i, image_file.diversity_eye)
+            ws.write(line, i + 1, image_file.diversity_nose)
+            ws.write(line, i + 2, image_file.diversity_cheek)
+            ws.write(line, i + 3, image_file.diversity_ear)
+            ws.write(line, i + 4, image_file.diversity_whiskers)
+            ws.write(line, i + 5, image_file.diversity)
+
+            # TODO format later
+            #
+            # _list = [image_file.diversity_eye,
+            #          image_file.diversity_nose,
+            #          image_file.diversity_cheek,
+            #          image_file.diversity_ear,
+            #          image_file.diversity_whiskers]
+            # j = 0
+            # for val in _list:
+            #     j += 1
+            #     if val == 0:
+            #         print("OKAY", i, j)
+            #         ws.set_column(i + j, i + j, cell_format=format_OK)
+
+            # Write Data
+            for score in queryset:
                 pos = user_id_dict.get(score.user_id)
 
                 start_col = get_cell(65 + 3 + (pos * 7))
@@ -227,6 +276,12 @@ class ImageFile(models.Model):
     hidden = models.BooleanField(default=False)
     diversity = models.FloatField(default=0, null=True, blank=True)
 
+    diversity_eye = models.FloatField(default=None, null=True, blank=True)
+    diversity_nose = models.FloatField(default=None, null=True, blank=True)
+    diversity_cheek = models.FloatField(default=None, null=True, blank=True)
+    diversity_ear = models.FloatField(default=None, null=True, blank=True)
+    diversity_whiskers = models.FloatField(default=None, null=True, blank=True)
+
     date = models.DateTimeField(blank=True, null=True)
     order = models.IntegerField(default=0, blank=True)
 
@@ -244,13 +299,25 @@ class ImageFile(models.Model):
             }
 
             diversity = 0.
+            diversity_list = {
+                "s_eye": 0,
+                "s_nose": 0,
+                "s_cheek": 0,
+                "s_ear": 0,
+                "s_whiskers": 0
+            }
             for score in self.scores.all():
                 for val in _params:
                     score_value = getattr(score, val)
-                    if score_value:
-                        diversity += abs(score_value - average.get(val))
+                    if score_value is not None:
+                        div = math.floor(abs(score_value - average.get(val)) * 100) / 100.0
+                        diversity += div
+                        diversity_list.update({val: diversity_list.get(val) + div})
 
-            self.diversity = math.floor(diversity * 100) / 100.0
+            for key, value in diversity_list.items():
+                setattr(self, f"diversity_{key[2:]}", value)
+            self.diversity = math.floor((diversity * 100)) / 100.0
+
             self.save()
             return self.diversity
         return 0

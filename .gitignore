@@ -1,6 +1,6 @@
 .idea
 
-
+scoring/migrations/
 __pycache__/
  *.pyc
 

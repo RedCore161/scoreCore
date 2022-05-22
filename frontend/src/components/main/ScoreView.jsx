@@ -17,7 +17,7 @@ import LoadingIcon from "../ui/LoadingIcon";
 const ScoreView = () => {
 
   const { id } = useParams();
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState({ });
   const [loadingDone, setLoadingDone] = useState(false);
   const [updateUi, setUpdateUi] = useState(false);
   const [state, dispatch] = useReducer(reducerScore, defaultStateScore);
@@ -28,8 +28,8 @@ const ScoreView = () => {
 
   useLayoutEffect(() => {
     console.log("fetchData");
-    fetchImages(id).then((images) => {
-      setImages(images);
+    fetchImages(id).then((data) => {
+      setImages(data);
       setLoadingDone(true);
     })
 
@@ -41,7 +41,7 @@ const ScoreView = () => {
   };
 
   async function confirmScore() {
-    let image = images.shift();
+    let image = images.image;
     await axiosConfig.holder.post(`/api/imagescore/${ image.id }/confirm/`, {
       'eye': state.eye,
       'nose': state.nose,
@@ -53,7 +53,7 @@ const ScoreView = () => {
       if (response.data) {
         if (response.data.success) {
           showSuccessBar(enqueueSnackbar, "Scoring confirmed!");
-          setImages(images);
+          setImages(response.data);
           dispatch({ type: actionTypes.SET_RESET });
         }
       } else {
@@ -68,22 +68,22 @@ const ScoreView = () => {
     });
   }
 
-  function skipImage() {
-    images.shift();
-    setImages(images);
-    dispatch({ type: actionTypes.SET_RESET });
-    setUpdateUi(!updateUi)
-  }
+  // function skipImage() {
+  //   let image = images.image;
+  //   setImages(images);  //TODO
+  //   dispatch({ type: actionTypes.SET_RESET });
+  //   setUpdateUi(!updateUi)
+  // }
 
   async function markAsUseless() {
-    let image = images.shift();
+    let image = images.image;
     await axiosConfig.holder.post(`/api/imagescore/${ image.id }/useless/`, {
       "project": id
     }).then((response) => {
         if (response.data) {
           if (response.data.success) {
             showSuccessBar(enqueueSnackbar, "Image marked as Useless!");
-            setImages(images);
+            setImages(response.data);
             setUpdateUi(!updateUi)
             dispatch({ type: actionTypes.SET_RESET });
           }
@@ -100,7 +100,7 @@ const ScoreView = () => {
   }
 
   function getImathPath() {
-    return [process.env.REACT_APP_BACKEND_URL, "media", images[0].rel_path, images[0].filename].join("/")
+    return [process.env.REACT_APP_BACKEND_URL, "media", images.image.rel_path, images.image.filename].join("/")
   }
 
   function changeCommentListener(event) {
@@ -110,7 +110,7 @@ const ScoreView = () => {
   return (
     <>
       { loadingDone ? (
-        images.length === 0 ? (
+        images.files_left === 0 ? (
             <>
               <h1 className={ "pt-3" }>Congratulations! You scored everything in this project!</h1>
               <Confetti
@@ -120,9 +120,9 @@ const ScoreView = () => {
             </> ) :
           (
             <>
-              <Row md={ 8 } id={`counter-${images.length}`}>
+              <Row md={ 8 } id={`counter-${images.files_left}`}>
                 <Col className="mt-2">
-                  Images left: { images.length }
+                  Images left: { images.files_left }
                 </Col>
               </Row>
 
@@ -131,7 +131,16 @@ const ScoreView = () => {
                   <img src={ getImathPath()} alt="Score-Image" />
                 </Col>
               </Row>
-
+              <Row>
+                <Col md={5} className={"pt-3"}>
+                  <Form.Group controlId="formComment">
+                    <Form.Control type="text" className={"input-form"}
+                                  placeholder="Comment (optional)"
+                                  value={ state.comment }
+                                  onChange={ changeCommentListener } />
+                  </Form.Group>
+                </Col>
+              </Row>
               <Row className={ "py-4" }>
 
                 <Col md={ 5 }>
@@ -153,12 +162,6 @@ const ScoreView = () => {
                       ({ state.whiskers || "?" })</Button>
                   </ButtonGroup>
                 </Col>
-                <Col>
-                  <Button size="lg" variant={ "success" } onClick={ () => confirmScore() }
-                          disabled={ ( state.eye + state.nose + state.cheek + state.ear + state.whiskers ).length !== 5 }>Confirm</Button>
-                  <Button className={"ms-2"} size="lg" variant={ "primary" } onClick={ () => skipImage() }>Skip</Button>
-                  <Button className={"ms-2"} size="lg" variant={ "danger" } onClick={ () => markAsUseless() }>Mark as Useless</Button>
-                </Col>
               </Row>
               <Row md={ 7 }>
                 <Col>
@@ -166,15 +169,13 @@ const ScoreView = () => {
                 </Col>
               </Row>
               <Row>
-                <Col md={5}>
-                  <Form.Group controlId="formComment">
-                    <Form.Control type="text" className={"input-form"}
-                                  placeholder="Comment (optional)"
-                                  value={ state.comment }
-                                  onChange={ changeCommentListener } />
-                  </Form.Group>
+                <Col>
+                  <Button size="lg" variant={ "success" } onClick={ () => confirmScore() }
+                          disabled={ ( state.eye + state.nose + state.cheek + state.ear + state.whiskers ).length !== 5 }>Confirm</Button>
+                  <Button className={"ms-2"} size="lg" variant={ "danger" } onClick={ () => markAsUseless() }>Mark as Useless</Button>
                 </Col>
               </Row>
+
             </>
           )
       ) : <Row><LoadingIcon /></Row> }

@@ -1,5 +1,7 @@
 import os
+import random
 
+from django.db.models import Count
 from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.decorators import action, permission_classes
@@ -43,13 +45,34 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @action(detail=True, url_path="images", methods=["GET"])
     @permission_classes([IsAuthenticated])
     def get_images(self, request, pk):
+        project = Project.objects.get(pk=pk)
 
-        images = ImageFile.objects.filter(project=pk)\
-                                  .exclude(useless=True) \
-                                  .exclude(hidden=True) \
-                                  .exclude(scores__user=request.user).order_by("order")
+        base_request = ImageFile.objects.filter(project=pk) \
+            .exclude(hidden=True) \
+            .exclude(useless=True) \
+            .exclude(scores__user=request.user) \
+            .annotate(scores_min=Count('scores'))
+
+        min_count = base_request.order_by("scores_min")[0].scores_min
+
+        images = base_request.filter(scores_min=min_count)
+
+        scored = ImageFile.objects.filter(project=pk, scores__user=request.user) \
+            .exclude(hidden=True) \
+            .exclude(useless=True).count()
+
         serializer = ImageFileSerializer(images, many=True)
-        return Response(serializer.data)
+        count = project.wanted_scores_per_user - scored
+
+        if count == 0:
+            return RequestSuccess({"files_left": count})
+
+        if len(images):
+            rnd = random.randint(0, len(images)-1)
+            return RequestSuccess({"files_left": count, "image": serializer.data[rnd], "random": rnd})
+
+        return RequestSuccess({"files_left": count})
+
 
     @action(detail=True, url_path="get-useless", methods=["GET"])
     @permission_classes([IsAdminUser])
@@ -61,7 +84,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @action(detail=True, url_path="read-images", methods=["GET"])
     @permission_classes([IsAdminUser])
     def read_images(self, request, pk):
-
         project = Project.objects.get(pk=pk)
         if not project.image_dir:
             return RequestFailed({"reason": f"No 'image-dir' on project '{project}'!"})
@@ -121,7 +143,6 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, url_path="confirm", methods=["POST"])
     def confirm_image(self, request, pk):
-
         eye = self.replaceNoneValue(request.data.get("eye"))
         nose = self.replaceNoneValue(request.data.get("nose"))
         cheek = self.replaceNoneValue(request.data.get("cheek"))
@@ -145,11 +166,10 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
 
         image_file.calc_similarity()
 
-        return RequestSuccess()
+        return ProjectViewSet().get_images(request, image_file.project.pk)
 
     @action(detail=True, url_path="useless", methods=["POST"])
     def mark_as_useless(self, request, pk):
-
         image_file_old = ImageFile.objects.get(pk=pk)
         image_file_old.useless = True
         image_file_old.save()
@@ -159,14 +179,14 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
 
         # Load new Imagefile
         result = _project.parse_info_file(build_abs_path([image_file_old.path]))
-        return RequestSuccess()
+
+        return ProjectViewSet().get_images(request, project)
         # if result:
         #     return RequestSuccess()
         # return RequestFailed()
 
     @action(detail=True, url_path="hide", methods=["POST"])
     def hide_useless(self, request, pk):
-
         image_file = ImageFile.objects.get(pk=pk)
         image_file.hidden = True
         image_file.save()
@@ -175,7 +195,6 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, url_path="restore", methods=["POST"])
     def restore(self, request, pk):
-
         image_file = ImageFile.objects.get(pk=pk)
         image_file.useless = False
         image_file.save()
@@ -213,6 +232,7 @@ class BackupViewSet(viewsets.ModelViewSet):
     #
     #     serializer = self.get_serializer(queryset, many=True)
     #     return Response(serializer.data)
+
 
 # ######################################################################################################################
 

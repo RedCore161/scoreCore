@@ -31,8 +31,6 @@ class Command(BaseCommand):
 
                 if created:
                     user.set_password(_user.get("password", random_string(4, 4)))
-                    with open(os.path.join(get_setup_path(), "users.pws"), "a+") as _file:
-                        _file.write(f"{user.username}:{user.password}\n")
                     user.first_name = _user.get("firstName")
                     user.last_name = _user.get("lastName")
                     if _user.get("isStaff"):
