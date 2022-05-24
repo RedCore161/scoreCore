@@ -1,32 +1,137 @@
-import React, { useLayoutEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Col, Row } from "react-bootstrap";
-import { fetchBackups } from "../../helper";
 import BoxContainer from "../ui/BoxContainer";
 import LoadingIcon from "../ui/LoadingIcon";
+import axiosConfig from "../../axiosConfig";
+import { showSuccessBar } from "../ui/Snackbar";
+import { useSnackbar } from "notistack";
+import CorePaginator from "../ui/CorePaginator";
+import BackupButton from "../ui/BackupButton";
 
 const BackupView = () => {
 
   const [data, setData] = useState([]);
+  const { enqueueSnackbar } = useSnackbar();
+  const [urls, setUrls] = useState({"backup": "/api/backup/?page=1"});
 
-  useLayoutEffect(() => {
-    fetchBackups().then((response) => {
-      setData(response)
+  async function fetchBackups() {
+    const result = await axiosConfig.holder.get(urls.backup);
+    console.log("Found Backups:", result.data);
+    return result.data;
+  }
+
+  useEffect(() => {
+    if ("backup" in urls) {
+      fetchBackups().then((response) => {
+        setData(response);
+      });
+    }
+  }, [urls]);
+
+  async function reloadBackup() {
+    await axiosConfig.holder.post(`/api/backup/reload/`).then((response) => {
+      setData(response.data);
+      showSuccessBar(enqueueSnackbar, "Successfully reloaded Backups!");
+    }, (error) => {
+      if (error.response) {
+        console.log(error.response.data);
+      } else {
+        console.error(error);
+      }
     });
-  }, []);
+  }
 
+  async function createBackup() {
+    await axiosConfig.holder.post(`/api/backup/create/`).then((response) => {
+      setData(response.data);
+      showSuccessBar(enqueueSnackbar, "Successfully created Backup!");
+    }, (error) => {
+      if (error.response) {
+        console.log(error.response.data);
+      } else {
+        console.error(error);
+      }
+    });
+  }
+
+  async function deleteAllBackups() {
+    await axiosConfig.holder.post(`/api/backup/deleteAll/`).then((response) => {
+      setData(response.data);
+      showSuccessBar(enqueueSnackbar, "Successfully deleted all Backups!");
+    }, (error) => {
+      if (error.response) {
+        console.log(error.response.data);
+      } else {
+        console.error(error);
+      }
+    });
+  }
+
+  async function deleteBackup(id) {
+    await axiosConfig.holder.post(`/api/backup/${id}/delete/`).then((response) => {
+      setData(response.data);
+      showSuccessBar(enqueueSnackbar, "Successfully deleted Backup!");
+    }, (error) => {
+      if (error.response) {
+        console.log(error.response.data);
+      } else {
+        console.error(error);
+      }
+    });
+  }
+
+  async function restoreBackup(id, name) {
+    await axiosConfig.holder.post(`/api/backup/${ id }/restore/`).then((response) => {
+      setData(response.data);
+      showSuccessBar(enqueueSnackbar, `Successfully restored "${ name }"!`);
+    }, (error) => {
+      if (error.response) {
+        console.log(error.response.data);
+      } else {
+        console.error(error);
+      }
+    });
+  }
+
+  const handlePaginator = ({ selected }) => {
+    setUrls({...urls, "backup": `/api/backup/?page=${ selected + 1 }`});
+  };
 
   return (
     data ? (
-      <BoxContainer title="Available Backups">
-        <Row>
-          { 'elements' in data && data.elements.map((backup) => {
-            return <Col md={4} key={backup.id}>
-              <Button>{backup.name}</Button>
-            </Col>;
-          }) }
-        </Row>
-      </BoxContainer>
-    ) : (<Row><LoadingIcon /></Row> )
+      <>
+        <BoxContainer title="Backup Actions">
+          <Row>
+            <Col>
+              <Button className={ "btn-lg me-3" } variant={ "info" } onClick={ () => reloadBackup() }>
+                Reload Backups</Button>
+              <Button className={ "btn-lg me-3" } variant={ "success" } onClick={ () => createBackup() }>
+                Create Backup</Button>
+              <Button className={ "btn-lg" } variant={ "danger" } onClick={ () => deleteAllBackups() }>
+                Delete All Backups</Button>
+            </Col>
+          </Row>
+        </BoxContainer>
+
+        <BoxContainer title="Available Backups">
+          { 'elements' in data && (
+            <>
+              { data.pages > 1 && <Row><CorePaginator pages={ data.pages } handleChange={ handlePaginator } /></Row> }
+              { data.elements.map((backup) => {
+                return <BackupButton {...backup}
+                                     callbackRestore={restoreBackup}
+                                     callbackDelete={deleteBackup}
+                                     key={backup.id} />;
+
+              }) }
+            </>
+          ) }
+
+        </BoxContainer>
+
+      </>
+
+    ) : ( <Row><LoadingIcon/></Row> )
   );
 };
 

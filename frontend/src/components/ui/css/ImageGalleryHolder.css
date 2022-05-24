@@ -44,3 +44,7 @@
 .table-icon {
     font-size: 35px;
 }
+
+.success-border {
+    border: 10px solid green;
+}

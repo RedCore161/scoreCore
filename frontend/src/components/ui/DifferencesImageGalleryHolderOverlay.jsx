@@ -1,36 +1,32 @@
 import React from "react";
-import { Button, Col, Container, Row } from "react-bootstrap";
-import { showErrorBar, showSuccessBar } from "./Snackbar";
-import { useSnackbar } from "notistack";
-
+import { Col, Container, Row } from "react-bootstrap";
 
 import "./css/DifferencesImageGalleryHolderOverlay.css";
 
 
-const DifferencesImageGalleryHolderOverlay = ({ imagefile, reloadCallback }) => {
+const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
 
-  const { enqueueSnackbar } = useSnackbar();
   const elements = [
     { "name": "File", "value": imagefile.filename },
-    { "name": "Eyes", "value": imagefile.diversity_eye ? imagefile.diversity_eye.toFixed(2) : 0 },
-    { "name": "Nose", "value": imagefile.diversity_nose ? imagefile.diversity_nose.toFixed(2) : 0 },
-    { "name": "Cheeks", "value": imagefile.diversity_cheek ? imagefile.diversity_cheek.toFixed(2) : 0 },
-    { "name": "Ears", "value": imagefile.diversity_ear ? imagefile.diversity_ear.toFixed(2) : 0 },
-    { "name": "Whiskers", "value": imagefile.diversity_whiskers ? imagefile.diversity_whiskers.toFixed(2) : 0 },
-    { "name": "Total-Score", "value": imagefile.diversity ? imagefile.diversity.toFixed(2) : 0 },
+    { "name": "Eyes", "value": imagefile.varianz_eye ? imagefile.varianz_eye.toFixed(2) : 0 },
+    { "name": "Nose", "value": imagefile.varianz_nose ? imagefile.varianz_nose.toFixed(2) : 0 },
+    { "name": "Cheeks", "value": imagefile.varianz_cheek ? imagefile.varianz_cheek.toFixed(2) : 0 },
+    { "name": "Ears", "value": imagefile.varianz_ear ? imagefile.varianz_ear.toFixed(2) : 0 },
+    { "name": "Whiskers", "value": imagefile.varianz_whiskers ? imagefile.varianz_whiskers.toFixed(2) : 0 },
+    { "name": "Total-Score", "value": imagefile.varianz ? imagefile.varianz.toFixed(2) : 0 },
   ];
 
-  console.log("XXX", typeof imagefile.diversity_eye);
 
   function getDifferences(value) {
     if (value === 0) {
       return "text-success";
     }
-    if (value > 6) {
+
+    if (value > 2) {
       return "text-danger";
     }
 
-    if (value > 3) {
+    if (value > 1) {
       return "text-warning";
     }
     return "";

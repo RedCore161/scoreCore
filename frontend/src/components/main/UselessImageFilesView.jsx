@@ -18,7 +18,7 @@ const UselessImageFilesView = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   async function fetchData() {
-    const result = await axiosConfig.holder.get(`/api/project/${ id }/get-useless`);
+    const result = await axiosConfig.holder.get(`/api/project/${ id }/get-useless/`);
     setImageFiles(result.data);
     console.log("Found Images:", result.data);
   }

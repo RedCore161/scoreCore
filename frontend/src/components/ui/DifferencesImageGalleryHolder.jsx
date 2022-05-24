@@ -12,12 +12,8 @@ const DifferencesImageGalleryHolder = ({ overlaySetter, imagefile }) => {
 
   const path = [process.env.REACT_APP_BACKEND_URL, "media", imagefile.rel_path, imagefile.filename].join("/");
 
-  const reloadCallback = () => {
-    window.location.reload(true);
-  };
-
   return (
-    <Col className={ "my-3" } md={ 3 }>
+    <Col className={ "my-3" } md={ 3 } >
       <Element name={ `imagefile-${ imagefile.id }` } className="element">
         <div className={ `imageHolder` }>
           <Item key={ imagefile.id }
@@ -27,15 +23,13 @@ const DifferencesImageGalleryHolder = ({ overlaySetter, imagefile }) => {
 
             { ({ ref, open }) => (
               <>
-
-                <img key={ imagefile.id } src={ path } className="img-fluid drawLayer" data-image={ path }
+                <img key={ imagefile.id } src={ path } className={`img-fluid drawLayer ${imagefile.varianz === 0 && "success-border"}`} data-image={ path }
                      ref={ ref } onClick={ open } title={ `${ imagefile.filename }` } alt={ imagefile.id }
                      width={ 340 } height={ 340 }/>
 
-                <DifferencesImageGalleryHolderOverlay imagefile={ imagefile }
-                                                      overlaySetter={ overlaySetter }
-                                                      reloadCallback={ reloadCallback }
-                />
+                <DifferencesImageGalleryHolderOverlay key={`actionOpener-${imagefile.id}`}
+                                                      imagefile={ imagefile }
+                                                      overlaySetter={ overlaySetter } />
 
               </>
             ) }

@@ -1,39 +1,47 @@
-import React, { useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 
 import BoxContainer from "../ui/BoxContainer";
 import { Row } from "react-bootstrap";
 import axiosConfig from "../../axiosConfig";
 import { fetchImagesAll} from "../../helper";
 
-import { useSnackbar } from "notistack";
 import { useParams } from "react-router";
 import { Gallery } from "react-photoswipe-gallery";
 import DifferencesImageGalleryHolder from "../ui/DifferencesImageGalleryHolder";
+import LoadingIcon from "../ui/LoadingIcon";
+import CorePaginator from "../ui/CorePaginator";
 
 const ProjectDifferencesView = () => {
 
   const { id } = useParams();
 
-  const [images, setImages] = useState([]);
-  const { enqueueSnackbar } = useSnackbar();
+  const [data, setData] = useState({});
+  const [pages, setPages] = useState({"varianzes": 1});
 
-  useLayoutEffect(() => {
-    axiosConfig.getInstance.refreshData();
-    fetchImagesAll(id).then((images) => {
-      console.log("images", images);
-      setImages(images);
-    })
-  }, []);
+  useEffect(() => {
+    if ("varianzes" in pages) {
+      axiosConfig.getInstance.refreshData();
+      fetchImagesAll(id, pages.varianzes).then((data) => {
+        setData(data);
+      })
+    }
+  }, [pages]);
 
+
+  const handlePaginator = ({ selected }) => {
+    setPages({...pages, "varianzes":  selected + 1});
+  };
 
   return (
-    images && (
+    data ? (
       <>
-        <BoxContainer title={`Differences for Project '${images.project}'`}>
+        <BoxContainer title={`Differences for Project '${data.project}'`}>
+          { data.pages > 1 && <Row><CorePaginator pages={ data.pages }
+                                                    handleChange={ handlePaginator } /></Row> }
           <Row>
             <Gallery>
-              { "images" in images && images.images.map((imagefile) => {
-                return <DifferencesImageGalleryHolder key={ imagefile.id }
+              { "elements" in data && data.elements.map((imagefile) => {
+                return <DifferencesImageGalleryHolder key={`diff-imagefile-${ imagefile.id }`}
                                                       imagefile={ imagefile }
                 />;
               }) }
@@ -41,7 +49,7 @@ const ProjectDifferencesView = () => {
           </Row>
         </BoxContainer>
       </>
-    )
+    ) : ( <Row><LoadingIcon/></Row> )
   );
 };
 

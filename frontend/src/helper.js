@@ -19,8 +19,8 @@ export async function fetchImages(id) {
   return result.data
 }
 
-export async function fetchImagesAll(id) {
-  const result = await axiosConfig.holder.get(`/api/project/${ id }/images/all`);
+export async function fetchImagesAll(id, page=1) {
+  const result = await axiosConfig.holder.get(`/api/project/${ id }/images/all?page=${page}`);
   console.log("Found Images:", result.data);
   return result.data
 }

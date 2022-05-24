@@ -17,6 +17,8 @@ import "./style.scss";
 import ProjectEvaluateView from "./components/main/ProjectEvaluateView";
 import BackupView from "./components/main/BackupView";
 import ProjectDifferencesView from "./components/main/ProjectDifferencesView";
+import { WebSocketProvider } from "./components/ws/websocketContext";
+import DockerStatusView from "./components/main/DockerStatusView";
 
 const mapStateToProps = (state) => {
   return {
@@ -67,11 +69,8 @@ const App = props => {
                         <Route exact path="/project/:id/score" element={ <ScoreView /> }/>
                         <Route exact path="/project/:id/useless" element={ <UselessImageFilesView /> }/>
                         <Route exact path="/project/:id/differences" element={ <ProjectDifferencesView /> }/>
-                        {/*<Route exact path="/stack/" element={ <WebSocketProvider url={ "/ws/stack/" }><StackTestsView /></WebSocketProvider> }/>*/ }
-                        {/*<Route exact path="/app/" element={ <WebSocketProvider url={ "/ws/product/test/" }><AppTestsView /></WebSocketProvider> }/>*/ }
-                        {/*<Route exact path="/app/:product/:version" element={ <WebSocketProvider url={ "/ws/product/test/" }><AppAllTestsView /></WebSocketProvider> }/>*/ }
-                        {/*<Route exact path="/app/viewer" element={ <AppTestRecordView /> }/>*/ }
-                        {/*<Route exact path="/app/fix" element={ <AppTestsFixxer /> }/>*/ }
+                        <Route path="/docker" element={ <WebSocketProvider url={ "/ws/docker/status" }><DockerStatusView /></WebSocketProvider> }/>
+
 
                         {/*Default-Route*/ }
                         <Route path="/*" element={ <Navigate exact from="/" to="/project/overview/"/> }/>

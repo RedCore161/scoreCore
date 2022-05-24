@@ -49,6 +49,7 @@ const ScoreView = () => {
       'ear': state.ear,
       'whiskers': state.whiskers,
       'comment': state.comment,
+      'project': id,
     }).then((response) => {
       if (response.data) {
         if (response.data.success) {

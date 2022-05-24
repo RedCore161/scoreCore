@@ -1,5 +1,6 @@
 from django.test import TestCase
 from .models import *
+from .views.viewsets.viewset_creator import ViewSetCreateModel
 
 
 def create_ImageScore(project, idx, image_file, data):
@@ -31,7 +32,7 @@ class GeneralTestCase(TestCase):
             user = User.objects.create(username=f"Tester{i}", password="geheim")
             user.save()
 
-        project = Project.objects.create(name="Test-Project")
+        project = Project.objects.create(name="Test-Project", wanted_scores_per_user=4, wanted_scores_per_image=2)
         for user in User.objects.all():
             project.users.add(user)
         project.save()
@@ -50,16 +51,16 @@ class GeneralTestCase(TestCase):
         pos = 0
 
         tests = [
-            {"expected": 5,     "data": ["00000", "11111"]},
+            {"expected": 2.5,   "data": ["00000", "11111"]},
             {"expected": 8,     "data": ["00000", "22 22"]},
             {"expected": 10,    "data": ["00000", "22222"]},
-            {"expected": 10,    "data": ["00000", "22222", "11111"]},
-            {"expected": 7.93,  "data": ["00000", "00000", "11112"]},
-            {"expected": 15,    "data": ["00000", "22222", "11111", "00000"]},
-            {"expected": 7.53,  "data": ["01002", "10102", "11112", "11112", "11112", "11112"]},
-            {"expected": 6.52,  "data": ["01002", "10112", "11112", "11112", "11112", "11112"]},
-            {"expected": 11.5,  "data": ["01201", "20120", "10101", "12100"]},
-            {"expected": 1.5,   "data": ["01201", "01201", "01201", "01211"]},
+            {"expected": 5,     "data": ["00000", "22222", "11111"]},
+            {"expected": 2.65,  "data": ["00000", "00000", "11112"]},
+            {"expected": 4.6,   "data": ["00000", "22222", "11111", "00000"]},
+            {"expected": 0.78,  "data": ["01002", "10102", "11112", "11112", "11112", "11112"]},
+            {"expected": 0.68,  "data": ["01002", "10112", "11112", "11112", "11112", "11112"]},
+            {"expected": 3.17,  "data": ["01201", "20120", "10101", "12100"]},
+            {"expected": 0.25,  "data": ["01201", "01201", "01201", "01211"]},
             {"expected": 0,     "data": ["01201", "01201", "01201", "01201"]},
             {"expected": 0,     "data": ["01201"]},
         ]
@@ -72,4 +73,36 @@ class GeneralTestCase(TestCase):
                 create_ImageScore(project, idx, image_file, data)
 
             #print(image_file, image_file.scores.all())
-            self.assertEqual(image_file.calc_similarity(), _test.get("expected"))
+            self.assertEqual(image_file.calc_varianz(), _test.get("expected"))
+
+
+    def test_scoring(self):
+
+        project = Project.objects.get(name="Test-Project")
+        image_files = project.files.all()
+        user1 = User.objects.get(username=f"Tester{1}")
+        user2 = User.objects.get(username=f"Tester{2}")
+        tests = [
+            {"user": user1, "image_file": image_files[0], "data": "01201", "start": 4, "end": 3, "existing_scores": 0},
+            {"user": user1, "image_file": image_files[1], "data": "10101", "start": 3, "end": 2, "existing_scores": 1},
+            {"user": user2, "image_file": image_files[1], "data": "10101", "start": 4, "end": 3, "existing_scores": 2},
+            {"user": user2, "image_file": image_files[2], "data": "10101", "start": 3, "end": 2, "existing_scores": 3},
+            {"user": user2, "image_file": image_files[3], "data": "10101", "start": 2, "end": 1, "existing_scores": 4},
+            {"user": user2, "image_file": image_files[4], "data": "10101", "start": 1, "end": 0, "existing_scores": 5},
+        ]
+
+        i = 0
+        for test in tests:
+            i += 1
+            print(f"Starting 'test_scoring' - Run {i} of {len(tests)}")
+            data = ViewSetCreateModel.get_images(project.pk, test.get("user")).data
+            #print("1", len(project.scores.all()), len(data.get("image")), data.get("files_left"))
+            self.assertEqual(data.get("files_left"), test.get("start"))
+            self.assertEqual(len(project.scores.all()), test.get("existing_scores"))
+
+            d = test.get("data")
+            ViewSetCreateModel.create_imagescore(image_files[0].pk, test.get("user"), d[0], d[1], d[2], d[3], d[4])
+            data = ViewSetCreateModel.get_images(project.pk, test.get("user")).data
+            #print("2", len(project.scores.all()), len(data.get("image")), data.get("files_left"))
+            self.assertEqual(data.get("files_left"), test.get("end"))
+            self.assertEqual(len(project.scores.all()), test.get("existing_scores") + 1)

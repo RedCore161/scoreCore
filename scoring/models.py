@@ -4,6 +4,8 @@ import math
 import os
 import re
 import pandas as pd
+import statistics
+
 from django.core.validators import RegexValidator
 
 from django.db import models
@@ -11,7 +13,7 @@ from django.contrib.auth.models import User
 from django.db.models import Avg
 from django.utils import timezone
 
-from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir
+from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir, get_path_backup
 
 from server.settings import BASE_DIR
 
@@ -93,12 +95,12 @@ class Project(models.Model):
 
         for u_id in user_ids:
             header.append(f"Comment_Scorer{u_id}")
-        header.extend([f"oDiff-Eyes",
-                       f"oDiff-Nose",
-                       f"oDiff-Cheeks",
-                       f"oDiff-Ears",
-                       f"oDiff-Whiskers",
-                       f"oDiff (SUM)"])
+        header.extend([f"Varianz-Eyes",
+                       f"Varianz-Nose",
+                       f"Varianz-Cheeks",
+                       f"Varianz-Ears",
+                       f"Varianz-Whiskers",
+                       f"Varianz (SUM)"])
 
         for i, name in enumerate(header, start=0):
             ws.write(0, i, name)
@@ -121,21 +123,21 @@ class Project(models.Model):
                 ws.write(line, i, score.comment)
                 i += 1
 
-            # Write diversity
-            ws.write(line, i, image_file.diversity_eye)
-            ws.write(line, i + 1, image_file.diversity_nose)
-            ws.write(line, i + 2, image_file.diversity_cheek)
-            ws.write(line, i + 3, image_file.diversity_ear)
-            ws.write(line, i + 4, image_file.diversity_whiskers)
-            ws.write(line, i + 5, image_file.diversity)
+            # Write varianz
+            ws.write(line, i, image_file.varianz_eye)
+            ws.write(line, i + 1, image_file.varianz_nose)
+            ws.write(line, i + 2, image_file.varianz_cheek)
+            ws.write(line, i + 3, image_file.varianz_ear)
+            ws.write(line, i + 4, image_file.varianz_whiskers)
+            ws.write(line, i + 5, image_file.varianz)
 
             # TODO format later
             #
-            # _list = [image_file.diversity_eye,
-            #          image_file.diversity_nose,
-            #          image_file.diversity_cheek,
-            #          image_file.diversity_ear,
-            #          image_file.diversity_whiskers]
+            # _list = [image_file.varianz_eye,
+            #          image_file.varianz_nose,
+            #          image_file.varianz_cheek,
+            #          image_file.varianz_ear,
+            #          image_file.varianz_whiskers]
             # j = 0
             # for val in _list:
             #     j += 1
@@ -273,53 +275,47 @@ class ImageFile(models.Model):
     path = models.CharField(max_length=500, null=False)
     useless = models.BooleanField(default=False)
     hidden = models.BooleanField(default=False)
-    diversity = models.FloatField(default=0, null=True, blank=True)
+    varianz = models.FloatField(default=0, null=True, blank=True)
 
-    diversity_eye = models.FloatField(default=None, null=True, blank=True)
-    diversity_nose = models.FloatField(default=None, null=True, blank=True)
-    diversity_cheek = models.FloatField(default=None, null=True, blank=True)
-    diversity_ear = models.FloatField(default=None, null=True, blank=True)
-    diversity_whiskers = models.FloatField(default=None, null=True, blank=True)
+    varianz_eye = models.FloatField(default=None, null=True, blank=True)
+    varianz_nose = models.FloatField(default=None, null=True, blank=True)
+    varianz_cheek = models.FloatField(default=None, null=True, blank=True)
+    varianz_ear = models.FloatField(default=None, null=True, blank=True)
+    varianz_whiskers = models.FloatField(default=None, null=True, blank=True)
 
     date = models.DateTimeField(blank=True, null=True)
 
-    def calc_similarity(self):
+    def calc_varianz(self):
         _params = ["s_eye", "s_nose", "s_cheek", "s_ear", "s_whiskers"]
         n = self.scores.all().distinct("user").count()
-
         if n >= 2:
-            average = {
-                "s_eye": self.scores.aggregate(Avg('s_eye')).get('s_eye__avg'),
-                "s_nose": self.scores.aggregate(Avg('s_nose')).get('s_nose__avg'),
-                "s_cheek": self.scores.aggregate(Avg('s_cheek')).get('s_cheek__avg'),
-                "s_ear": self.scores.aggregate(Avg('s_ear')).get('s_ear__avg'),
-                "s_whiskers": self.scores.aggregate(Avg('s_whiskers')).get('s_whiskers__avg')
+
+            varianz = 0
+            varianz_list = {
+                "s_eye": [],
+                "s_nose": [],
+                "s_cheek": [],
+                "s_ear": [],
+                "s_whiskers": []
             }
 
-            diversity = 0.
-            diversity_list = {
-                "s_eye": 0,
-                "s_nose": 0,
-                "s_cheek": 0,
-                "s_ear": 0,
-                "s_whiskers": 0
-            }
             for score in self.scores.all():
                 for val in _params:
                     score_value = getattr(score, val)
                     if score_value is not None:
-                        div = math.floor(abs(score_value - average.get(val)) * 100) / 100.0
-                        #diversity += div
-                        diversity_list.update({val: diversity_list.get(val) + div})
+                        feature = varianz_list.get(val)
+                        feature.append(score_value)
+                        varianz_list.update({val: feature})
 
-            for key, value in diversity_list.items():
-                diversity += value
-                print("key, value", key, value)
-                setattr(self, f"diversity_{key[2:]}", value)
-            self.diversity = math.floor((diversity * 100)) / 100.0
-            print("diversity", self.diversity, "\n")
+            for key, _list in varianz_list.items():
+                if len(_list) < 2:
+                    continue
+                _varianz = round(statistics.variance(_list), 2)
+                varianz += _varianz
+                setattr(self, f"varianz_{key[2:]}", _varianz)
+            self.varianz = round(varianz, 2)
             self.save()
-            return self.diversity
+            return self.varianz
         return 0
 
     def __str__(self):
@@ -351,6 +347,9 @@ class ImageScore(models.Model):
 
 class Backup(models.Model):
     name = models.CharField(max_length=100, null=False)
+
+    def get_file(self):
+        return os.path.join(get_path_backup(), str(self.name))
 
     def __str__(self):
         _id = ""

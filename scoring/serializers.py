@@ -128,5 +128,5 @@ class BackupSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     @staticmethod
-    def get_clazz_name(obj: ImageScore):
+    def get_clazz_name(obj: Backup):
         return "backup"
