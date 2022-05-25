@@ -2,7 +2,7 @@ from django.conf.urls import url
 from django.urls import include
 from rest_framework.routers import DefaultRouter
 
-from scoring.views.viewsets.base import EmptyViewSet
+from scoring.views.viewsets.base_viewset import EmptyViewSet
 from scoring.views.viewsets.docker_viewset import DockerViewSet
 from scoring.views.viewsets.project_viewset import ProjectViewSet
 from scoring.views.viewsets.imagescore_viewset import ImageScoreViewSet

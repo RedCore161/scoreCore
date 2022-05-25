@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from scoring.models import Project, ImageFile, ImageScore
 from scoring.serializers import ProjectSerializer, ImageFileSerializer, ImageScoreSerializer
-from scoring.views.viewsets.base import StandardResultsSetPagination
+from scoring.views.viewsets.base_viewset import StandardResultsSetPagination
 from scoring.views.viewsets.viewset_creator import ViewSetCreateModel
 from server.views import RequestSuccess, RequestFailed
 
@@ -30,10 +30,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
             image.calc_varianz()
         return RequestSuccess()
 
-    @action(detail=True, url_path="images", methods=["GET"])
+    @action(detail=True, url_path="image", methods=["GET"])
     @permission_classes([IsAuthenticated])
-    def get_images(self, request, pk):
-        return ViewSetCreateModel.get_images(pk, request.user)
+    def get_next_image(self, request, pk):
+        return ViewSetCreateModel.get_next_image(pk, request.user)
 
     @action(detail=True, url_path="images/all", methods=["GET"])
     @permission_classes([IsAuthenticated])
@@ -45,15 +45,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
             .exclude(useless=True) \
             .order_by("-varianz")
 
-
-        response = {"project": project.name}
-
         page = self.paginate_queryset(images)
         if page is not None:
             serializer = ImageFileSerializer(page, many=True)
-            response.update(self.get_paginated_response(serializer.data))
+            response = self.get_paginated_response(serializer.data)
+            response.update_data({"project": project.name})
+            return response
 
-        return RequestSuccess(response)
+        return RequestFailed()
 
     @action(detail=True, url_path="get-useless", methods=["GET"])
     @permission_classes([IsAdminUser])

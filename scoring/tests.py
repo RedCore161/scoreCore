@@ -95,14 +95,14 @@ class GeneralTestCase(TestCase):
         for test in tests:
             i += 1
             print(f"Starting 'test_scoring' - Run {i} of {len(tests)}")
-            data = ViewSetCreateModel.get_images(project.pk, test.get("user")).data
+            data = ViewSetCreateModel.get_next_image(project.pk, test.get("user")).data
             #print("1", len(project.scores.all()), len(data.get("image")), data.get("files_left"))
             self.assertEqual(data.get("files_left"), test.get("start"))
             self.assertEqual(len(project.scores.all()), test.get("existing_scores"))
 
             d = test.get("data")
             ViewSetCreateModel.create_imagescore(image_files[0].pk, test.get("user"), d[0], d[1], d[2], d[3], d[4])
-            data = ViewSetCreateModel.get_images(project.pk, test.get("user")).data
+            data = ViewSetCreateModel.get_next_image(project.pk, test.get("user")).data
             #print("2", len(project.scores.all()), len(data.get("image")), data.get("files_left"))
             self.assertEqual(data.get("files_left"), test.get("end"))
             self.assertEqual(len(project.scores.all()), test.get("existing_scores") + 1)

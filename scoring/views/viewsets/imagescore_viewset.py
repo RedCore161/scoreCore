@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from scoring.helper import build_abs_path
 from scoring.models import Project, ImageFile, ImageScore
 from scoring.serializers import ImageScoreSerializer
-from scoring.views.viewsets.base import StandardResultsSetPagination
+from scoring.views.viewsets.base_viewset import StandardResultsSetPagination
 from scoring.views.viewsets.project_viewset import ProjectViewSet
 from scoring.views.viewsets.viewset_creator import ViewSetCreateModel
 from server.views import RequestSuccess
@@ -16,21 +16,22 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     pagination_class = StandardResultsSetPagination
 
-    def replaceNoneValue(self, str):
-        if str == "X":
-            return None
-        return str
-
     def get_queryset(self):
         return ImageScore.objects.all()
 
     @action(detail=True, url_path="confirm", methods=["POST"])
     def confirm_image(self, request, pk):
-        eye = self.replaceNoneValue(request.data.get("eye"))
-        nose = self.replaceNoneValue(request.data.get("nose"))
-        cheek = self.replaceNoneValue(request.data.get("cheek"))
-        ear = self.replaceNoneValue(request.data.get("ear"))
-        whiskers = self.replaceNoneValue(request.data.get("whiskers"))
+
+        def replace_none(_str):
+            if _str == "X":
+                return None
+            return _str
+
+        eye = replace_none(request.data.get("eye"))
+        nose = replace_none(request.data.get("nose"))
+        cheek = replace_none(request.data.get("cheek"))
+        ear = replace_none(request.data.get("ear"))
+        whiskers = replace_none(request.data.get("whiskers"))
         comment = request.data.get("comment", "")
         project = request.data.get("project")
 
@@ -48,12 +49,9 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
         _project = Project.objects.get(pk=project)
 
         # Load new Imagefile
-        result = _project.parse_info_file(build_abs_path([image_file_old.path]))
+        _project.parse_info_file(build_abs_path([image_file_old.path]))
 
         return ProjectViewSet().get_images(request, project)
-        # if result:
-        #     return RequestSuccess()
-        # return RequestFailed()
 
     @action(detail=True, url_path="hide", methods=["POST"])
     def hide_useless(self, request, pk):

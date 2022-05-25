@@ -5,9 +5,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
-from scoring.helper import random_string, get_setup_path
+from scoring.helper import random_string, get_path_setup
 from scoring.models import Project
-from server.settings import BASE_DIR
 
 
 class Command(BaseCommand):
@@ -21,7 +20,7 @@ class Command(BaseCommand):
         else:
             root = None
 
-        with open(os.path.join(get_setup_path(), "users.json"), "r") as _file:
+        with open(os.path.join(get_path_setup(), "users.json"), "r") as _file:
             _users = json.load(_file)
 
             for _user in _users:

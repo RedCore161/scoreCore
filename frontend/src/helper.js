@@ -13,15 +13,15 @@ export async function fetchEvaluations() {
   return result.data
 }
 
-export async function fetchImages(id) {
-  const result = await axiosConfig.holder.get(`/api/project/${ id }/images/`);
-  console.log("Found Images:", result.data);
+export async function fetchImage(id) {
+  const result = await axiosConfig.holder.get(`/api/project/${ id }/image/`);
+  console.log("Found Image:", result.data);
   return result.data
 }
 
 export async function fetchImagesAll(id, page=1) {
   const result = await axiosConfig.holder.get(`/api/project/${ id }/images/all?page=${page}`);
-  console.log("Found Images:", result.data);
+  console.log("Found All Images:", result.data);
   return result.data
 }
 

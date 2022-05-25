@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAdminUser
 from scoring.helper import delete_file, get_path_backup
 from scoring.models import Backup
 from scoring.serializers import BackupSerializer
-from scoring.views.viewsets.base import StandardResultsSetPagination
+from scoring.views.viewsets.base_viewset import StandardResultsSetPagination
 from server.views import RequestSuccess
 
 

@@ -9,6 +9,10 @@ class RequestSuccess(Response):
         super().__init__(data=data, status=200, **kwargs)
 
 
+    def update_data(self, data: dict):
+        self.data.update(data)
+
+
 class RequestFailed(Response):
     def __init__(self, data=None, **kwargs):
         if data is None:

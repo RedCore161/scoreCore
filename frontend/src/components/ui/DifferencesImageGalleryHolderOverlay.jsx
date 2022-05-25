@@ -38,7 +38,7 @@ const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
       <Container className={ "hiddenContent imageOverLay pt-5" }>
 
         { elements.map((element) =>
-          <Row className={ `${ getDifferences(element.value) }` }>
+          <Row className={ `${ getDifferences(element.value) }` } key={`diff-row-${element.name}`}>
             <Col md={ 6 }>{ element.name }:</Col>
             <Col>{ element.value }</Col>
           </Row>

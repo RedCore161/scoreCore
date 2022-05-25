@@ -11,7 +11,7 @@ import ScoreGroup from "../ui/ScoreGroup";
 import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
 import { useSnackbar } from "notistack";
 import axiosConfig from "../../axiosConfig";
-import { fetchImages } from "../../helper";
+import { fetchImage } from "../../helper";
 import LoadingIcon from "../ui/LoadingIcon";
 
 const ScoreView = () => {
@@ -28,7 +28,7 @@ const ScoreView = () => {
 
   useLayoutEffect(() => {
     console.log("fetchData");
-    fetchImages(id).then((data) => {
+    fetchImage(id).then((data) => {
       setImages(data);
       setLoadingDone(true);
     })

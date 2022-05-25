@@ -31,7 +31,7 @@ class ViewSetCreateModel(object):
 
 
     @staticmethod
-    def get_images(pk, user) -> Response:
+    def get_next_image(pk, user) -> Response:
         project = Project.objects.get(pk=pk)
 
         base_request = ImageFile.objects.filter(project=pk) \
@@ -48,13 +48,14 @@ class ViewSetCreateModel(object):
             .exclude(hidden=True) \
             .exclude(useless=True).count()
 
-        serializer = ImageFileSerializer(images, many=True)
         count = project.wanted_scores_per_user - scored
 
         if count == 0:
             return RequestSuccess({"files_left": count})
 
         if len(images):
+            serializer = ImageFileSerializer(images, many=True)
             rnd = random.randint(0, len(images) - 1)
             return RequestSuccess({"files_left": count, "image": serializer.data[rnd], "random": rnd})
+
         return RequestSuccess({"files_left": count})

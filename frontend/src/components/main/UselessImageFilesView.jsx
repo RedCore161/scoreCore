@@ -1,50 +1,55 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
-import { useSnackbar } from "notistack";
-import { Row } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
 import { Gallery } from "react-photoswipe-gallery";
 import BoxContainer from "../ui/BoxContainer";
 import UselessImageGalleryHolder from "../ui/UselessImageGalleryHolder";
 
+import axiosConfig from "../../axiosConfig";
 import 'photoswipe/dist/photoswipe.css';
 import 'photoswipe/dist/default-skin/default-skin.css';
-import axiosConfig from "../../axiosConfig";
 
 const UselessImageFilesView = () => {
 
   const { id } = useParams();
   const [imageFiles, setImageFiles] = useState([]);
-  const { enqueueSnackbar } = useSnackbar();
+  const [isLoading, setIsLoading] = useState(true);
 
   async function fetchData() {
     const result = await axiosConfig.holder.get(`/api/project/${ id }/get-useless/`);
     setImageFiles(result.data);
+    setIsLoading(false)
     console.log("Found Images:", result.data);
   }
 
   useEffect(() => {
     console.log("fetchData");
     fetchData();
-
   }, []);
 
 
   return (
     <>
-      <BoxContainer title={ "Images marked as useless" }>
-        <Row>
-          <Gallery>
-            { imageFiles.map((imagefile) => {
-              return <UselessImageGalleryHolder key={ imagefile.id }
-                                                imagefile={ imagefile }
-                                          />;
-            }) }
-          </Gallery>
-        </Row>
-      </BoxContainer>
-    </>
+      {!isLoading && (
+        <BoxContainer title={ "Images marked as useless" }>
+          <Row>
+            { imageFiles.length === 0 ? (
+              <Col>There are no images marked as "useless" in this project yet!</Col>
+            ) : (
+              <Gallery>
+                { imageFiles.map((imagefile) => {
+                  return <UselessImageGalleryHolder key={ imagefile.id }
+                                                    imagefile={ imagefile }
+                  />;
+                }) }
+              </Gallery>
+            ) }
 
+          </Row>
+        </BoxContainer>
+      ) }
+    </>
   );
 };
 
