@@ -37,7 +37,7 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
 
         ViewSetCreateModel().create_imagescore(pk, request.user, eye, nose, cheek, ear, whiskers, comment)
 
-        return ProjectViewSet().get_images(request, project)
+        return ProjectViewSet().get_next_image(request, project)
 
     @action(detail=True, url_path="useless", methods=["POST"])
     def mark_as_useless(self, request, pk):
@@ -51,7 +51,7 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
         # Load new Imagefile
         _project.parse_info_file(build_abs_path([image_file_old.path]))
 
-        return ProjectViewSet().get_images(request, project)
+        return ProjectViewSet().get_next_image(request, project)
 
     @action(detail=True, url_path="hide", methods=["POST"])
     def hide_useless(self, request, pk):
