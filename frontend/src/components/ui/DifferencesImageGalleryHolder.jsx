@@ -12,6 +12,20 @@ const DifferencesImageGalleryHolder = ({ overlaySetter, imagefile }) => {
 
   const path = [process.env.REACT_APP_BACKEND_URL, "media", imagefile.rel_path, imagefile.filename].join("/");
 
+  function getBorderClazz() {
+
+    if (imagefile.varianz === 0) {
+      return "success-border"
+    }
+
+    if (imagefile.varianz > 1.5) {
+      return "failed-border"
+    }
+
+    return "warning-border"
+
+  }
+
   return (
     <Col className={ "my-3" } md={ 3 } >
       <Element name={ `imagefile-${ imagefile.id }` } className="element">
@@ -23,7 +37,7 @@ const DifferencesImageGalleryHolder = ({ overlaySetter, imagefile }) => {
 
             { ({ ref, open }) => (
               <>
-                <img key={ imagefile.id } src={ path } className={`img-fluid drawLayer ${imagefile.varianz === 0 && "success-border"}`} data-image={ path }
+                <img key={ imagefile.id } src={ path } className={`img-fluid drawLayer ${getBorderClazz()}`} data-image={ path }
                      ref={ ref } onClick={ open } title={ `${ imagefile.filename }` } alt={ imagefile.id }
                      width={ 340 } height={ 340 }/>
 

@@ -310,7 +310,7 @@ class ImageFile(models.Model):
             for key, _list in varianz_list.items():
                 if len(_list) < 2:
                     continue
-                _varianz = round(statistics.variance(_list), 2)
+                _varianz = round(statistics.pstdev(_list), 2)
                 varianz += _varianz
                 setattr(self, f"varianz_{key[2:]}", _varianz)
             self.varianz = round(varianz, 2)

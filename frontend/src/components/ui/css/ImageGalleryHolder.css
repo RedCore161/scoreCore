@@ -29,7 +29,7 @@
     top: 0;
     left: 0;
     width: 340px !important;
-    height: 340px;
+    height: 330px !important;
     background-color: rgba(225, 225, 225, 0.75);
 }
 
@@ -46,5 +46,16 @@
 }
 
 .success-border {
-    border: 10px solid green;
+    border: 0 solid green;
+    border-right-width: 10px;
+}
+
+.warning-border {
+    border: 0 solid orange;
+    border-right-width: 10px;
+}
+
+.failed-border {
+    border: 0 solid red;
+    border-right-width: 10px;
 }
