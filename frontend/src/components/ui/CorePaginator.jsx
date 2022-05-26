@@ -1,31 +1,46 @@
 import React from "react";
 import ReactPaginate from "react-paginate";
+import { Col, Row } from "react-bootstrap";
 
-const CorePaginator = ({ pages, handleChange }) => {
+import "../ui/css/CorePaginator.css";
+
+const CorePaginator = ({ pages, handleChangePage, handleChangeSize=()=>{} }) => {
 
   return (
-    <span className={ "paginatorContainer" }>
-      <div className={ "paginatorContent" }>
-        <ReactPaginate
-          nextLabel={ "»" }
-          previousLabel={ "«" }
-          breakLabel={ "..." }
-          breakClassName={ "page-item" }
-          breakLinkClassName={ "page-link" }
-          pageCount={ pages }
-          onPageChange={ handleChange }
-          onPageActive={ handleChange }
-          containerClassName={ "pagination" }
-          pageClassName={ "page-item" }
-          pageLinkClassName={ "page-link" }
-          activeClassName={ "active" }
-          nextLinkClassName={ "page-link" }
-          previousLinkClassName={ "page-link" }
-          nextClassName={ "page-item" }
-          previousClassName={ "page-item" }
-        />
-      </div>
-    </span>
+    <Row>
+      <Col md={ 4 }/>
+      <Col md={ 4 } align="center">
+        <span className={ "paginatorPages" }>
+          {/*TODO*/}
+        </span>
+      </Col>
+
+      <Col md={ 4 } className={ "" }>
+        <span className={ "paginatorContainer" }>
+          <div className={ "paginatorContent" }>
+            <ReactPaginate
+              nextLabel={ "»" }
+              previousLabel={ "«" }
+              breakLabel={ "..." }
+              breakClassName={ "page-item" }
+              breakLinkClassName={ "page-link" }
+              pageCount={ pages }
+              onPageChange={ handleChangePage }
+              onPageActive={ handleChangePage }
+              containerClassName={ "pagination" }
+              pageClassName={ "page-item" }
+              pageLinkClassName={ "page-link" }
+              activeClassName={ "active" }
+              nextLinkClassName={ "page-link" }
+              previousLinkClassName={ "page-link" }
+              nextClassName={ "page-item" }
+              previousClassName={ "page-item" }
+            />
+          </div>
+        </span>
+      </Col>
+    </Row>
+
   );
 
 };

@@ -33,7 +33,10 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @action(detail=True, url_path="image", methods=["GET"])
     @permission_classes([IsAuthenticated])
     def get_next_image(self, request, pk):
-        return ViewSetCreateModel.get_next_image(pk, request.user)
+        _project = Project.objects.get(pk=pk)
+        if not _project.is_finished():
+            return ViewSetCreateModel.get_next_image(pk, request.user)
+        return RequestSuccess({"is_finished": True, "files_left": 0})
 
     @action(detail=True, url_path="images/all", methods=["GET"])
     @permission_classes([IsAuthenticated])

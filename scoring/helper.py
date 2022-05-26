@@ -70,12 +70,12 @@ def get_media_path() -> str:
     return "media"
 
 
-def get_path_setup() -> str:
-    return SETUP_DIR
+def get_path_setup(*args) -> str:
+    return os.path.join(SETUP_DIR, *args)
 
 
-def get_path_backup() -> str:
-    return BACKUP_DIR
+def get_path_backup(*args) -> str:
+    return os.path.join(BACKUP_DIR, *args)
 
 
 def get_project_evaluation_dir(project_id) -> str:

@@ -36,8 +36,9 @@ const ProjectDifferencesView = () => {
     data ? (
       <>
         <BoxContainer title={`Differences for Project '${data.project}'`}>
-          { data.pages > 1 && <Row><CorePaginator pages={ data.pages }
-                                                    handleChange={ handlePaginator } /></Row> }
+          { <CorePaginator pages={ data.pages }
+                           handleChangePage={ handlePaginator } /> }
+
           <Row>
             <Gallery>
               { "elements" in data && data.elements.map((imagefile) => {

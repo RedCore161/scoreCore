@@ -20,7 +20,7 @@ class Command(BaseCommand):
         else:
             root = None
 
-        with open(os.path.join(get_path_setup(), "users.json"), "r") as _file:
+        with open(get_path_setup("users.json"), "r") as _file:
             _users = json.load(_file)
 
             for _user in _users:

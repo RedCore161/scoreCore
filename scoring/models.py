@@ -1,6 +1,5 @@
 import datetime
 import json
-import math
 import os
 import re
 import pandas as pd
@@ -10,13 +9,11 @@ from django.core.validators import RegexValidator
 
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import Avg
 from django.utils import timezone
 
 from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir, get_path_backup
 
 from server.settings import BASE_DIR
-
 
 
 
@@ -41,6 +38,15 @@ class Project(models.Model):
         with open(os.path.join(_path, f"{_file_template}.json"), "r") as _file:
             data = json.load(_file)
             print("DATA", data.get("imagefiles"))
+
+    def get_score_count(self):
+        return self.scores.all().exclude(file__useless=True).count()
+
+    def get_files_count(self):
+        return self.files.exclude(useless=True).count()
+
+    def is_finished(self):
+        return self.get_score_count() >= self.get_files_count() * self.wanted_scores_per_image
 
     def evaluate_data_as_xlsx(self, data):
 
@@ -308,6 +314,7 @@ class ImageFile(models.Model):
                         varianz_list.update({val: feature})
 
             for key, _list in varianz_list.items():
+                # print(key, "=>", _list)
                 if len(_list) < 2:
                     continue
                 _varianz = round(statistics.pstdev(_list), 2)
@@ -315,6 +322,7 @@ class ImageFile(models.Model):
                 setattr(self, f"varianz_{key[2:]}", _varianz)
             self.varianz = round(varianz, 2)
             self.save()
+            # print("V=", self.varianz, "\n")
             return self.varianz
         return 0
 
@@ -349,7 +357,7 @@ class Backup(models.Model):
     name = models.CharField(max_length=100, null=False)
 
     def get_file(self):
-        return os.path.join(get_path_backup(), str(self.name))
+        return get_path_backup(self.name)
 
     def __str__(self):
         _id = ""

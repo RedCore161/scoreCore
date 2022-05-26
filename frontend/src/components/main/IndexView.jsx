@@ -21,7 +21,8 @@ const IndexView = () => {
       <BoxContainer title="Available Projects">
         <Row>
           { data.map((project) => {
-            return <ProjectCardView key={ project.id } { ...project } />;
+            return <ProjectCardView key={ project.id }
+                                    { ...project } />;
           }) }
         </Row>
       </BoxContainer>

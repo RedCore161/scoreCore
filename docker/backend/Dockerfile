@@ -27,6 +27,7 @@ COPY ./manage.py ./manage.py
 COPY ./requirements.txt ./requirements.txt
 COPY ./docker/backend/django.env ./django.env
 
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 EXPOSE 6379

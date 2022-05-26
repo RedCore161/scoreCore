@@ -56,6 +56,10 @@ const ScoreView = () => {
           showSuccessBar(enqueueSnackbar, "Scoring confirmed!");
           setImages(response.data);
           dispatch({ type: actionTypes.SET_RESET });
+        } else {
+          if (response.data.is_finished) {
+            showErrorBar(enqueueSnackbar, "Project is already finished!");
+          }
         }
       } else {
         showErrorBar(enqueueSnackbar, "Couldn't confirm Score!");
@@ -113,13 +117,18 @@ const ScoreView = () => {
       { loadingDone ? (
         images.files_left === 0 ? (
             <>
-              <h1 className={ "pt-3" }>Congratulations! You scored everything in this project!</h1>
+              <h1 className={ "pt-3" }>
+                { "is_finished" in images ?
+                  "This project is already finished!" :
+                  "Congratulations! You scored this project!"
+                }
+              </h1>
               <Confetti
                 width={ width }
                 height={ height }
               />
-            </> ) :
-          (
+            </>
+          ) : (
             <>
               <Row md={ 8 } id={`counter-${images.files_left}`}>
                 <Col className="mt-2">

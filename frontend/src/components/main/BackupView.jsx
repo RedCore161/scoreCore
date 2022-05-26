@@ -116,7 +116,9 @@ const BackupView = () => {
         <BoxContainer title="Available Backups">
           { 'elements' in data && (
             <>
-              { data.pages > 1 && <Row><CorePaginator pages={ data.pages } handleChange={ handlePaginator } /></Row> }
+              { <CorePaginator pages={ data.pages }
+                               handleChangePage={ handlePaginator } /> }
+
               { data.elements.map((backup) => {
                 return <BackupButton {...backup}
                                      callbackRestore={restoreBackup}

@@ -1,15 +1,45 @@
+import os
+
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import get_default_password_validators, UserAttributeSimilarityValidator, \
+    MinimumLengthValidator, CommonPasswordValidator, NumericPasswordValidator
 from rest_auth.models import TokenModel
 from rest_framework import serializers
 
+from scoring.helper import get_path_setup
 from scoring.models import Project, ImageScore, ImageFile, Backup
+from scoring.validators import NumberValidator
+
+
+class MinimalUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ("id", "username")
 
 
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "username")
+        fields = ("id", "username", "email", "last_login", "is_superuser", "is_staff", "is_active")
+
+
+class PasswordSerializer(serializers.Serializer):
+    model = User
+
+    """
+    Serializer for password change endpoint.
+    """
+
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True,
+                                         validators=[UserAttributeSimilarityValidator,
+                                                     MinimumLengthValidator,
+                                                     NumberValidator,
+                                                     #TODO
+                                                     # CommonPasswordValidator(get_path_setup("common-passwords.txt.gz")),
+                                                     ])
 
 
 class TokenSerializer(serializers.ModelSerializer):
@@ -40,6 +70,7 @@ class TokenSerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     clazz = serializers.SerializerMethodField("get_clazz_name")
+    isFinished = serializers.SerializerMethodField("get_is_finished")
     imagesTotal = serializers.SerializerMethodField("get_total_images_count")
     uselessCount = serializers.SerializerMethodField("get_useless_count")
     scoresCount = serializers.SerializerMethodField("get_scores_count")
@@ -53,6 +84,10 @@ class ProjectSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_clazz_name(obj: Project):
         return "project"
+
+    @staticmethod
+    def get_is_finished(obj: Project):
+        return obj.is_finished()
 
     @staticmethod
     def get_total_images_count(obj: Project):
@@ -81,7 +116,7 @@ class ImageScoreSerializer(serializers.ModelSerializer):
     clazz = serializers.SerializerMethodField("get_clazz_name")
     file_name = serializers.SerializerMethodField("get_filename")
     full_path = serializers.SerializerMethodField("get_full_path")
-    user = UserSerializer(read_only=True)
+    user = MinimalUserSerializer(read_only=True)
 
     class Meta:
         model = ImageScore
