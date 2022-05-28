@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Row } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
 import { useParams } from "react-router";
 import BoxContainer from "../ui/BoxContainer";
 import LoadingIcon from "../ui/LoadingIcon";
@@ -38,10 +38,30 @@ const ProjectInvestigateView = () => {
   return (
     data ? (
       <>
-        <BoxContainer title={`Debug '${data.project}'`}>
-          <Row>
+        <BoxContainer title={`Debug '${"project" in data && data.project.name}'`}>
 
+          <Row>
+            <Col md={2}>ImageFiles</Col>
+            <Col>{ data.imageFilesCount }</Col>
           </Row>
+
+          <Row className={"py-3"}>
+            <Col md={2}>Scores foreach ImageFiles</Col>
+            <Col>{ "scoreCount" in data && Object.keys(data.scoreCount).map(function(key, index) {
+              let obj = data.scoreCount[key]
+              return <div key={index}>[{index}] {obj.filename} - { obj.scores }<br/></div>
+            })}
+            </Col>
+          </Row>
+
+          <Row className={"py-3"}>
+            <Col md={2}>Scores per User</Col>
+            <Col>{ "scoresPerUser" in data && Object.keys(data.scoresPerUser).map(function(key, index) {
+              return <div key={index}>{key}: {data.scoresPerUser[key]}<br/></div>
+            })}
+            </Col>
+          </Row>
+
         </BoxContainer>
       </>
     ) : ( <Row><LoadingIcon/></Row> )

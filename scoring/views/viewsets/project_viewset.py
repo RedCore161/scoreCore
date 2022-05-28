@@ -105,7 +105,32 @@ class ProjectViewSet(viewsets.ModelViewSet):
         project = Project.objects.get(pk=pk)
 
         project_serializer = ProjectSerializer(project)
-        project.evaluate_data_as_xlsx({"imagefiles": serializer.data,
-                                       "project": project_serializer.data})
+        project.evaluate_data_as_xlsx({"project": project_serializer.data,
+                                       "imagefiles": serializer.data
+                                       })
 
         return RequestSuccess(project.get_existing_evaluations())
+
+    @permission_classes([IsAdminUser])
+    @action(detail=True, url_path="investigate", methods=["GET"])
+    def investigate(self, request, pk):
+
+        project = Project.objects.get(pk=pk)
+        project_serializer = ProjectSerializer(project)
+
+        files = project.files.exclude(useless=True)
+
+        score_count = {}
+        for _file in files:
+            score_count.update({_file.id: {"filename": _file.filename, "scores": len(_file.scores.all())}})
+
+        scores_per_user = {}
+        for user in project.users.all():
+            scores_per_user.update({user.username: ImageScore.objects.filter(project=pk, user=user.id)
+                                                                     .exclude(file__useless=True).count()})
+
+        return RequestSuccess({"project": project_serializer.data,
+                               "imageFilesCount": files.count(),
+                               "scoreCount": score_count,
+                               "scoresPerUser": scores_per_user,
+                               })

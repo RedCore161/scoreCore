@@ -191,7 +191,8 @@ class Project(models.Model):
                 if not ("infofile.txt" in files):
                     self.create_infofile(root, files)
 
-    def create_infofile(self, _path, _files):
+    @staticmethod
+    def create_infofile(_path, _files):
         if len(_files) == 0:
             return False
 
