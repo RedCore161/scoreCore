@@ -334,7 +334,6 @@ class ImageFile(models.Model):
 
 
 class ImageScore(models.Model):
-    date = models.DateTimeField(auto_created=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     file = models.ForeignKey(ImageFile, related_name='scores', on_delete=models.CASCADE)
     project = models.ForeignKey(Project, related_name='scores', on_delete=models.CASCADE)
@@ -345,6 +344,8 @@ class ImageScore(models.Model):
     s_cheek = models.IntegerField(default=None, null=True, blank=True)
     s_ear = models.IntegerField(default=None, null=True, blank=True)
     s_whiskers = models.IntegerField(default=None, null=True, blank=True)
+    
+    date = models.DateTimeField(auto_created=True, null=True, blank=True)
 
     def __str__(self):
         _id = ""

@@ -19,6 +19,7 @@ import BackupView from "./components/main/BackupView";
 import ProjectDifferencesView from "./components/main/ProjectDifferencesView";
 import { WebSocketProvider } from "./components/ws/websocketContext";
 import DockerStatusView from "./components/main/DockerStatusView";
+import ProjectInvestigateView from "./components/main/ProjectInvestigateView";
 
 const mapStateToProps = (state) => {
   return {
@@ -69,6 +70,7 @@ const App = props => {
                         <Route exact path="/project/:id/score" element={ <ScoreView /> }/>
                         <Route exact path="/project/:id/useless" element={ <UselessImageFilesView /> }/>
                         <Route exact path="/project/:id/differences" element={ <ProjectDifferencesView /> }/>
+                        <Route exact path="/project/:id/investigate" element={ <ProjectInvestigateView /> }/>
                         <Route path="/docker" element={ <WebSocketProvider url={ "/ws/docker/status" }><DockerStatusView /></WebSocketProvider> }/>
 
 

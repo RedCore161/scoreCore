@@ -32,8 +32,10 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
         _project = Project.objects.get(pk=project)
 
         if not _project.is_finished():
-            ViewSetCreateModel().create_imagescore(pk, request.user, [eye, nose, cheek, ear, whiskers], comment)
-            return ProjectViewSet().get_next_image(request, project)
+            success = ViewSetCreateModel().create_imagescore(pk, request.user, [eye, nose, cheek, ear, whiskers], comment)
+            if success:
+                return ProjectViewSet().get_next_image(request, project)
+            return RequestFailed({"already_scored": True})
         return RequestFailed({"is_finished": True})
 
     @action(detail=True, url_path="useless", methods=["POST"])

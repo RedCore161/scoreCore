@@ -15,7 +15,7 @@ const store = createStore(reducer, composeEnhances(
 
 const app = (
   <Provider store={ store }>
-    <App/>
+    <App />
   </Provider>
 );
 

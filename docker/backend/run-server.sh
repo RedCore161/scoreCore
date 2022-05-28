@@ -14,7 +14,6 @@ printf "\n\033[0;36m ### Running Django-Scripts \033[0m\n"
 python manage.py makemigrations
 python manage.py migrate
 python manage.py createadmin
-python manage.py initdump
 python manage.py collectstatic --noinput
 
 printf "\n\033[0;36m ### Starting Webserver \033[0m\n"

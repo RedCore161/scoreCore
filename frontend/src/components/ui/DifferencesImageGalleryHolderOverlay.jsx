@@ -14,7 +14,7 @@ const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
     { "name": "Cheeks", "value": imagefile.varianz_cheek ? imagefile.varianz_cheek.toFixed(2) : 0 , "format": true },
     { "name": "Ears", "value": imagefile.varianz_ear ? imagefile.varianz_ear.toFixed(2) : 0 , "format": true },
     { "name": "Whiskers", "value": imagefile.varianz_whiskers ? imagefile.varianz_whiskers.toFixed(2) : 0 , "format": true },
-    { "name": "∑ Varianz", "value": imagefile.varianz ? imagefile.varianz.toFixed(2) : 0 , "format": true },
+    { "name": "∑ Std.-Dev.", "value": imagefile.varianz ? imagefile.varianz.toFixed(2) : 0 , "format": true },
   ];
 
 
