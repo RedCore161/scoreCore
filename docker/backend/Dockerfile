@@ -47,8 +47,11 @@ RUN apt update && \
 ENV DOMAIN="${DB_HOST}:${DB_PORT}"
 ENV PORT=${BACKEND_PORT}
 
-RUN echo "0 5 * * * python /home/grimsu/scoreCore/manage.py dbbackup" >> /tmp/backUpJob
+RUN echo "0 5 * * * /usr/src/app/scripts/createBackup.sh" >> /tmp/backUpJob
 RUN crontab /tmp/backUpJob
+
+RUN sed -i -e 's/\r$//' ./scripts/*.sh
+RUN chmod +x ./scripts/*.sh
 
 #USER scoring # Fix later
 CMD ./wait-for-it.sh $DOMAIN -- ./run-server.sh "${PORT}"
