@@ -91,7 +91,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_total_images_count(obj: Project):
-        return obj.files.exclude(useless=True).count()
+        return obj.files.count()
 
     @staticmethod
     def get_useless_count(obj: Project):
@@ -99,7 +99,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_scores_count(obj: Project):
-        return obj.scores.exclude(file__useless=True).count()
+        return obj.get_all_scores_save().count()
 
     @staticmethod
     def get_evaluations(obj: Project):
@@ -109,7 +109,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         if not self.context.get("user"):
             return 0
         user = User.objects.get(pk=self.context.get("user"))
-        return obj.scores.exclude(file__useless=True).filter(user=user).count()
+        return obj.get_all_scores_save().filter(user=user).count()
 
 
 class ImageScoreSerializer(serializers.ModelSerializer):
@@ -151,8 +151,8 @@ class ImageFileSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_rel_path(obj: ImageFile):
         # remove '../media/'
-        index = obj.path.find("media")
-        return obj.path[index+6:]
+        return obj.get_rel_path()
+
 
 
 class BackupSerializer(serializers.ModelSerializer):

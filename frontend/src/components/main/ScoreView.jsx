@@ -108,7 +108,7 @@ const ScoreView = () => {
     });
   }
 
-  function getImathPath() {
+  function getImagePath() {
     return [process.env.REACT_APP_BACKEND_URL, "media", images.image.rel_path, images.image.filename].join("/");
   }
 
@@ -142,7 +142,7 @@ const ScoreView = () => {
 
             <Row md={ 8 }>
               <Col className="mt-2">
-                <img src={ getImathPath() } alt="Score-Image"/>
+                <img src={ getImagePath() } alt="Score-Image"/>
               </Col>
             </Row>
             <Row>

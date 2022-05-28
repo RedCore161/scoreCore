@@ -31,7 +31,7 @@ const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, sco
             <i className={"project-Card-Header-Content"} onClick={ () => navigate(`/project/${ id }/score`) }>{ name }</i>
             { isAdmin === "true" && (
               <div className={"float-end"}>
-                <i className="project-Card-Header-Content bi bi-patch-check" onClick={() => navigate(`/project/${ id }/investigate`)}/>
+                <i className="project-Card-Header-Content bi bi-patch-check" onClick={() => navigate(`/project/${ id }/investigate`)}/>&nbsp;
                 <i className="project-Card-Header-Content bi bi-calculator-fill" onClick={() => navigate(`/project/${ id }/differences`)}/>
               </div>
             )}

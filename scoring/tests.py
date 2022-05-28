@@ -35,7 +35,7 @@ class GeneralTestCase(TestCase):
     def test_calculate_similarity(self):
 
         project = Project.objects.get(name="Test-Project")
-        image_files = project.files.all()
+        image_files = project.get_all_files_save()
         pos = 0
 
         tests = [
@@ -125,12 +125,12 @@ class GeneralTestCase(TestCase):
             print(f"Starting 'test_scoring' - Run {idx+1} of {len(tests)}")
             data = ViewSetCreateModel.get_next_image(project.pk, test.get("user")).data
             self.assertEqual(data.get("files_left"), test.get("files_left"))
-            self.assertEqual(len(project.scores.all()), idx)
+            self.assertEqual(len(project.get_all_scores_save()), idx)
 
             d = test.get("data")
             image_file_id = data.get("image").get("id")
             ViewSetCreateModel.create_imagescore(image_file_id, test.get("user"), d)
             data = ViewSetCreateModel.get_next_image(project.pk, test.get("user")).data
             self.assertEqual(data.get("files_left"), test.get("files_left") - 1)
-            self.assertEqual(len(project.scores.all()), idx + 1)
+            self.assertEqual(len(project.get_all_scores_save()), idx + 1)
             self.assertEqual(data.get("scores_ratio"), test.get("ratio"))

@@ -39,11 +39,19 @@ class Project(models.Model):
             data = json.load(_file)
             print("DATA", data.get("imagefiles"))
 
+
+    def get_all_scores_save(self):
+        return self.scores.exclude(file__useless=True) \
+                          .filter(user__in=self.users.all())
+
     def get_score_count(self):
-        return self.scores.all().exclude(file__useless=True).count()
+        return self.get_all_scores_save().count()
+
+    def get_all_files_save(self):
+        return self.files.exclude(useless=True)
 
     def get_files_count(self):
-        return self.files.exclude(useless=True).count()
+        return self.get_all_files_save().count()
 
     def is_finished(self):
         return self.get_score_count() >= self.get_files_count() * self.wanted_scores_per_image
@@ -70,7 +78,7 @@ class Project(models.Model):
 
         _path = get_project_evaluation_dir(str(self.pk))
         project = Project.objects.get(name=data.get("project").get("name"))
-        user_ids = project.scores.all().distinct("user").values_list("user__id", flat=True)
+        user_ids = project.get_all_scores_save().distinct("user").values_list("user__id", flat=True)
         user_id_dict = {}
 
         _file_template = datetime.datetime.now().strftime("%Y-%m-%d_-_%H%M%S")
@@ -114,7 +122,7 @@ class Project(models.Model):
         line = 1
 
         for image_file in project.files.filter(scores__gt=0):
-            queryset = image_file.scores.all().order_by("user__pk")
+            queryset = image_file.get_all_scores_save(self).order_by("user__pk")
 
             ws.write(line, 0, line)
             ws.write(line, 1, image_file.path)
@@ -292,9 +300,16 @@ class ImageFile(models.Model):
 
     date = models.DateTimeField(blank=True, null=True)
 
+    def get_scores_save(self, project: Project):
+        return self.scores.exclude(file__useless=True) \
+                   .filter(user__in=project.users.all())
+
     def calc_varianz(self):
         _params = ["s_eye", "s_nose", "s_cheek", "s_ear", "s_whiskers"]
-        n = self.scores.all().distinct("user").count()
+
+        scores = self.get_scores_save(self.project)
+
+        n = scores.distinct("user").count()
         if n >= 2:
 
             varianz = 0
@@ -306,7 +321,7 @@ class ImageFile(models.Model):
                 "s_whiskers": []
             }
 
-            for score in self.scores.all():
+            for score in scores:
                 for val in _params:
                     score_value = getattr(score, val)
                     if score_value is not None:
@@ -332,6 +347,10 @@ class ImageFile(models.Model):
         if os.getenv("DEBUG"):
             _id = f"[{self.pk}] "
         return f"{_id} File: {self.filename} for project {self.project.name}"
+
+    def get_rel_path(self):
+        index = self.path.find("media")
+        return self.path[index+6:]
 
 
 class ImageScore(models.Model):

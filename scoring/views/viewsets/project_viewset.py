@@ -118,11 +118,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
         project = Project.objects.get(pk=pk)
         project_serializer = ProjectSerializer(project)
 
-        files = project.files.exclude(useless=True)
+        files = project.get_all_files_save()
 
         score_count = {}
         for _file in files:
-            score_count.update({_file.id: {"filename": _file.filename, "scores": len(_file.scores.all())}})
+            value = len(_file.get_scores_save(_file.project))
+
+            if value in score_count:
+                element = score_count.get(value)
+            else:
+                element = []
+            element.append({"id": _file.id, "path": _file.get_rel_path(), "filename": _file.filename})
+
+            score_count.update({value: element})
 
         scores_per_user = {}
         for user in project.users.all():
