@@ -17,10 +17,6 @@ WORKDIR ${PROJECT_ROOT}
 RUN wget https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -O wait-for-it.sh
 RUN chmod +x wait-for-it.sh
 
-COPY ./docker/backend/ .
-COPY ./scoring ./scoring
-COPY ./server ./server
-
 VOLUME ${MEDIA_VOLUME}
 
 COPY ./manage.py ./manage.py
@@ -29,6 +25,10 @@ COPY ./docker/backend/django.env ./django.env
 
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
+
+COPY ./docker/backend/ .
+COPY ./scoring ./scoring
+COPY ./server ./server
 
 EXPOSE 6379
 EXPOSE 5432

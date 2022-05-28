@@ -51,7 +51,9 @@ class ViewSetCreateModel(object):
             .exclude(scores__user=user) \
             .annotate(scores_ratio=Count('scores'))
 
-        if len(base_request) == 0:
+        available_images = len(base_request)
+
+        if available_images == 0:
             return RequestSuccess({"files_left": 0})
 
         self_scored = ImageFile.objects.filter(project=pk, scores__user=user) \
@@ -63,6 +65,8 @@ class ViewSetCreateModel(object):
         images = base_request.filter(scores_ratio=scores_ratio)
 
         count = project.wanted_scores_per_user - self_scored
+        if count > available_images:
+            count = available_images
 
         # okaylog("scores_ratio", scores_ratio)
         # okaylog("project.scores.count", project.scores.count())
