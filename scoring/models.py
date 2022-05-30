@@ -145,8 +145,7 @@ class Project(models.Model):
             last_pos = 10 + (pos * 7)
             i = last_pos + 1
             for score in queryset:
-                if len(score.comment) > 0:
-                    ws.write(line, i, score.comment)
+                ws.write(line, i, score.comment)
                 i += 1
 
             # Write varianz
