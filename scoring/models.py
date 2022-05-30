@@ -11,7 +11,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir, get_path_backup
+from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir, get_path_backup, dlog
 
 from server.settings import BASE_DIR
 
@@ -50,6 +50,9 @@ class Project(models.Model):
     def get_all_files_save(self):
         return self.files.exclude(useless=True)
 
+    def get_all_useless_files(self):
+        return self.files.filter(useless=True)
+
     def get_files_count(self):
         return self.get_all_files_save().count()
 
@@ -79,6 +82,11 @@ class Project(models.Model):
         _path = get_project_evaluation_dir(str(self.pk))
         user_ids = self.get_all_scores_save().distinct("user").values_list("user__id", flat=True)
         user_id_dict = {}
+
+        _image_files = self.get_all_files_save()
+        dlog(f"Recalculate Varianz for {len(_image_files)} ImageFiles...")
+        for _file in _image_files:
+            _file.calc_varianz()
 
         _file_template = datetime.datetime.now().strftime("%Y-%m-%d_-_%H%M%S")
 
@@ -120,8 +128,12 @@ class Project(models.Model):
 
         line = 1
 
-        for image_file in self.files.filter(scores__gt=0):
+        for image_file in _image_files:
             queryset = image_file.get_scores_save(self).order_by("user__pk")
+            if len(queryset) == 0:
+                continue
+
+            dlog("Write Line", line, "=>", image_file)
 
             ws.write(line, 0, line)
             ws.write(line, 1, image_file.path)
@@ -133,7 +145,8 @@ class Project(models.Model):
             last_pos = 10 + (pos * 7)
             i = last_pos + 1
             for score in queryset:
-                ws.write(line, i, score.comment)
+                if len(score.comment) > 0:
+                    ws.write(line, i, score.comment)
                 i += 1
 
             # Write varianz
@@ -178,6 +191,14 @@ class Project(models.Model):
                     ws.write_formula(line,  9 + (pos * 7), f"=SUM({start_col}{line + 1}:{end_col}{line + 1})")
                     ws.write_formula(line, 10 + (pos * 7), f"=AVERAGE({start_col}{line + 1}:{end_col}{line + 1})")
 
+            line += 1
+
+        line += 2
+        for image_file in self.get_all_useless_files():
+            ws.write(line, 0, line)
+            ws.write(line, 1, image_file.path)
+            ws.write(line, 2, image_file.filename)
+            ws.write(line, 3, image_file.useless)
             line += 1
 
         writer.save()
