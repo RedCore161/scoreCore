@@ -50,7 +50,6 @@ services:
     volumes:
       - ${MEDIA_VOLUME}:/usr/src/app/media
       - /var/run/docker.sock:/var/run/docker.sock:rw
-
     networks:
       defaultnet:
         aliases:

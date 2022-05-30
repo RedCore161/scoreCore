@@ -16,7 +16,6 @@ RUN sed -i -r "s/BASE-URL-TEMPLATE/${HARD_IP}/g" ./.env.production
 RUN sed -i -r "s/URL-TEMPLATE-WITH-PORT/${HARD_IP}:${BACKEND_PORT}/g" ./.env.production
 
 RUN npm install
-#RUN npm audit fix
 RUN npm run build
 
 #CMD ["tail", "-f", "/dev/null"]

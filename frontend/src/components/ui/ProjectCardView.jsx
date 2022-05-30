@@ -23,6 +23,16 @@ const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, sco
     }
   }
 
+  function get_save_wanted_scores() {
+    return Math.min(wanted_scores_per_user, imagesTotal - uselessCount)
+  }
+
+  function get_own_percentage() {
+    return Math.min(((scoresOwn / get_save_wanted_scores()) * 100), 100).toFixed(2)
+  }
+
+  const save_wanted_scores = get_save_wanted_scores()
+
   return (
     <Col key={ id } md={ 4 } className={"pb-4"}>
       <div className={"project-Card bg-secondary m-1"} >
@@ -53,7 +63,7 @@ const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, sco
             </Row>
             <Row>
               <Col md={8} className={"project-Card-Item"}>Target Scores / Image:</Col>
-              <Col className={"project-Card-Content"}>{ wanted_scores_per_image }</Col>
+              <Col className={`project-Card-Content ${wanted_scores_per_user > save_wanted_scores && "text-warning"}`}>{ wanted_scores_per_image }</Col>
             </Row>
             <Row>
               <Col md={8} className={"project-Card-Item"}>Scores / Image:</Col>
@@ -74,10 +84,10 @@ const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, sco
             </Row>
           </Col>
           <Col className={"score-Info-Container"}>
-            { wanted_scores_per_user === scoresOwn ? (
+            { save_wanted_scores === scoresOwn ? (
               imagesTotal > 0 && <i className="bi bi-check-lg text-success huge-icon score-Info"/>
             ) : (
-              <span className={"score-Info"}>You finished:<br/> {Math.min(((scoresOwn / wanted_scores_per_user) * 100), 100).toFixed(2)}%</span>
+              <span className={"score-Info"}>You finished:<br/> { get_own_percentage() }%</span>
             )}
           </Col>
         </Row>

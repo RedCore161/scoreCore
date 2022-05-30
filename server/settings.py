@@ -18,7 +18,6 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = os.getenv("DEBUG") == "1"
 
-ADB_BASE = os.getenv("ADB_BASE")
 
 ALLOWED_HOSTS = [os.getenv("DJANGO_ALLOWED_HOSTS")]
 
@@ -60,19 +59,7 @@ Q_CLUSTER = {
     "retry": outtime + 300,
     "orm": "default",
     "has_replica": True,
-    # "redis": {
-    #     "host": os.getenv("REDIS_HOST"),
-    #     "port": 6379,
-    #     "db": 0,
-    #     "charset": "utf-8",
-    #     "errors": "strict",
-    # },
-    # "error_reporter": {
-    #     "rollbar": {
-    #         "access_token": "GET-A-KEY",
-    #         "environment": "Django-Q"
-    #     }
-    # }
+
 }
 
 # CACHES = {
@@ -221,10 +208,6 @@ EXPORT_DIR = os.path.join(MEDIA_ROOT, os.getenv("EXPORT_DIR", "export"))
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = {'location': BACKUP_DIR}
 DBBACKUP_HOSTNAME = HARD_IP
-
-SCREENSHOT_FILENAME = "current.png"
-
-PRINT_EMULATOR_COMMANDS = True
 
 
 # Security

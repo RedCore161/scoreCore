@@ -77,15 +77,14 @@ class Project(models.Model):
                 return f"{chr(init)}{chr(value)}"
 
         _path = get_project_evaluation_dir(str(self.pk))
-        project = Project.objects.get(name=data.get("project").get("name"))
-        user_ids = project.get_all_scores_save().distinct("user").values_list("user__id", flat=True)
+        user_ids = self.get_all_scores_save().distinct("user").values_list("user__id", flat=True)
         user_id_dict = {}
 
         _file_template = datetime.datetime.now().strftime("%Y-%m-%d_-_%H%M%S")
 
         df = pd.DataFrame()
 
-        project_name = project.name
+        project_name = self.name
         target = os.path.join(_path, f"{_file_template}.xlsx")
         writer = pd.ExcelWriter(target, engine='xlsxwriter')
         df.to_excel(writer, sheet_name=project_name)
@@ -121,8 +120,8 @@ class Project(models.Model):
 
         line = 1
 
-        for image_file in project.files.filter(scores__gt=0):
-            queryset = image_file.get_all_scores_save(self).order_by("user__pk")
+        for image_file in self.files.filter(scores__gt=0):
+            queryset = image_file.get_scores_save(self).order_by("user__pk")
 
             ws.write(line, 0, line)
             ws.write(line, 1, image_file.path)
@@ -366,6 +365,7 @@ class ImageScore(models.Model):
     s_whiskers = models.IntegerField(default=None, null=True, blank=True)
     
     date = models.DateTimeField(auto_created=True, null=True, blank=True)
+
 
     def __str__(self):
         _id = ""
