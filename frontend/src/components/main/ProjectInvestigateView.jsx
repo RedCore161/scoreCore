@@ -9,7 +9,7 @@ import axiosConfig from "../../axiosConfig";
 import Tooltip from "@material-ui/core/Tooltip";
 
 
-const ScoreFileLink = ({filename, path, users}) => {
+const ScoreFileLink = ({id, filename, path, users}) => {
   function getImagePath() {
     return [process.env.REACT_APP_BACKEND_URL, "media", path, filename].join("/");
   }

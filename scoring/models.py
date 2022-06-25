@@ -101,7 +101,7 @@ class Project(models.Model):
         # workbook = writer.book
         # format_OK = workbook.add_format({'bg_color': '#00a077'})
 
-        header = ["ID", "Path", "Filename", "Useless"]
+        header = ["ID", "Path", "Filename", "Useless", "Score-Count"]
         i = 0
         for u_id in user_ids:
             user_id_dict.update({u_id: i})
@@ -139,14 +139,15 @@ class Project(models.Model):
             ws.write(line, 1, image_file.path)
             ws.write(line, 2, image_file.filename)
             ws.write(line, 3, image_file.useless)
+            ws.write(line, 4, image_file.scores.count())
 
             # Write user-comments
             pos = user_id_dict.get(max(user_id_dict, key=user_id_dict.get))
-            last_pos = 10 + (pos * 7)
+            last_pos = 11 + (pos * 7)
             i = last_pos + 1
             for score in queryset:
-                ws.write(line, i, score.comment)
-                i += 1
+                ws.write(line, i + user_id_dict.get(score.user_id), score.comment)
+            i += pos + 1
 
             # Write varianz
             ws.write(line, i, image_file.varianz_eye)
@@ -174,21 +175,21 @@ class Project(models.Model):
             for score in queryset:
                 pos = user_id_dict.get(score.user_id)
 
-                start_col = get_cell(65 + 4 + (pos * 7))
-                ws.write(line, 4 + (pos * 7), score.s_eye)
-                ws.write(line, 5 + (pos * 7), score.s_nose)
-                ws.write(line, 6 + (pos * 7), score.s_cheek)
-                ws.write(line, 7 + (pos * 7), score.s_ear)
-                ws.write(line, 8 + (pos * 7), score.s_whiskers)
-                end_col = get_cell(65 + 8 + (pos * 7))
+                start_col = get_cell(65 + 5 + (pos * 7))
+                ws.write(line, 5 + (pos * 7), score.s_eye)
+                ws.write(line, 6 + (pos * 7), score.s_nose)
+                ws.write(line, 7 + (pos * 7), score.s_cheek)
+                ws.write(line, 8 + (pos * 7), score.s_ear)
+                ws.write(line, 9 + (pos * 7), score.s_whiskers)
+                end_col = get_cell(65 + 9 + (pos * 7))
 
                 if score.s_eye is not None or \
                    score.s_nose is not None or \
                    score.s_cheek is not None or \
                    score.s_ear is not None or \
                    score.s_whiskers is not None:
-                    ws.write_formula(line,  9 + (pos * 7), f"=SUM({start_col}{line + 1}:{end_col}{line + 1})")
-                    ws.write_formula(line, 10 + (pos * 7), f"=AVERAGE({start_col}{line + 1}:{end_col}{line + 1})")
+                    ws.write_formula(line, 10 + (pos * 7), f"=SUM({start_col}{line + 1}:{end_col}{line + 1})")
+                    ws.write_formula(line, 11 + (pos * 7), f"=AVERAGE({start_col}{line + 1}:{end_col}{line + 1})")
 
             line += 1
 
