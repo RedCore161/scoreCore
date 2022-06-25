@@ -9,14 +9,14 @@ import axiosConfig from "../../axiosConfig";
 import Tooltip from "@material-ui/core/Tooltip";
 
 
-const ScoreFileLink = ({id, filename, path}) => {
+const ScoreFileLink = ({filename, path, users}) => {
   function getImagePath() {
     return [process.env.REACT_APP_BACKEND_URL, "media", path, filename].join("/");
   }
 
   return (
-    <div key={ `file-${id}` }>
-      <Link color={"initial"} target={"_blank"} href={getImagePath()}>{ filename }</Link><br/>
+    <div>
+      <Link color={"initial"} target={"_blank"} href={getImagePath()}>{ filename }</Link> ({users.join(", ")})<br/>
     </div>
   )
 }
@@ -71,13 +71,13 @@ const ProjectInvestigateView = () => {
 
           <Row className={ "py-3" }>
             <Col md={ 2 }>Scores foreach ImageFiles</Col>
-            <Col>{ "scoreCount" in data && Object.keys(data.scoreCount).map(function (count, index) {
-              let objects = data.scoreCount[count];
-              let _elements = objects.map(obj => <ScoreFileLink {...obj} />);
+            <Col>{ "scoresCount" in data && Object.keys(data.scoresCount).map(function (count, index) {
+              let objects = data.scoresCount[count];
+              let _elements = objects.map(obj => <ScoreFileLink key={ `file-${obj.id}` } {...obj} />);
               return <div key={ `block-${index}` }>
                       <div style={ { fontWeight: "bold" } }>
                         <Tooltip title={"Click to see Files"} placement={"right"}>
-                          <Button className={"mt-4 mb-1"} ak onClick={() => changeCollapse(count)}>
+                          <Button className={"mt-4 mb-1"} onClick={() => changeCollapse(count)}>
                             Images with { count === "1" ? "1 score" : `${count} scores` } ({objects.length})
                           </Button>
                         </Tooltip>
@@ -94,7 +94,7 @@ const ProjectInvestigateView = () => {
           <Row className={ "py-3" }>
             <Col md={ 2 }>Scores per User</Col>
             <Col>{ "scoresPerUser" in data && Object.keys(data.scoresPerUser).map(function (key, index) {
-              return <div key={ index }>{ key }: { data.scoresPerUser[key] }<br/></div>;
+              return <div key={ `scoresPerUser-${index}` }>{ key }: { data.scoresPerUser[key] }<br/></div>;
             }) }
             </Col>
           </Row>

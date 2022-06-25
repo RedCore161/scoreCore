@@ -122,25 +122,30 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         files = project.get_all_files_save()
 
-        score_count = {}
+        scores_count = {}
         for _file in files:
             value = len(_file.get_scores_save(_file.project))
 
-            if value in score_count:
-                element = score_count.get(value)
+            if value in scores_count:
+                element = scores_count.get(value)
             else:
                 element = []
-            element.append({"id": _file.id, "path": _file.get_rel_path(), "filename": _file.filename})
 
-            score_count.update({value: element})
+            element.append({"id": _file.id,
+                            "path": _file.get_rel_path(),
+                            "filename": _file.filename,
+                            "users": _file.get_scored_users(),
+                            })
+
+            scores_count.update({value: element})
 
         scores_per_user = {}
         for user in project.users.all():
             scores_per_user.update({user.username: ImageScore.objects.filter(project=pk, user=user.id)
-                                                                     .exclude(file__useless=True).count()})
+                                   .exclude(file__useless=True).count()})
 
         return RequestSuccess({"project": project_serializer.data,
                                "imageFilesCount": files.count(),
-                               "scoreCount": score_count,
+                               "scoresCount": scores_count,
                                "scoresPerUser": scores_per_user,
                                })

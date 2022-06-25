@@ -361,15 +361,18 @@ class ImageFile(models.Model):
             return self.varianz
         return 0
 
+    def get_rel_path(self):
+        index = self.path.find("media")
+        return self.path[index+6:]
+
+    def get_scored_users(self):
+        return list(self.scores.order_by("user__username").values_list("user__username", flat=True))
+
     def __str__(self):
         _id = ""
         if os.getenv("DEBUG"):
             _id = f"[{self.pk}] "
         return f"{_id} File: {self.filename} for project {self.project.name}"
-
-    def get_rel_path(self):
-        index = self.path.find("media")
-        return self.path[index+6:]
 
 
 class ImageScore(models.Model):

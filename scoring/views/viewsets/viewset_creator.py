@@ -4,6 +4,7 @@ from django.db.models import Count
 from django.utils import timezone
 from rest_framework.response import Response
 
+from scoring.helper import okaylog, dlog
 from scoring.models import ImageFile, ImageScore, Project
 from scoring.serializers import ImageFileSerializer
 from server.views import RequestSuccess
@@ -76,9 +77,14 @@ class ViewSetCreateModel(object):
             return RequestSuccess({"files_left": count, "scores_ratio": scores_ratio})
 
         if len(images):
-            serializer = ImageFileSerializer(images, many=True)
             rnd = random.randint(0, len(images) - 1)
-            return RequestSuccess({"files_left": count, "image": serializer.data[rnd],
+            serializer = ImageFileSerializer(images[rnd])
+            # dlog("IMAGE", serializer.data)
+            # dlog("COUNT", len(images))
+            #
+            # for image in images:
+            #     print("=>", len(image.scores.all()), image)
+            return RequestSuccess({"files_left": count, "image": serializer.data,
                                    "scores_ratio": scores_ratio, "random": rnd})
 
         return RequestSuccess({"files_left": 0, "scores_ratio": scores_ratio})
