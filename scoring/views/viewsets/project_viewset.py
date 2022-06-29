@@ -52,7 +52,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if page is not None:
             serializer = ImageFileSerializer(page, many=True)
             response = self.get_paginated_response(serializer.data)
-            response.update_data({"project": project.name})
+            response.update_data({"project": project.name,
+                                  "usersCount": len(project.users.all()),
+                                  "scoresCount": project.get_score_count()})
             return response
 
         return RequestFailed()
