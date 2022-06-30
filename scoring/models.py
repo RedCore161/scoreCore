@@ -150,12 +150,12 @@ class Project(models.Model):
                 i += 1
 
             # Write varianz
-            ws.write(line, i + 1, image_file.varianz_eye)
-            ws.write(line, i + 2, image_file.varianz_nose)
-            ws.write(line, i + 3, image_file.varianz_cheek)
-            ws.write(line, i + 4, image_file.varianz_ear)
-            ws.write(line, i + 5, image_file.varianz_whiskers)
-            ws.write(line, i + 6, image_file.varianz)
+            ws.write(line, i, image_file.varianz_eye)
+            ws.write(line, i + 1, image_file.varianz_nose)
+            ws.write(line, i + 2, image_file.varianz_cheek)
+            ws.write(line, i + 3, image_file.varianz_ear)
+            ws.write(line, i + 4, image_file.varianz_whiskers)
+            ws.write(line, i + 5, image_file.varianz)
 
             # TODO format later
             #

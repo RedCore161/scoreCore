@@ -1,11 +1,9 @@
-import math
 import random
 
 from django.db.models import Count
 from django.utils import timezone
 from rest_framework.response import Response
 
-from scoring.helper import okaylog
 from scoring.models import ImageFile, ImageScore, Project
 from scoring.serializers import ImageFileSerializer
 from server.views import RequestSuccess
@@ -33,7 +31,7 @@ class ViewSetCreateModel(object):
                                                           s_whiskers=replace_none(data[4]))
 
         if created:
-            score.comment = comment,
+            score.comment = comment
             score.date = timezone.now()
             score.save()
 
