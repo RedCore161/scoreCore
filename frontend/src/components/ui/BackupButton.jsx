@@ -12,7 +12,7 @@ const BackupButton = ({ id, name, callbackRestore, callbackDelete }) => {
           <Button variant={ "outline-danger" } onClick={ () => callbackDelete(id) }>Delete</Button>
         </Col>
         <Col>
-          <div className={ "backupbutton-text" }>{ name }</div>
+          <a className={ "backupbutton-text" } href={`${process.env.REACT_APP_BACKEND_URL}/media/backup/${name}`}>{ name }</a>
         </Col>
     </Row>
   );

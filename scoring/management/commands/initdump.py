@@ -50,7 +50,7 @@ class Command(BaseCommand):
                 project.create_script()
             if projects[name].get("check", False):
                 project.check_create_infofiles()
-            result = project.read_images()
+            result = project.read_images(False)
 
             if created:
                 print("Created Project!", result, project)

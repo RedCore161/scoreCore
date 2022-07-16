@@ -3,6 +3,7 @@ from rest_framework.decorators import permission_classes, action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
+from scoring.helper import build_abs_path
 from scoring.models import Project, ImageFile, ImageScore
 from scoring.serializers import ProjectSerializer, ImageFileSerializer, ImageScoreSerializer
 from scoring.views.viewsets.base_viewset import StandardResultsSetPagination
@@ -149,3 +150,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
                                "scoresCount": scores_count,
                                "scoresPerUser": scores_per_user,
                                })
+
+
+
+    @action(detail=True, url_path="fix/useless", methods=["GET"])
+    @permission_classes([IsAdminUser])
+    def fix_useless_images(self, request, pk):
+        project = Project.objects.get(pk=pk)
+        images = ImageFile.objects.filter(project=pk, useless=True, hidden=False)
+
+        for image in images:
+            index = image.path.index("media") + 6
+            _path = image.path[index:]
+            project.parse_info_file(build_abs_path([_path]))
+        return RequestSuccess()

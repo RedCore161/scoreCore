@@ -10,8 +10,12 @@ from time import strftime, gmtime
 
 from colorama import Fore, Style
 from colorama.ansi import AnsiFore
+from loguru import logger
 
-from server.settings import MEDIA_ROOT, BACKUP_DIR, SETUP_DIR
+from server.settings import MEDIA_ROOT, BACKUP_DIR, SETUP_DIR, LOGS_DIR
+
+
+INFO_FILE_NAME = "infofile.txt"
 
 # ######################################################################## #
 # #####  H E L P E R - F U N C T I O N S ################################# #
@@ -57,7 +61,12 @@ def breaklog(show_time=False):
     ilog("=====================================================\n\n", tag="#")
 
 
+def set_logging_file(_log_filename="default.log"):
+    logger.add(os.path.join(get_path_logs(), _log_filename), rotation="100 MB")
+
+
 # ##############################################################
+
 
 def save_check_dir(*dirs):
     for _d in dirs:
@@ -76,6 +85,10 @@ def get_path_setup(*args) -> str:
 
 def get_path_backup(*args) -> str:
     return os.path.join(BACKUP_DIR, *args)
+
+
+def get_path_logs(*args) -> str:
+    return os.path.join(LOGS_DIR, *args)
 
 
 def get_project_evaluation_dir(project_id) -> str:

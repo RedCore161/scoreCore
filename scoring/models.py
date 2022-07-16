@@ -1,7 +1,8 @@
 import datetime
 import json
 import os
-import re
+
+import filetype
 import pandas as pd
 import statistics
 
@@ -11,10 +12,11 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir, get_path_backup, dlog
+from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir, get_path_backup, dlog, \
+    set_logging_file, INFO_FILE_NAME
 
 from server.settings import BASE_DIR
-
+from loguru import logger
 
 
 class Project(models.Model):
@@ -216,7 +218,7 @@ class Project(models.Model):
         _path = self.get_images_dir()
         for root, _, files in os.walk(_path):
             if len(files):
-                if not ("infofile.txt" in files):
+                if not (INFO_FILE_NAME in files):
                     self.create_infofile(root, files)
 
     @staticmethod
@@ -224,76 +226,95 @@ class Project(models.Model):
         if len(_files) == 0:
             return False
 
-        with open(os.path.join(_path, "infofile.txt"), "w") as _file:
-            _file.write("\n")
-            _file.write("\n")
-            _file.write("\n")
+        with open(os.path.join(_path, INFO_FILE_NAME), "w") as _file:
+            _file.write("This is a helper-file which lists all the available images. Two were picked. If one of these is marked 'useless' the next will be chosen!\n")
+            _file.write("Staring below ###...\n")
+            _file.write("####################\n")
             for image in _files:
-                if image == "infofile.txt":
+                if image == INFO_FILE_NAME:
                     continue
                 _file.write(f"{image}\n")
 
         return True
 
     def create_script(self):
+        set_logging_file()
         _path = self.get_images_dir()
         for root, _, files in os.walk(_path):
-            if len(files):
-                print("CREATE SCRIPT", root, files)
-                group_trigger = False
-                dir_count = 0
-                for _file in files:
-                    group_trigger = not group_trigger
-                    if group_trigger:
-                        dir_count += 1
-                        save_check_dir(os.path.join(root, str(dir_count)))
+            group_trigger = False
+            dir_count = 0
+            logger.info(f"Create Script for {root} => {files}")
 
-                    os.rename(os.path.join(root, _file),
-                              os.path.join(root, str(dir_count), _file))
+            for _file in files:
+                group_trigger = not group_trigger
+                if group_trigger:
+                    dir_count += 1
+                    save_check_dir(os.path.join(root, str(dir_count)))
 
-    def read_images(self):
+                os.rename(os.path.join(root, _file),
+                          os.path.join(root, str(dir_count), _file))
+
+    def read_images(self, enabled_log=True):
+        set_logging_file()
+        files, folders = 0, 0
         _path = self.get_images_dir()
+
+        for _, dirs, filenames in os.walk(_path):
+            files += len(filenames)
+            folders += len(dirs)
+        dlog(f"Project has: {files} Files in {folders} Folders")
+
+        if folders == 0:
+            self.create_script()
+            self.check_create_infofiles()
+
         for root, _, files in os.walk(_path):
             if len(files):
-                # print("READ IMAGES", root, files)
+                if enabled_log:
+                    logger.info(f"Read Images for '{root}' => {files}")
                 for _file in files:
-                    if _file[-4:] == ".txt":  # TODO check file-type
-                        self.parse_info_file(os.path.join(BASE_DIR, root))
+                    if _file.endswith(".txt"):
+                        self.parse_info_file(os.path.join(BASE_DIR, root), enabled_log)
 
         return True
 
-    def parse_info_file(self, _path, get_or_create_amount=2):
+    def parse_info_file(self, _path, enabled_log=True, get_or_create_amount=2):
+        set_logging_file()
+        _path_infofile = os.path.join(_path, INFO_FILE_NAME)
 
-        regex = re.compile("^\d{5}\.png")
-        _path_infofile = os.path.join(_path, "infofile.txt")
         if os.path.exists(_path_infofile):
             with open(_path_infofile, 'r') as f:
                 lines = f.readlines()
                 images = lines[3:]
 
                 for img in images:
-
-                    if not regex.match(img):
+                    _file = img.rstrip("\n")
+                    if len(_file) == 0:
                         break
+
+                    if not filetype.is_image(os.path.join(_path, _file)):
+                        continue
 
                     if get_or_create_amount == 0:
                         return True
-
-                    _file = img.rstrip("\n")
 
                     image_file, created = ImageFile.objects.get_or_create(project=self,
                                                                           filename=_file,
                                                                           path=_path)
 
+                    print("=>", _file, created, "| Useless: ", image_file.useless)
+
                     if created:
-                        print("Created IMAGEFILE", _file, get_or_create_amount, _path)
+                        if enabled_log:
+                            logger.info(f"Created ImageFile for {_path}{os.sep}{_file} #{get_or_create_amount}")
                         image_file.date = timezone.now()
                         image_file.save()
                         get_or_create_amount -= 1
 
                     else:
-                        if not image_file.useless and not image_file.hidden:
-                            print("Existing IMAGEFILE", _file, get_or_create_amount, _path)
+                        if not image_file.useless:
+                            if enabled_log:
+                                logger.info(f"Existing ImageFile for {_path}{os.sep}{_file} #{get_or_create_amount}")
                             get_or_create_amount -= 1
         return False
 

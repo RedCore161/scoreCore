@@ -1,8 +1,11 @@
+import os
+
+from loguru import logger
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
-from scoring.helper import build_abs_path
+from scoring.helper import build_abs_path, set_logging_file
 from scoring.models import Project, ImageFile, ImageScore
 from scoring.serializers import ImageScoreSerializer
 from scoring.views.viewsets.base_viewset import StandardResultsSetPagination
@@ -45,13 +48,16 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
         _project = Project.objects.get(pk=project)
 
         if not _project.is_finished():
-
+            set_logging_file()
             image_file_old = ImageFile.objects.get(pk=pk)
             image_file_old.useless = True
             image_file_old.save()
+            logger.info(f"Marked useless ImageFile: {os.path.join(image_file_old.path, image_file_old.filename)}")
 
             # Load new Imagefile
-            _project.parse_info_file(build_abs_path([image_file_old.path]))
+            index = image_file_old.path.index("media") + 6
+            _path = image_file_old.path[index:]
+            _project.parse_info_file(build_abs_path([_path]))
 
             return ProjectViewSet().get_next_image(request, project)
         return RequestFailed({"is_finished": True})

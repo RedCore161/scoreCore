@@ -3,7 +3,7 @@ ARG DB_HOST
 ARG DB_PORT
 ARG MEDIA_VOLUME
 
-FROM solutiance/django-opencv:1.0.0
+FROM solutiance/django-opencv:1.0.1
 RUN useradd -rm -d /home/scoring -s /bin/sh -g root -G sudo -u 1001 scoring
 
 ARG BACKEND_PORT
