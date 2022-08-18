@@ -91,7 +91,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_total_images_count(obj: Project):
-        return obj.files.count()
+        return obj.get_all_files_save().count()
 
     @staticmethod
     def get_useless_count(obj: Project):
