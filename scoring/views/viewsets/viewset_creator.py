@@ -27,10 +27,10 @@ class ViewSetCreateModel(object):
                                                           file=image_file)
 
         if created:
-            score.s_eye = replace_none(data[0]),
-            score.s_nose = replace_none(data[1]),
-            score.s_cheek = replace_none(data[2]),
-            score.s_ear = replace_none(data[3]),
+            score.s_eye = replace_none(data[0])
+            score.s_nose = replace_none(data[1])
+            score.s_cheek = replace_none(data[2])
+            score.s_ear = replace_none(data[3])
             score.s_whiskers = replace_none(data[4])
             score.comment = comment
             score.date = timezone.now()
@@ -69,11 +69,11 @@ class ViewSetCreateModel(object):
         if count > available_images:
             count = available_images
 
-        okaylog("scores_ratio", scores_ratio)
-        okaylog("project.scores.count", project.scores.count())
-        okaylog("images", len(images))
-        okaylog("self_scored", self_scored)
-        okaylog("project.wanted_scores_per_user", project.wanted_scores_per_user, "\n")
+        # okaylog("scores_ratio", scores_ratio)
+        # okaylog("project.scores.count", project.scores.count())
+        # okaylog("images", len(images))
+        # okaylog("self_scored", self_scored)
+        # okaylog("project.wanted_scores_per_user", project.wanted_scores_per_user, "\n")
 
         if count == 0:
             return RequestSuccess({"files_left": count, "scores_ratio": scores_ratio})
@@ -81,11 +81,11 @@ class ViewSetCreateModel(object):
         if len(images):
             rnd = random.randint(0, len(images) - 1)
             serializer = ImageFileSerializer(images[rnd])
-            dlog("IMAGE", serializer.data)
-            dlog("COUNT", len(images))
-
-            for image in images:
-                print("=>", len(image.scores.all()), image)
+            # dlog("IMAGE", serializer.data)
+            # dlog("COUNT", len(images))
+            #
+            # for image in images:
+            #     print("=>", len(image.scores.all()), image)
             return RequestSuccess({"files_left": count, "image": serializer.data,
                                    "scores_ratio": scores_ratio, "random": rnd})
 
