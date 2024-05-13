@@ -1,4 +1,4 @@
-import { Col, FormCheck, Row } from "react-bootstrap";
+import { FormCheck } from "react-bootstrap";
 import React from "react";
 import "../ui/css/ScoreGroup.css"
 

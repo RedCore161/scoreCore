@@ -13,8 +13,10 @@ export async function fetchEvaluations() {
   return result.data
 }
 
-export async function fetchImage(id) {
-  const result = await axiosConfig.holder.get(`/api/project/${ id }/image/`);
+export async function fetchImage(id, params) {
+  const url = params ? `/api/project/${ id }/image/?${ params }` :
+                     `/api/project/${ id }/image/`
+  const result = await axiosConfig.holder.get(url);
   console.log("Found Image:", result.data);
   return result.data
 }

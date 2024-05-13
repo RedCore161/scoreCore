@@ -52,7 +52,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     @staticmethod
-    def get_clazz_name(obj: Project):
+    def get_clazz_name(_):
         return "project"
 
     @staticmethod
@@ -93,7 +93,7 @@ class ImageScoreSerializer(serializers.ModelSerializer):
         exclude = ("date", "project", "file")
 
     @staticmethod
-    def get_clazz_name(obj: ImageScore):
+    def get_clazz_name(_):
         return "imagescore"
 
     @staticmethod
@@ -115,14 +115,13 @@ class ImageFileSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     @staticmethod
-    def get_clazz_name(obj: ImageFile):
+    def get_clazz_name(_):
         return "imagefile"
 
     @staticmethod
     def get_rel_path(obj: ImageFile):
         # remove '../media/'
         return obj.get_rel_path()
-
 
 
 class BackupSerializer(serializers.ModelSerializer):
@@ -133,5 +132,5 @@ class BackupSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     @staticmethod
-    def get_clazz_name(obj: Backup):
+    def get_clazz_name(_):
         return "backup"

@@ -18,7 +18,6 @@ export const reducerScore = (state, action) => {
   switch (action.type) {
 
     case actionTypes.SET_SCORE:
-
       switch (action.payload.action) {
         case "eye": return { ...state, eye: action.payload.value, active: "nose" };
         case "nose": return { ...state, nose: action.payload.value, active: "cheek" };

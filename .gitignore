@@ -18,4 +18,3 @@ docker-compose.yml
 
 django.env
 dev.py
-

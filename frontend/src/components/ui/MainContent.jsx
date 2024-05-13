@@ -69,7 +69,6 @@ const MainContent = () => {
           </RequireAuth> }/>
           <Route path="/docker" element={ <WebSocketProvider url={ "/ws/docker/status" }><DockerStatusView /></WebSocketProvider> }/>
 
-
           {/*Default-Route*/ }
           <Route path="/*" element={ <Navigate exact from="/" to="/project/overview/"/> }/>
 

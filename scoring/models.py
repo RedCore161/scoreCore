@@ -1,20 +1,16 @@
 import datetime
 import json
 import os
-
 import filetype
 import pandas as pd
 import statistics
 
 from django.core.validators import RegexValidator
-
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-
 from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir, get_path_backup, dlog, \
     set_logging_file, INFO_FILE_NAME
-
 from server.settings import BASE_DIR
 from loguru import logger
 
@@ -23,8 +19,7 @@ class Project(models.Model):
     name = models.CharField(max_length=100, unique=True, null=False)
     image_dir = models.CharField(max_length=500,
                                  validators=[RegexValidator('^(?!setup$|backup$|evaluations$).*$')],
-                                 null=True,
-                                 blank=True)
+                                 null=True, blank=True)
     users = models.ManyToManyField(User)
 
     wanted_scores_per_user = models.IntegerField(default=100, null=True, blank=True)
@@ -39,11 +34,11 @@ class Project(models.Model):
 
         with open(os.path.join(_path, f"{_file_template}.json"), "r") as _file:
             data = json.load(_file)
-            print("DATA", data.get("imagefiles"))
+            dlog("DATA", data.get("imagefiles"))
 
     def get_all_scores_save(self):
         return self.scores.exclude(file__useless=True) \
-            .filter(user__in=self.users.all())
+                          .filter(user__in=self.users.all(), completed=True)
 
     def get_score_count(self):
         return self.get_all_scores_save().count()
@@ -342,8 +337,8 @@ class ImageFile(models.Model):
     date = models.DateTimeField(blank=True, null=True)
 
     def get_scores_save(self, project: Project):
-        return self.scores.exclude(file__useless=True)\
-                          .filter(user__in=project.users.all())
+        return self.scores.exclude(file__useless=True) \
+            .filter(user__in=project.users.all())
 
     def calc_varianz(self):
         _params = ["s_eye", "s_nose", "s_cheek", "s_ear", "s_whiskers"]
@@ -399,8 +394,8 @@ class ImageFile(models.Model):
 
 class ImageScore(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    file = models.ForeignKey(ImageFile, related_name='scores', on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, related_name='scores', on_delete=models.CASCADE)
+    file = models.ForeignKey(ImageFile, related_name="scores", on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, related_name="scores", on_delete=models.CASCADE)
     comment = models.CharField(max_length=255, null=True, default="", blank=True)
 
     s_eye = models.IntegerField(default=None, null=True, blank=True)
@@ -409,13 +404,31 @@ class ImageScore(models.Model):
     s_ear = models.IntegerField(default=None, null=True, blank=True)
     s_whiskers = models.IntegerField(default=None, null=True, blank=True)
 
+    is_completed = models.BooleanField(default=False)
+
     date = models.DateTimeField(auto_created=True, null=True, blank=True)
+
+    def check_completed(self):
+        if self.s_eye is not None and \
+               self.s_nose is not None and \
+               self.s_cheek is not None and \
+               self.s_ear is not None and \
+               self.s_whiskers is not None:
+            self.is_completed = True
+            self.save()
 
     def __str__(self):
         _id = ""
         if os.getenv("DEBUG"):
             _id = f"[{self.pk}] "
-        return f"{_id} Score: {self.s_eye}{self.s_nose}{self.s_cheek}{self.s_ear}{self.s_whiskers} for '{self.file.filename}' by {self.user.username}"
+
+        def readable(_field):
+            return str(_field) if _field is not None else "?"
+
+        scores = readable(self.s_eye) + readable(self.s_nose) + readable(self.s_cheek) + \
+                 readable(self.s_ear) + readable(self.s_whiskers)
+
+        return f"{_id} Score: {scores} for '{self.file.filename}' by {self.user.username}"
 
 
 class Backup(models.Model):

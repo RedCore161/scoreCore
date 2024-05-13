@@ -12,6 +12,7 @@ import ScoreGroup from "../ui/ScoreGroup";
 import * as actionTypes from "../reducer/reducerTypes";
 import axiosConfig from "../../axiosConfig";
 import { useAuthHeader } from "react-auth-kit";
+import { useSearchParams } from "react-router-dom";
 
 const ScoreView = () => {
 
@@ -21,6 +22,8 @@ const ScoreView = () => {
   const [uilock, setUILock] = useState(false);
   const [updateUi, setUpdateUi] = useState(false);
   const [state, dispatch] = useReducer(reducerScore, defaultStateScore);
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const { enqueueSnackbar } = useSnackbar();
   const { width, height } = useWindowSize();
   const authHeader = useAuthHeader();
@@ -28,13 +31,12 @@ const ScoreView = () => {
   const actions = ["eye", "nose", "cheek", "ear", "whiskers"];
 
   useLayoutEffect(() => {
-    console.log("fetchData");
+    console.log("fetchData", searchParams);
     axiosConfig.updateToken(authHeader());
-    fetchImage(id).then((data) => {
+    fetchImage(id, searchParams).then((data) => {
       setImages(data);
       setLoadingDone(true);
     });
-
   }, []);
 
 
@@ -52,7 +54,7 @@ const ScoreView = () => {
     axiosConfig.updateToken(authHeader());
     await axiosConfig.holder.post(`/api/imagescore/${ image.id }/confirm/`, {
       ...state,
-      'project': id,
+      "project": id,
     }).then((response) => {
       setUILock(false);
       if (response.data) {
@@ -145,6 +147,7 @@ const ScoreView = () => {
                 <img src={ getImagePath() } alt="Score-Image"/>
               </Col>
             </Row>
+
             <Row>
               <Col md={ 5 } className={ "pt-3" }>
                 <Form.Group controlId="formComment">
@@ -155,39 +158,49 @@ const ScoreView = () => {
                 </Form.Group>
               </Col>
             </Row>
-            <Row className={ "py-4" }>
 
+            <Row className={ "py-4" }>
               <Col md={ 5 }>
                 <ButtonGroup size="lg">
                   <Button variant={ state.active === actions[0] ? "info" : "primary" }
-                          onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[0] }) }>Eyes
-                    ({ state.eye || "?" })</Button>
+                          onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[0] }) }>
+                    Eyes ({ state.eye || "?" })
+                  </Button>
                   <Button variant={ state.active === actions[1] ? "info" : "primary" }
-                          onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[1] }) }>Nose
-                    ({ state.nose || "?" })</Button>
+                          onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[1] }) }>
+                    Nose ({ state.nose || "?" })
+                  </Button>
                   <Button variant={ state.active === actions[2] ? "info" : "primary" }
-                          onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[2] }) }>Cheeks
-                    ({ state.cheek || "?" })</Button>
+                          onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[2] }) }>
+                    Cheeks ({ state.cheek || "?" })
+                  </Button>
                   <Button variant={ state.active === actions[3] ? "info" : "primary" }
-                          onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[3] }) }>Ears
-                    ({ state.ear || "?" })</Button>
+                          onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[3] }) }>
+                    Ears ({ state.ear || "?" })
+                  </Button>
                   <Button variant={ state.active === actions[4] ? "info" : "primary" }
-                          onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[4] }) }>Whiskers
-                    ({ state.whiskers || "?" })</Button>
+                          onClick={ () => dispatch({ type: actionTypes.SET_ACTIVE, payload: actions[4] }) }>
+                    Whiskers ({ state.whiskers || "?" })
+                  </Button>
                 </ButtonGroup>
               </Col>
             </Row>
+
             <Row md={ 7 }>
               <Col>
                 <ScoreGroup callback={ selectCallback } action={ state.active }/>
               </Col>
             </Row>
+
             <Row>
               <Col>
                 <Button size="lg" variant={ "success" } onClick={ () => confirmScore() }
-                        disabled={ ( state.eye + state.nose + state.cheek + state.ear + state.whiskers ).length !== 5 }>Confirm</Button>
-                <Button className={ "ms-2" } size="lg" variant={ "danger" } onClick={ () => markAsUseless() }>Mark as
-                  Useless</Button>
+                        disabled={ ( state.eye + state.nose + state.cheek + state.ear + state.whiskers ).length === 0 }>
+                  Confirm
+                </Button>
+                <Button className={ "ms-2" } size="lg" variant={ "danger" } onClick={ () => markAsUseless() }>
+                  Mark as Useless
+                </Button>
               </Col>
             </Row>
 
@@ -195,7 +208,6 @@ const ScoreView = () => {
         )
       ) : <Row><LoadingIcon/></Row> }
     </>
-
   );
 };
 
