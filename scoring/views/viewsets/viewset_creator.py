@@ -46,20 +46,20 @@ class ViewSetCreateModel(object):
     def get_next_image(pk, user, file=None) -> dict:
         project = Project.objects.get(pk=pk)
 
-        base_request = ImageFile.objects.filter(project=pk) \
-            .exclude(hidden=True) \
-            .exclude(useless=True) \
-            .exclude(scores__user=user) \
-            .annotate(scores_ratio=Count("scores"))
+        base_request = ImageFile.objects.filter(project=pk)\
+                                        .exclude(hidden=True)\
+                                        .exclude(useless=True)\
+                                        .exclude(scores__user=user)\
+                                        .annotate(scores_ratio=Count("scores"))
 
         available_images = len(base_request)
 
         if available_images == 0:
             return {"files_left": 0}
 
-        self_scored = ImageFile.objects.filter(project=pk, scores__user=user) \
-            .exclude(hidden=True) \
-            .exclude(useless=True).count()
+        self_scored = ImageFile.objects.filter(project=pk, scores__user=user)\
+                                       .exclude(hidden=True)\
+                                       .exclude(useless=True).count()
 
         scores_ratio = base_request.order_by("scores_ratio")[0].scores_ratio
 

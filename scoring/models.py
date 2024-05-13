@@ -38,7 +38,7 @@ class Project(models.Model):
 
     def get_all_scores_save(self):
         return self.scores.exclude(file__useless=True) \
-                          .filter(user__in=self.users.all(), completed=True)
+                          .filter(user__in=self.users.all(), is_completed=True)
 
     def get_score_count(self):
         return self.get_all_scores_save().count()
