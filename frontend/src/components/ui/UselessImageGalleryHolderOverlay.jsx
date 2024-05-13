@@ -5,13 +5,16 @@ import { useSnackbar } from "notistack";
 
 import axiosConfig from "../../axiosConfig";
 import "./css/ImageGalleryHolder.css"
+import { useAuthHeader } from "react-auth-kit";
 
 
 const UselessImageGalleryHolderOverlay = ({ imageId, reloadCallback }) => {
 
   const { enqueueSnackbar } = useSnackbar();
+  const authHeader = useAuthHeader();
 
   async function removeUseless(imageId) {
+    axiosConfig.updateToken(authHeader());
     await axiosConfig.holder.post(`/api/imagescore/${ imageId }/restore/`,)
       .then((response) => {
         if (response.data) {
@@ -32,6 +35,7 @@ const UselessImageGalleryHolderOverlay = ({ imageId, reloadCallback }) => {
   }
 
   async function acceptAsUseless(imageId) {
+    axiosConfig.updateToken(authHeader());
     await axiosConfig.holder.post(`/api/imagescore/${ imageId }/hide/`,)
       .then((response) => {
         if (response.data) {

@@ -1,10 +1,20 @@
 import { Button, Col } from "react-bootstrap";
-import { authCheckState, logout } from "../../store/actions/auth";
 import React from "react";
+import { useSignOut } from "react-auth-kit";
+import { useNavigate } from "react-router";
+import { useLocation } from "react-router-dom";
 
 const Navbar = () => {
 
   const isAdmin = localStorage.getItem("is_staff")
+  const singOut = useSignOut();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const logout = () => {
+    singOut();
+    navigate(`/login?forward=${ location.pathname }`);
+  };
 
   return (
     <Col md={ 2 } id={ "main-Navbar" }>

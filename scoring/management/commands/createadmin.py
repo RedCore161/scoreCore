@@ -3,9 +3,7 @@ import os
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
-from rest_framework.authtoken.models import Token
 
-from server.settings import BASE_DIR
 
 
 class Command(BaseCommand):

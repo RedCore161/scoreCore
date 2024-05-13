@@ -11,6 +11,7 @@ import LoadingIcon from "../ui/LoadingIcon";
 import ScoreGroup from "../ui/ScoreGroup";
 import * as actionTypes from "../reducer/reducerTypes";
 import axiosConfig from "../../axiosConfig";
+import { useAuthHeader } from "react-auth-kit";
 
 const ScoreView = () => {
 
@@ -22,11 +23,13 @@ const ScoreView = () => {
   const [state, dispatch] = useReducer(reducerScore, defaultStateScore);
   const { enqueueSnackbar } = useSnackbar();
   const { width, height } = useWindowSize();
+  const authHeader = useAuthHeader();
 
   const actions = ["eye", "nose", "cheek", "ear", "whiskers"];
 
   useLayoutEffect(() => {
     console.log("fetchData");
+    axiosConfig.updateToken(authHeader());
     fetchImage(id).then((data) => {
       setImages(data);
       setLoadingDone(true);
@@ -46,13 +49,9 @@ const ScoreView = () => {
       return;
     }
     setUILock(true);
+    axiosConfig.updateToken(authHeader());
     await axiosConfig.holder.post(`/api/imagescore/${ image.id }/confirm/`, {
-      'eye': state.eye,
-      'nose': state.nose,
-      'cheek': state.cheek,
-      'ear': state.ear,
-      'whiskers': state.whiskers,
-      'comment': state.comment,
+      ...state,
       'project': id,
     }).then((response) => {
       setUILock(false);
@@ -85,6 +84,7 @@ const ScoreView = () => {
       return;
     }
     setUILock(true);
+    axiosConfig.updateToken(authHeader());
     await axiosConfig.holder.post(`/api/imagescore/${ image.id }/useless/`, {
       "project": id
     }).then((response) => {

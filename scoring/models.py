@@ -41,10 +41,9 @@ class Project(models.Model):
             data = json.load(_file)
             print("DATA", data.get("imagefiles"))
 
-
     def get_all_scores_save(self):
         return self.scores.exclude(file__useless=True) \
-                          .filter(user__in=self.users.all())
+            .filter(user__in=self.users.all())
 
     def get_score_count(self):
         return self.get_all_scores_save().count()
@@ -118,12 +117,12 @@ class Project(models.Model):
 
         for u_id in user_ids:
             header.append(f"Comment_Scorer{u_id}")
-        header.extend([f"Varianz-Eyes",
-                       f"Varianz-Nose",
-                       f"Varianz-Cheeks",
-                       f"Varianz-Ears",
-                       f"Varianz-Whiskers",
-                       f"Varianz (SUM)"])
+        header.extend(["Varianz-Eyes",
+                       "Varianz-Nose",
+                       "Varianz-Cheeks",
+                       "Varianz-Ears",
+                       "Varianz-Whiskers",
+                       "Varianz (SUM)"])
 
         for i, name in enumerate(header, start=0):
             ws.write(0, i, name)
@@ -186,10 +185,10 @@ class Project(models.Model):
                 end_col = get_cell(65 + 9 + (pos * 7))
 
                 if score.s_eye is not None or \
-                   score.s_nose is not None or \
-                   score.s_cheek is not None or \
-                   score.s_ear is not None or \
-                   score.s_whiskers is not None:
+                    score.s_nose is not None or \
+                    score.s_cheek is not None or \
+                    score.s_ear is not None or \
+                    score.s_whiskers is not None:
                     ws.write_formula(line, 10 + (pos * 7), f"=SUM({start_col}{line + 1}:{end_col}{line + 1})")
                     ws.write_formula(line, 11 + (pos * 7), f"=AVERAGE({start_col}{line + 1}:{end_col}{line + 1})")
 
@@ -212,13 +211,13 @@ class Project(models.Model):
         return {"files": files}
 
     def get_images_dir(self):
-        return os.path.join(get_media_path(), self.image_dir)
+        return os.path.join(get_media_path(), str(self.image_dir))
 
     def check_create_infofiles(self):
         _path = self.get_images_dir()
         for root, _, files in os.walk(_path):
             if len(files):
-                if not (INFO_FILE_NAME in files):
+                if INFO_FILE_NAME not in files:
                     self.create_infofile(root, files)
 
     @staticmethod
@@ -227,7 +226,8 @@ class Project(models.Model):
             return False
 
         with open(os.path.join(_path, INFO_FILE_NAME), "w") as _file:
-            _file.write("This is a helper-file which lists all the available images. Two were picked. If one of these is marked 'useless' the next will be chosen!\n")
+            _file.write(
+                "This is a helper-file which lists all the available images. Two were picked. If one of these is marked 'useless' the next will be chosen!\n")
             _file.write("Staring below ###...\n")
             _file.write("####################\n")
             for image in _files:
@@ -342,8 +342,8 @@ class ImageFile(models.Model):
     date = models.DateTimeField(blank=True, null=True)
 
     def get_scores_save(self, project: Project):
-        return self.scores.exclude(file__useless=True) \
-                   .filter(user__in=project.users.all())
+        return self.scores.exclude(file__useless=True)\
+                          .filter(user__in=project.users.all())
 
     def calc_varianz(self):
         _params = ["s_eye", "s_nose", "s_cheek", "s_ear", "s_whiskers"]
@@ -385,7 +385,7 @@ class ImageFile(models.Model):
 
     def get_rel_path(self):
         index = self.path.find("media")
-        return self.path[index+6:]
+        return self.path[index + 6:]
 
     def get_scored_users(self):
         return list(self.scores.order_by("user__username").values_list("user__username", flat=True))
@@ -408,9 +408,8 @@ class ImageScore(models.Model):
     s_cheek = models.IntegerField(default=None, null=True, blank=True)
     s_ear = models.IntegerField(default=None, null=True, blank=True)
     s_whiskers = models.IntegerField(default=None, null=True, blank=True)
-    
-    date = models.DateTimeField(auto_created=True, null=True, blank=True)
 
+    date = models.DateTimeField(auto_created=True, null=True, blank=True)
 
     def __str__(self):
         _id = ""

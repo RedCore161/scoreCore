@@ -26,7 +26,7 @@ def _log(*msg, color: AnsiFore, tag, active):
     :param tag: leading tag for the print line
     """
     if len(msg) and active:
-        if type(msg[0]) == str and msg[0].startswith(tag):
+        if isinstance(msg[0], str) and msg[0].startswith(tag):
             print(color, *msg, Style.RESET_ALL)
         else:
             print(color, tag, *msg, Style.RESET_ALL)

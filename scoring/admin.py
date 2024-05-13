@@ -1,6 +1,5 @@
 from django.contrib import admin
-
-from .models import *
+from scoring.models import Project, ImageScore, Backup, ImageFile
 
 admin.site.register(Project)
 admin.site.register(ImageScore)

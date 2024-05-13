@@ -2,10 +2,9 @@ from scoring.helper import elog
 
 
 def parse_boolean(value):
-    if type(value) == bool:
+    if isinstance(value, bool):
         return value
-
-    if type(value) == str:
+    if isinstance(value, str):
         if value.lower() == "true" or value == "1":
             return True
         if value.lower() == "none":

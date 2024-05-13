@@ -6,6 +6,7 @@ import BoxContainer from "../ui/BoxContainer";
 import LoadingIcon from "../ui/LoadingIcon";
 import axiosConfig from "../../axiosConfig";
 import { Link, Tooltip } from "@mui/material";
+import { useAuthHeader } from "react-auth-kit";
 
 
 const ScoreFileLink = ({id, filename, path, users}) => {
@@ -26,12 +27,14 @@ const ProjectInvestigateView = () => {
 
   const [data, setData] = useState({});
   const [collapsed, setCollapsed] = useState({ });
+  const authHeader = useAuthHeader();
 
   useEffect(() => {
     investigateProject();
   }, []);
 
   async function investigateProject() {
+    axiosConfig.updateToken(authHeader());
     await axiosConfig.holder.get(`/api/project/${ id }/investigate/`, {
       "project": id
     }).then((response) => {

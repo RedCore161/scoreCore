@@ -6,16 +6,19 @@ import axiosConfig from "../../axiosConfig";
 import { fetchProjects, SelectListened } from "../../helper";
 import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
 import { useSnackbar } from "notistack";
+import { useAuthHeader } from "react-auth-kit";
 
 const ProjectEvaluateView = () => {
 
   const [evaluations, setEvaluations] = useState([]);
   const [data, setData] = useState([]);
   const [selectedProject, setSelectedProject] = useState({});
+
   const { enqueueSnackbar } = useSnackbar();
+  const authHeader = useAuthHeader();
 
   useLayoutEffect(() => {
-    axiosConfig.getInstance.refreshData();
+    axiosConfig.updateToken(authHeader());
     fetchProjects().then((projects) => {
       setData(projects);
       setSelectedProject(projects[0]);
@@ -30,6 +33,7 @@ const ProjectEvaluateView = () => {
   }
 
   async function exportAsExcel() {
+    axiosConfig.updateToken(authHeader());
     await axiosConfig.holder.post(`/api/project/${ selectedProject.id }/export/xlsx/`, {
       "project": selectedProject.id
     }).then((response) => {
@@ -53,6 +57,7 @@ const ProjectEvaluateView = () => {
 
   async function evaluateProject() {
     console.log(selectedProject);
+    axiosConfig.updateToken(authHeader());
     await axiosConfig.holder.post(`/api/project/${ selectedProject.id }/evaluate/`, {
       "project": selectedProject.id
     }).then((response) => {

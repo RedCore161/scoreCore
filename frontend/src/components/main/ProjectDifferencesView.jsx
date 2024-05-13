@@ -12,6 +12,7 @@ import LoadingIcon from "../ui/LoadingIcon";
 import CorePaginator from "../ui/CorePaginator";
 import { showSuccessBar } from "../ui/Snackbar";
 import { useSnackbar } from "notistack";
+import { useAuthHeader } from "react-auth-kit";
 
 const ProjectDifferencesView = () => {
 
@@ -20,10 +21,11 @@ const ProjectDifferencesView = () => {
   const [data, setData] = useState({});
   const [pages, setPages] = useState({ "varianzes": 1 });
   const { enqueueSnackbar } = useSnackbar();
+  const authHeader = useAuthHeader();
 
   useEffect(() => {
     if ("varianzes" in pages) {
-      axiosConfig.getInstance.refreshData();
+      axiosConfig.updateToken(authHeader());
       fetchImagesAll(id, pages.varianzes).then((data) => {
         setData(data);
       });
@@ -36,6 +38,7 @@ const ProjectDifferencesView = () => {
   };
 
   async function recalcuateVarianz() {
+    axiosConfig.updateToken(authHeader());
     await axiosConfig.holder.get(`/api/project/${ id }/recalculate-varianz/`)
       .then((response) => {
         if (response.data) {

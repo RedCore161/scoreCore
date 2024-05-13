@@ -4,7 +4,7 @@ from django.db.models import Count
 from django.utils import timezone
 from rest_framework.response import Response
 
-from scoring.helper import okaylog, dlog, elog
+from scoring.helper import elog
 from scoring.models import ImageFile, ImageScore, Project
 from scoring.serializers import ImageFileSerializer
 from server.views import RequestSuccess

@@ -7,7 +7,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from scoring.consumer import get_docker_status
-from scoring.tasks import task_stop_docker_container
 from server.views import RequestSuccess, RequestFailed
 
 

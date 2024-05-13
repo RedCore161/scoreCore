@@ -89,8 +89,7 @@ REST_FRAMEWORK = {
         "rest_framework.parsers.JSONParser",
         "rest_framework.parsers.FormParser",
         "rest_framework.parsers.MultiPartParser",
-    ],
-    "EXCEPTION_HANDLER": "rollbar.contrib.django_rest_framework.post_exception_handler",
+    ]
 }
 
 SIMPLE_JWT = {

@@ -1,5 +1,9 @@
+from django.contrib.auth.models import User
+from django.core.files.images import ImageFile
 from django.test import TestCase
-from .models import *
+from django.utils import timezone
+
+from .models import Project
 from .views.viewsets.viewset_creator import ViewSetCreateModel
 
 
@@ -62,10 +66,9 @@ class GeneralTestCase(TestCase):
 
             for idx, data in enumerate(_test.get("data")):
                 user = User.objects.get(username=f"Tester{idx}")
-                ViewSetCreateModel().create_imagescore(image_file.pk, user, data)
+                ViewSetCreateModel().create_or_update_imagescore(image_file.pk, user, data)
 
             self.assertEqual(image_file.calc_varianz(), _test.get("expected"))
-
 
     def test_scoring(self):
 
@@ -129,7 +132,7 @@ class GeneralTestCase(TestCase):
 
             d = test.get("data")
             image_file_id = data.get("image").get("id")
-            ViewSetCreateModel.create_imagescore(image_file_id, test.get("user"), d)
+            ViewSetCreateModel.create_or_update_imagescore(image_file_id, test.get("user"), d)
             data = ViewSetCreateModel.get_next_image(project.pk, test.get("user")).data
             self.assertEqual(data.get("files_left"), test.get("files_left") - 1)
             self.assertEqual(len(project.get_all_scores_save()), idx + 1)
