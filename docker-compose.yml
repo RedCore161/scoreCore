@@ -1,9 +1,7 @@
-version: '3.7'
-
 services:
 
   scoring-database:
-    image: postgres:13.4-alpine
+    image: postgres:16
     container_name: scoring-database
     restart: unless-stopped
     ports:
@@ -15,7 +13,7 @@ services:
 
   # Used for django websocket connections
   scoring-redis:
-    image: "redis:6.2.5"
+    image: redis:latest
     container_name: scoring-redis
     restart: always
     environment:
@@ -32,13 +30,13 @@ services:
     env_file:
       - django.env
     environment:
-      - BACKEND_URL=${HARD_IP}
-      - BACKEND_PORT=${BACKEND_PORT}
+      - CONTROL_BACKEND_URL=${CONTROL_BACKEND_URL}
+      - CONTROL_BACKEND_PORT=${CONTROL_BACKEND_PORT}
     build:
       context: .
       dockerfile: docker/backend/Dockerfile
       args:
-        BACKEND_PORT: ${BACKEND_PORT}
+        CONTROL_BACKEND_PORT: ${CONTROL_BACKEND_PORT}
         DB_HOST: scoring-database   # TODO unify django.env and .env.docker
         DB_PORT: 5432               # TODO unify django.env and .env.docker
         MEDIA_VOLUME: ${MEDIA_VOLUME}
@@ -46,7 +44,7 @@ services:
       - scoring-database
       - scoring-redis
     ports:
-      - ${BACKEND_PORT}:${BACKEND_PORT}
+      - ${CONTROL_BACKEND_PORT}:${CONTROL_BACKEND_PORT}
     volumes:
       - ${MEDIA_VOLUME}:/usr/src/app/media
       - /var/run/docker.sock:/var/run/docker.sock:rw
@@ -63,8 +61,8 @@ services:
       context: .
       dockerfile: docker/frontend/Dockerfile
       args:
-        BACKEND_PORT: ${BACKEND_PORT}
-        HARD_IP: ${HARD_IP}
+        CONTROL_BACKEND_PORT: ${CONTROL_BACKEND_PORT}
+        CONTROL_BACKEND_URL: ${CONTROL_BACKEND_URL}
     environment:
       - NODE_OPTIONS=--max-old-space-size=8196
       - MAX_OLD_SPACE_SIZE=8196

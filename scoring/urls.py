@@ -1,7 +1,8 @@
-from django.conf.urls import url
-from django.urls import include
+from django.urls import include, re_path
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView
 
+from scoring.views.viewsets.base_viewset import ExtendedTokenObtainPairView
 from scoring.views.viewsets.docker_viewset import DockerViewSet
 from scoring.views.viewsets.project_viewset import ProjectViewSet
 from scoring.views.viewsets.imagescore_viewset import ImageScoreViewSet
@@ -16,7 +17,7 @@ router.register(r'docker', DockerViewSet, basename='docker')
 router.register(r'user', UserViewSet, basename='user')
 
 urlpatterns = [
-    url(r'^api/', include(router.urls)),
-    url(r'^rest-auth/', include('rest_auth.urls')),
-    url(r'^api-auth/', include('rest_framework.urls')),
+    re_path(r'^api/token/refresh/$', TokenRefreshView.as_view(), name='token_refresh'),
+    re_path(r'^api/token/$', ExtendedTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    re_path(r'^api/', include(router.urls)),
 ]

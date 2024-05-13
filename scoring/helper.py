@@ -1,5 +1,4 @@
 import errno
-import math
 import os
 import pathlib
 import random
@@ -11,9 +10,6 @@ from time import strftime, gmtime
 from colorama import Fore, Style
 from colorama.ansi import AnsiFore
 from loguru import logger
-
-from server.settings import MEDIA_ROOT, BACKUP_DIR, SETUP_DIR, LOGS_DIR
-
 
 INFO_FILE_NAME = "infofile.txt"
 
@@ -80,14 +76,19 @@ def get_media_path() -> str:
 
 
 def get_path_setup(*args) -> str:
+    from server.settings import SETUP_DIR
+
     return os.path.join(SETUP_DIR, *args)
 
 
 def get_path_backup(*args) -> str:
+    from server.settings import BACKUP_DIR
+
     return os.path.join(BACKUP_DIR, *args)
 
 
 def get_path_logs(*args) -> str:
+    from server.settings import LOGS_DIR
     return os.path.join(LOGS_DIR, *args)
 
 
@@ -98,6 +99,7 @@ def get_project_evaluation_dir(project_id) -> str:
 
 
 def build_abs_path(path_list: list) -> str:
+    from server.settings import MEDIA_ROOT
     _abs_path = os.path.abspath(MEDIA_ROOT)
     return os.path.join(_abs_path, *path_list)
 

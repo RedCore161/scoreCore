@@ -7,8 +7,6 @@ import BoxContainer from "../ui/BoxContainer";
 import UselessImageGalleryHolder from "../ui/UselessImageGalleryHolder";
 
 import axiosConfig from "../../axiosConfig";
-import 'photoswipe/dist/photoswipe.css';
-import 'photoswipe/dist/default-skin/default-skin.css';
 
 const UselessImageFilesView = () => {
 

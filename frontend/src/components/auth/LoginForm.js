@@ -1,63 +1,75 @@
-import React from 'react';
-import {Button, Col, Container, Form, Row} from "react-bootstrap";
+import React, { useState } from 'react';
+import { Button, Col, Container, Form, InputGroup, Row } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { connect } from 'react-redux';
-import * as actions from '../../store/actions/auth';
-import { useSnackbar } from "notistack";
+import axios from "axios";
+import { useNavigate } from "react-router";
+import { useSignIn } from "react-auth-kit";
+import { jwtDecode } from "jwt-decode";
+import { useSearchParams } from "react-router-dom";
 
 const LoginForm = (props) => {
 
-  const { register, handleSubmit } = useForm();
-  const { enqueueSnackbar } = useSnackbar();
+  const liveTime = process.env.REACT_APP_LOGIN_TIME | 3600
 
-  const onSubmit = (data) => {
-    props.onAuth(data.user, data.password, enqueueSnackbar);
+  const signIn = useSignIn()
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const { register, handleSubmit } = useForm();
+  const [showPasswd, setShowPasswd] = useState(false);
+
+  const onSubmit = async (data) => {
+    try {
+      const response = await axios.post(
+        `${ process.env.REACT_APP_BACKEND_URL }/api/token/`,
+        data
+      );
+      signIn({
+        token: response.data.access,
+        expiresIn: liveTime,
+        tokenType: "Bearer",
+        refreshToken: response.data.refresh,
+        refreshTokenExpireIn: liveTime * 2,
+        authState: jwtDecode(response.data.access),
+      });
+
+      const forward = searchParams.get("forward") || "/";
+      navigate(forward);
+
+    } catch (err) {
+      console.log("Error: ", err);
+    }
   };
 
   return (
-
     <Container>
-      <Row md={4} className="justify-content-md-center" style={{'marginTop': 60}}>
-        <Col xs={6}>
-          <Form onSubmit={handleSubmit(onSubmit)}>
+      <Row md={ 4 } className="justify-content-md-center" style={ { "marginTop": 60 } }>
+        <Col xs={ 6 }>
+          <Form onSubmit={ handleSubmit(onSubmit) }>
             <Form.Group controlId="formUser">
               <Form.Label>Username</Form.Label>
-              <Form.Control type="text" placeholder="Enter User" {...register("user")} />
+              <Form.Control type="text" placeholder="Enter User" { ...register("username") } />
             </Form.Group>
 
-            <Form.Group controlId="formPassword" className={"mt-4"}>
+            <Form.Group controlId="formPassword" className={ "mt-4" }>
               <Form.Label>Password</Form.Label>
-              <Form.Control type="password" placeholder="Password" {...register("password")} />
+              <InputGroup>
+                <Form.Control type={ showPasswd ? "text" : "password" } placeholder="Password" { ...register("password") } />
+                <InputGroup.Text>
+                  <i onClick={() => setShowPasswd(!showPasswd)} className={ showPasswd ? "bi bi-eye-slash" : "bi bi-eye" }/>
+                </InputGroup.Text>
+              </InputGroup>
             </Form.Group>
 
-            <Button variant="primary" type="submit" className={"mt-5"}>
+            <Button variant="primary" type="submit" className={ "mt-5" }>
               Login
             </Button>
+
           </Form>
         </Col>
       </Row>
     </Container>
   );
-
 };
-
-
-const mapStateToProps = (state) => {
-  return {
-    isAuthenticated: !!state.token,
-    isLoading: state.loading,
-    error: state.error,
-    is_staff: state.is_staff,
-    is_superuser: state.is_superuser,
-    is_active: state.is_active
-  };
-};
-
-const mapDispatchToProps = dispatch => {
-  return {
-    onAuth: (username, password, enqueueSnackbar) => dispatch(actions.authLogin(username, password, enqueueSnackbar))
-  };
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(LoginForm);
+export default LoginForm;
 

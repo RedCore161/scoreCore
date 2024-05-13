@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Col, Row, Collapse, Button } from "react-bootstrap";
-import { Link } from "@material-ui/core";
 
 import { useParams } from "react-router";
 import BoxContainer from "../ui/BoxContainer";
 import LoadingIcon from "../ui/LoadingIcon";
 import axiosConfig from "../../axiosConfig";
-import Tooltip from "@material-ui/core/Tooltip";
+import { Link, Tooltip } from "@mui/material";
 
 
 const ScoreFileLink = ({id, filename, path, users}) => {

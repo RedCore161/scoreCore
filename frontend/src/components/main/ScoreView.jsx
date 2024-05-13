@@ -1,8 +1,8 @@
 import React, { useLayoutEffect, useReducer, useState } from "react";
 import { defaultStateScore, reducerScore } from "../reducer/reducerScore";
 import { Form, Button, ButtonGroup, Col, Row } from "react-bootstrap";
-import useWindowSize from 'react-use/lib/useWindowSize';
-import Confetti from 'react-confetti';
+import useWindowSize from "react-use/lib/useWindowSize";
+import Confetti from "react-confetti";
 import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
 import { useSnackbar } from "notistack";
 import { useParams } from "react-router";

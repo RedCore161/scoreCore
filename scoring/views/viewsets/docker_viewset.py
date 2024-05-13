@@ -1,5 +1,4 @@
 import docker
-from django_q.tasks import async_task
 from docker.errors import NotFound
 from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
@@ -52,12 +51,12 @@ class DockerViewSet(viewsets.ViewSet):
 
         container_id = request.data.get("container_id")
         if container_id:
-            async_task(task_stop_docker_container, container_id, task_name="stopping-docker-container")
+            #TODO async_task(task_stop_docker_container, container_id, task_name="stopping-docker-container")
             return RequestSuccess()
 
         container = request.data.get("container")
         if container:
-            async_task(task_stop_docker_container, container_id, task_name="stopping-docker-container")
+            #TODO async_task(task_stop_docker_container, container_id, task_name="stopping-docker-container")
             return RequestSuccess()
 
         return RequestFailed()

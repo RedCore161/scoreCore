@@ -1,23 +1,25 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
-import { Provider } from "react-redux";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "react-auth-kit"
+import refreshApi from "./components/auth/refreshApi";
+import App from "./App";
+import "./style.scss";
 
-import reducer from './store/reducers/auth';
-import registerServiceWorker from './registerServiceWorker';
-import { createStore, compose, applyMiddleware } from 'redux';
-import thunk from 'redux-thunk';
-
-const composeEnhances = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-const store = createStore(reducer, composeEnhances(
-  applyMiddleware(thunk)
-));
-
-const app = (
-  <Provider store={ store }>
-    <App />
-  </Provider>
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <React.StrictMode>
+    <AuthProvider
+      authName={ "_auth" }
+      authType={ "cookie" }
+      cookieDomain={ window.location.hostname }
+      cookieSecure={ process.env.PROTOCOL === "https" }
+      refresh={ refreshApi }
+    >
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </AuthProvider>
+  </React.StrictMode>
 );
-
-ReactDOM.render(app, document.getElementById('root'));
-registerServiceWorker();
+// reportWebVitals();

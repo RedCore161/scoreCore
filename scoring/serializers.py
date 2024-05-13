@@ -1,12 +1,8 @@
-import os
-
 from django.contrib.auth.models import User
-from django.contrib.auth.password_validation import get_default_password_validators, UserAttributeSimilarityValidator, \
-    MinimumLengthValidator, CommonPasswordValidator, NumericPasswordValidator
-from rest_auth.models import TokenModel
+from django.contrib.auth.password_validation import UserAttributeSimilarityValidator, \
+    MinimumLengthValidator
 from rest_framework import serializers
 
-from scoring.helper import get_path_setup
 from scoring.models import Project, ImageScore, ImageFile, Backup
 from scoring.validators import NumberValidator
 
@@ -40,32 +36,6 @@ class PasswordSerializer(serializers.Serializer):
                                                      #TODO
                                                      # CommonPasswordValidator(get_path_setup("common-passwords.txt.gz")),
                                                      ])
-
-
-class TokenSerializer(serializers.ModelSerializer):
-    """
-    Serializer for Token model.
-    """
-
-    is_staff = serializers.SerializerMethodField("get_is_staff")
-    is_superuser = serializers.SerializerMethodField("get_is_superuser")
-    is_active = serializers.SerializerMethodField("get_is_active")
-
-    class Meta:
-        model = TokenModel
-        fields = ("key", "is_staff", "is_superuser", "is_active")
-
-    @staticmethod
-    def get_is_staff(obj: TokenModel):
-        return obj.user.is_staff
-
-    @staticmethod
-    def get_is_superuser(obj: TokenModel):
-        return obj.user.is_superuser
-
-    @staticmethod
-    def get_is_active(obj: TokenModel):
-        return obj.user.is_active
 
 
 class ProjectSerializer(serializers.ModelSerializer):

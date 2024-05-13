@@ -1,8 +1,10 @@
 import os
+from datetime import timedelta
 
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / "subdir".
+from scoring.basics import parse_boolean, parse_int
 from server.read_env import read_env
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
@@ -17,7 +19,9 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 
 DEBUG = os.getenv("DEBUG") == "1"
+DEBUG_PROPAGATE_EXCEPTIONS = True
 
+INTERNAL_IPS = ["127.0.0.1"]
 
 ALLOWED_HOSTS = [os.getenv("DJANGO_ALLOWED_HOSTS")]
 
@@ -31,43 +35,28 @@ INSTALLED_APPS = [
 
     "rest_framework",
     "rest_framework.authtoken",
-    "rest_auth",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
+
     "dbbackup",
 
     "corsheaders",
 
+    "django_celery_results",
     "channels",
-    "django_q",
 
     "scoring",
 ]
 
+CELERY_RESULT_EXTENDED = True
+CELERY_WORKER_SEND_TASK_EVENTS = True
+CELERY_TASK_SEND_SENT_EVENT = True
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SOFT_TIME_LIMIT = None
+CELERY_TASK_TIME_LIMIT = None
+
 outtime = 60 * 60 * 4
 
-Q_CLUSTER = {
-    "name": "DjangORM",
-    "workers": 4,
-
-    "queue_limit": 15,
-    "bulk": 10,
-    "recycle": 500,
-    "save_limit": 10,
-    "cpu_affinity": 1,
-    "ack_failures": True,
-    "max_attempts": 1,
-    "timeout": outtime,
-    "retry": outtime + 300,
-    "orm": "default",
-    "has_replica": True,
-
-}
-
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-#         'LOCATION': 'uitests-control-cache:11211',
-#     }
-# }
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -80,6 +69,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG,
+}
+
 REST_FRAMEWORK = {
     "DATETIME_FORMAT": "%d.%m.%Y, %H:%M:%S",
 
@@ -90,19 +83,56 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.BasicAuthentication",
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",
-    ]
+        "rest_framework.parsers.FormParser",
+        "rest_framework.parsers.MultiPartParser",
+    ],
+    "EXCEPTION_HANDLER": "rollbar.contrib.django_rest_framework.post_exception_handler",
 }
 
-REST_AUTH_SERIALIZERS = {
-    'TOKEN_SERIALIZER': 'scoring.serializers.TokenSerializer',
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": os.getenv("SIGNING_KEY", None),
+    "VERIFYING_KEY": os.getenv("VERIFYING_KEY", None),
+    "AUDIENCE": None,
+    "ISSUER": None,
+    "JWK_URL": None,
+    "LEEWAY": 0,
+
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
+
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "TOKEN_TYPE_CLAIM": "token_type",
+
+    "JTI_CLAIM": "jti",
 }
 
 ROOT_URLCONF = "server.urls"
-
 ASGI_APPLICATION = "server.routing.application"
+
+# Internationalization
+# https://docs.djangoproject.com/en/4.2/topics/i18n/
+
+LANGUAGE_CODE = "de-DE"
+TIME_ZONE = "Europe/Berlin"
+USE_I18N = False
+USE_L10N = False
+USE_TZ = True
+
+IS_PRODUCTION = parse_boolean(os.getenv("PRODUCTION"))
 
 TEMPLATES = [
     {
@@ -131,6 +161,9 @@ DATABASES = {
         "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
         "HOST": os.getenv("POSTGRES_HOST"),
         "PORT": os.getenv("POSTGRES_PORT"),
+        "CONN_HEALTH_CHECKS": False,
+        "TIME_ZONE": TIME_ZONE,
+        "CHARSET": "UTF8",
     }
 }
 
@@ -144,17 +177,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-PROTOCOL = os.getenv('PROTOCOL', 'http')
-HARD_IP = os.getenv('HARD_IP', 'ignore.local')
+PROTOCOL = os.getenv("PROTOCOL", "http")
+CORS_ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
 
-CORS_ALLOWED_ORIGINS = [
-    f"{PROTOCOL}://{HARD_IP}",
-    f"{PROTOCOL}://localhost:3000",
-    f"{PROTOCOL}://localhost:8000",
-    f"{PROTOCOL}://scoring.local",
-    f"{PROTOCOL}://api.scoring.local",
-    f"{PROTOCOL}://scoring-backend:8000",
-]
 CSRF_COOKIE_NAME = "csrftoken"
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
@@ -181,6 +206,18 @@ else:
         },
     }
 
+REDIS_URL = f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT', 6379)}/1"
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    },
+}
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -196,7 +233,6 @@ USE_TZ = True
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 STATIC_URL = "/static/"
 
-
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
@@ -208,22 +244,30 @@ LOGS_DIR = os.path.join(MEDIA_ROOT, os.getenv("LOGS_DIR", "logs"))
 
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = {'location': BACKUP_DIR}
-DBBACKUP_HOSTNAME = HARD_IP
-
+DBBACKUP_CONNECTOR_MAPPING = {
+    "django.db.backends.postgresql_psycopg2": "dbbackup.db.postgresql.PgDumpConnector",
+}
 
 # Security
 
 # python manage.py check --deploy
 
-# CSRF_COOKIE_SECURE = True
+# TODO fix later SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_SERIALIZER = "django.contrib.sessions.serializers.JSONSerializer"
+SESSION_COOKIE_AGE = 9000
+SESSION_COOKIE_SECURE = parse_boolean(os.getenv("SESSION_COOKIE_SECURE", False))
+
+SECURE_REFERRER_POLICY = os.getenv("SECURE_REFERRER_POLICY")
+SECURE_HSTS_SECONDS = parse_int(os.getenv("SECURE_HSTS_SECONDS", 0))
+SECURE_HSTS_PRELOAD = parse_boolean(os.getenv("SECURE_HSTS_PRELOAD", False))
+SECURE_SSL_REDIRECT = parse_boolean(os.getenv("SECURE_SSL_REDIRECT", False))
+SECURE_SSL_HOST = os.getenv("SECURE_SSL_HOST")
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+# CSRF_COOKIE_SECURE = parse_boolean(os.getenv("CSRF_COOKIE_SECURE", True))
 # CSRF_COOKIE_SAMESITE = "Strict"
-# SESSION_COOKIE_SECURE = True
-
-# SECURE_BROWSER_XSS_FILTER = True
-# SECURE_CONTENT_TYPE_NOSNIFF = True
-# SECURE_SSL_REDIRECT = True
-# X_FRAME_OPTIONS = "DENY"
-# SECURE_HSTS_SECONDS = 300  # set low, but when site is ready for deployment, set to at least 15768000 (6 months)
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
-
+# CSRF_FAILURE_VIEW = "django.views.csrf.csrf_failure"
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+CSRF_COOKIE_NAME = "csrftoken"
+CSRF_USE_SESSIONS = False

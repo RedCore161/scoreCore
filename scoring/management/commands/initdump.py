@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
-from scoring.helper import random_string, get_path_setup
+from scoring.helper import random_string, get_path_setup, okaylog, ilog, elog
 from scoring.models import Project
 
 
@@ -19,6 +19,11 @@ class Command(BaseCommand):
             root = get_user_model().objects.get(username=username)
         else:
             root = None
+
+        _path = get_path_setup("users.json")
+        if not os.path.exists(_path):
+            elog("No 'users.json' in media/setup... Stopping!")
+            return
 
         with open(get_path_setup("users.json"), "r") as _file:
             _users = json.load(_file)
@@ -37,13 +42,12 @@ class Command(BaseCommand):
                     user.save()
 
         users = User.objects.all()
-        projects = {"wolter_demo": {"image_dir": "Frames_Wolter"},
-                    "Einzel-Training 1": {"image_dir": "Einzel_Training1", "check": True, "allUsers": True},
-                    "Einzel-Training 2": {"image_dir": "Einzel_Training2", "check": True, "allUsers": True}
+        projects = {
+                    "Einzel-Demo": {"image_dir": "Einzel-Demo", "check": True, "allUsers": True},
                     }
 
         for name in projects:
-            print("Project", name, "...\n")
+            ilog("Project", name, "...\n")
             project, created = Project.objects.get_or_create(name=name, image_dir=projects[name].get("image_dir"))
 
             if projects[name].get("createScript", False):
@@ -53,7 +57,7 @@ class Command(BaseCommand):
             result = project.read_images(False)
 
             if created:
-                print("Created Project!", result, project)
+                okaylog("Created Project!", result, project)
                 if projects[name].get("allUsers", False):
                     for _user in users:
                         project.users.add(_user)

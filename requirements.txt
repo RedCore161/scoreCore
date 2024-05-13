@@ -1,37 +1,43 @@
-asgiref~=3.4.0
-channels~=3.0.3
-channels-redis==3.4.0
-colorama~=0.4.4
-decorator~=5.1.1
-Django==3.2.14
-django-cors-headers~=3.12.0
-django-dbbackup~=3.3.0
-django-mathfilters~=1.0.0
-django-multiselectfield~=0.1.12
-django-q~=1.3.9
-django-rest-auth~=0.9.5
-djangorestframework~=3.13.1
-docker~=4.2.2
-filetype~=1.1.0
-gunicorn~=20.1.0
-jsonfield~=3.1.0
+asgiref~=3.8.1
+celery~=5.4.0
+channels~=4.1.0
+channels-redis~=4.2.0       # install https://visualstudio.microsoft.com/de/visual-cpp-build-tools/
+colorama~=0.4.6
+daphne~=4.1.2
+Django~=5.0.5
+django-celery-results~=2.5.1
+django-cors-headers~=4.3.1
+django-dbbackup~=4.1.0
+django-debug-toolbar~=4.3.0
+django-picklefield~=3.2
+django-polymorphic~=3.1.0
+django-redis~=5.4.0
+djangorestframework~=3.15.1
+djangorestframework-simplejwt~=5.3.1
+docker~=7.0.0
+eventlet~=0.36.1
+filetype~=1.2.0
+flower~=2.0.1
+gunicorn~=22.0.0
+hiredis~=2.3.2
 loguru~=0.6.0
-numpy~=1.22.4
-opencv-python~=4.5.5.64
-openpyxl~=3.0.10
+jsonfield~=3.1.0
 pandas~=1.4.2
-Pillow~=9.1.1
-plotly~=5.8.0
-psycopg2-binary>=2.8
-pyparsing~=3.0.9
-python-dateutil~=2.8.2
-python-memcached>=1.3
-requests~=2.27.1
-rncryptor~=3.3.0
-simplejson~=3.17.6
-statsmodels~=0.13.2
-uvicorn~=0.17.6
+numpy~=1.26.4
+opencv-python~=4.9.0.80
+packaging~=24.0
+pillow~=10.3.0
+pip-review~=1.3.0               # Usage: pip-review --interactive
+psycopg2-binary~=2.9.9
+pyparsing~=3.1.2
+redis~=5.0.1
+requests~=2.31.0
+ruff~=0.4.3            # ruff check --fix
+simplejson~=3.19.2
+uvicorn~=0.29.0
 xlrd~=2.0.1
 xlsxwriter~=3.0.3
 
 
+# CMDS
+# pip index versions redis  # list available versions
