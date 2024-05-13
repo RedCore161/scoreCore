@@ -147,6 +147,14 @@ def clear_dir(_dir):
             delete_file(os.path.join(_dir, f))
 
 
+def get_fields_from_bit(_bit):
+    if _bit == 0:
+        return {}
+
+    binary_str = bin(_bit)[:1:-1]
+    return [int(bit) for bit in binary_str]
+
+
 def sleep_ms(delay=0, msg=None):
     """
     sleeps for a specific amount of ms

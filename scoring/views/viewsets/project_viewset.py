@@ -3,8 +3,9 @@ from rest_framework.decorators import permission_classes, action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
-from scoring.helper import build_abs_path
-from scoring.models import Project, ImageFile, ImageScore
+from scoring.basics import parse_int
+from scoring.helper import build_abs_path, get_fields_from_bit
+from scoring.models import Project, ImageFile, ImageScore, scoring_fields
 from scoring.serializers import ProjectSerializer, ImageFileSerializer, ImageScoreSerializer
 from scoring.views.viewsets.base_viewset import StandardResultsSetPagination
 from scoring.views.viewsets.viewset_creator import ViewSetCreateModel
@@ -33,11 +34,24 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @action(detail=True, url_path="image", methods=["GET"])
     def get_next_image(self, request, pk):
         _project = Project.objects.get(pk=pk)
-        qs = ImageScore.objects.filter(project=pk, user=request.user).order_by("-pk")
+        _fields = parse_int(request.GET.get("fields", 0))
+        bits = get_fields_from_bit(_fields)
+
+        _index = 0
+        _filter = {}
+        for bit in bits:
+            if bit:
+                #print(f"{_index=} => {scoring_fields[_index]=}")
+                _filter.update({f"{scoring_fields[_index]}__isnull": False})
+            _index += 1
+
+        print("_filter", _filter)
+        qs = ImageScore.objects.filter(project=pk, user=request.user, **_filter).order_by("-pk")
         serializer = ImageScoreSerializer(qs, many=True, read_only=True)
         if not _project.is_finished():
             data = ViewSetCreateModel.get_next_image(pk, request.user, request.GET.get("file"))
             data.update({"history": serializer.data})
+            return RequestSuccess(data)
         return RequestSuccess({"is_finished": True, "files_left": 0, "history": serializer.data})
 
     @action(detail=True, url_path="images/all", methods=["GET"])

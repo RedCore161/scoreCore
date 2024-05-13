@@ -14,6 +14,8 @@ from scoring.helper import get_project_evaluation_dir, get_media_path, save_chec
 from server.settings import BASE_DIR
 from loguru import logger
 
+scoring_fields = ["s_eye", "s_nose", "s_cheek", "s_ear", "s_whiskers"]
+
 
 class Project(models.Model):
     name = models.CharField(max_length=100, unique=True, null=False)
