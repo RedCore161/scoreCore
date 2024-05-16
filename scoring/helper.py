@@ -1,10 +1,12 @@
 import errno
+import fnmatch
 import os
 import pathlib
 import random
 import shutil
 import string
 import time
+from datetime import datetime
 from time import strftime, gmtime
 
 from colorama import Fore, Style
@@ -12,10 +14,19 @@ from colorama.ansi import AnsiFore
 from loguru import logger
 
 INFO_FILE_NAME = "infofile.txt"
+MAX_LOG_LENGTH = 2500
+
 
 # ######################################################################## #
 # #####  H E L P E R - F U N C T I O N S ################################# #
 # ######################################################################## #
+
+
+def _cleaned_msg(*msg):
+    _msg = ' '.join(str(x) for x in msg)
+    if len(_msg) > MAX_LOG_LENGTH:
+        return f"[SHORTED len={ len(_msg) }] { _msg[:MAX_LOG_LENGTH] }..."
+    return _msg
 
 
 def _log(*msg, color: AnsiFore, tag, active):
@@ -25,27 +36,52 @@ def _log(*msg, color: AnsiFore, tag, active):
     :param color: color of output
     :param tag: leading tag for the print line
     """
-    if len(msg) and active:
-        if isinstance(msg[0], str) and msg[0].startswith(tag):
-            print(color, *msg, Style.RESET_ALL)
-        else:
-            print(color, tag, *msg, Style.RESET_ALL)
+    if active:
+        _now = time.time()
+        time_with_ms = "%s.%03d" % (time.strftime('%X', time.localtime(_now)), _now % 1 * 1000)
+        print(color, time_with_ms, f"{tag: <15}", *msg, Style.RESET_ALL)
 
 
-def dlog(*msg, tag="[DEBUG]", active=True):
-    _log(*msg, color=Fore.WHITE, tag=tag, active=active)
+def dlog(*msg, tag: str = "[DEBUG]", active=True, logger=None):
+    _msg = _cleaned_msg(*msg)
+    _log(_msg, color=Fore.WHITE, tag=tag, active=active)
+    if logger:
+        logger.debug(f"{tag: <15} {_msg}")
 
 
-def ilog(*msg, tag="[INFO]", active=True):
-    _log(*msg, color=Fore.BLUE, tag=tag, active=active)
+def ilog(*msg, tag: str = "[INFO]", active=True, logger=None):
+    _msg = _cleaned_msg(*msg)
+    _log(_msg, color=Fore.BLUE, tag=tag, active=active)
+    if logger:
+        logger.info(f"{tag: <15} {_msg}")
 
 
-def elog(*msg, tag="[ERROR]", active=True):
-    _log(*msg, color=Fore.RED, tag=tag, active=active)
+def elog(*msg, tag: str = "[ERROR]", active=True, logger=None):
+    _msg = _cleaned_msg(*msg)
+    _log(_msg, color=Fore.RED, tag=tag, active=active)
+    if logger:
+        logger.error(f"{tag: <15} {_msg}")
 
 
-def okaylog(*msg, tag="[OK]", active=True):
-    _log(*msg, color=Fore.GREEN, tag=tag, active=active)
+def flog(*msg, tag: str = "[FATAL]", active=True, logger=None):
+    _msg = _cleaned_msg(*msg)
+    _log(_msg, color=Fore.RED, tag=tag, active=active)
+    if logger:
+        logger.fatal(f"{tag: <15} {_msg}")
+
+
+def okaylog(*msg, tag: str = "[OK]", active=True, logger=None):
+    _msg = _cleaned_msg(*msg)
+    _log(_msg, color=Fore.GREEN, tag=tag, active=active)
+    if logger:
+        logger.info(f"{tag: <15} {_msg}")
+
+
+def wlog(*msg, tag: str = "[???]", active=True, logger=None):
+    _msg = _cleaned_msg(*msg)
+    _log(_msg, color=Fore.YELLOW, tag=tag, active=active)
+    if logger:
+        logger.warning(f"{tag: <15} {_msg}")
 
 
 def breaklog(show_time=False):
@@ -168,3 +204,37 @@ def sleep_ms(delay=0, msg=None):
         time.sleep(3)
     else:
         time.sleep(int(delay) / 1000)
+
+
+def is_image(filename):
+    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'}
+    _, ext = os.path.splitext(filename)
+    return ext.lower() in image_extensions
+
+
+def is_video(filename):
+    image_extensions = {'.mp4', '.wepm'}
+    _, ext = os.path.splitext(filename)
+    return ext.lower() in image_extensions
+
+
+def find_uploaded_file(base_dir, filename_pattern):
+    _base_name = os.path.basename(filename_pattern)
+    for root, _, files in os.walk(base_dir):
+        for filename in fnmatch.filter(files, _base_name):
+            return os.path.join(root, filename)
+    return None
+
+
+def pretty_sizeof(num, suffix="b"):
+    if abs(num) < 1024.0:
+        return f"{(num/1024):3.1f}K{suffix}"
+    for unit in ["", "K", "M", "G", "T"]:
+        if abs(num) < 1024.0:
+            return f"{num:3.1f}{unit}{suffix}"
+        num /= 1024.0
+    return f"{num:.1f}Y{suffix}"
+
+
+def pretty_now():
+    return str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))

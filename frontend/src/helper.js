@@ -1,5 +1,31 @@
 import React from "react";
 import axiosConfig from "./axiosConfig";
+export const MULTISELECT_STYLE = {
+  chips: {
+    background: "green"
+  },
+  multiSelectContainer: {
+    color: "red",
+    background: "blue"
+  },
+  searchBox: {
+    color: "yellow",
+    background: "white",
+    borderRadius: "var(--bs-border-radius)"
+  },
+  optionContainer: {
+    color: "black",
+    background: "white"
+  }
+};
+
+export function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+export function range(start, end) {
+  return Array.apply(0, Array(end)).map((element, index) => index + start);
+}
 
 export async function fetchProjects() {
   const result = await axiosConfig.holder.get("/api/project/list/");
@@ -15,7 +41,7 @@ export async function fetchEvaluations() {
 
 export async function fetchImage(id, params) {
   const url = params ? `/api/project/${ id }/image/?${ params }` :
-                     `/api/project/${ id }/image/`
+                       `/api/project/${ id }/image/`
   const result = await axiosConfig.holder.get(url);
   console.log("Found Image:", result.data);
   return result.data

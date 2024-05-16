@@ -4,21 +4,21 @@ import os
 import filetype
 import pandas as pd
 import statistics
-
+from PIL import Image as PilImage
 from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir, get_path_backup, dlog, \
-    set_logging_file, INFO_FILE_NAME
+    set_logging_file, INFO_FILE_NAME, is_image, elog
 from server.settings import BASE_DIR
 from loguru import logger
-
-scoring_fields = ["s_eye", "s_nose", "s_cheek", "s_ear", "s_whiskers"]
 
 
 class Project(models.Model):
     name = models.CharField(max_length=100, unique=True, null=False)
+    icon = models.CharField(max_length=5, null=True, default="", blank=True)
+
     image_dir = models.CharField(max_length=500,
                                  validators=[RegexValidator('^(?!setup$|backup$|evaluations$).*$')],
                                  null=True, blank=True)
@@ -40,7 +40,7 @@ class Project(models.Model):
 
     def get_all_scores_save(self):
         return self.scores.exclude(file__useless=True) \
-                          .filter(user__in=self.users.all(), is_completed=True)
+            .filter(user__in=self.users.all(), is_completed=False)
 
     def get_score_count(self):
         return self.get_all_scores_save().count()
@@ -55,6 +55,7 @@ class Project(models.Model):
         return self.get_all_files_save().count()
 
     def is_finished(self):
+        print("XXX", self.get_score_count(), self.get_files_count(), self.get_score_count() >= self.get_files_count())
         return self.get_score_count() >= self.get_files_count() * self.wanted_scores_per_image
 
     def evaluate_data_as_xlsx(self, data):
@@ -90,118 +91,118 @@ class Project(models.Model):
 
         df = pd.DataFrame()
 
-        project_name = self.name
-        target = os.path.join(_path, f"{_file_template}.xlsx")
-        writer = pd.ExcelWriter(target, engine='xlsxwriter')
-        df.to_excel(writer, sheet_name=project_name)
-
-        ws = writer.sheets[project_name]
-        # workbook = writer.book
-        # format_OK = workbook.add_format({'bg_color': '#00a077'})
-
-        header = ["ID", "Path", "Filename", "Useless", "Score-Count"]
-        i = 0
-        for u_id in user_ids:
-            user_id_dict.update({u_id: i})
-            header.extend([f"Eyes_Scorer{u_id}",
-                           f"Nose_Scorer{u_id}",
-                           f"Cheeks_Scorer{u_id}",
-                           f"Ears_Scorer{u_id}",
-                           f"Whiskers_Scorer{u_id}",
-                           f"Sum_Scorer{u_id}",
-                           f"Mean_Scorer{u_id}"])
-            i += 1
-
-        for u_id in user_ids:
-            header.append(f"Comment_Scorer{u_id}")
-        header.extend(["Varianz-Eyes",
-                       "Varianz-Nose",
-                       "Varianz-Cheeks",
-                       "Varianz-Ears",
-                       "Varianz-Whiskers",
-                       "Varianz (SUM)"])
-
-        for i, name in enumerate(header, start=0):
-            ws.write(0, i, name)
-
-        line = 1
-
-        for image_file in _image_files:
-            queryset = image_file.get_scores_save(self).order_by("user__pk")
-            if len(queryset) == 0:
-                continue
-
-            dlog("Write Line", line, "=>", image_file)
-
-            ws.write(line, 0, line)
-            ws.write(line, 1, image_file.path)
-            ws.write(line, 2, image_file.filename)
-            ws.write(line, 3, image_file.useless)
-            ws.write(line, 4, image_file.scores.count())
-
-            # Write user-comments
-            pos = user_id_dict.get(max(user_id_dict, key=user_id_dict.get))
-            last_pos = 11 + (pos * 7)
-            i = last_pos + 1
-            for score in queryset:
-                ws.write(line, i + user_id_dict.get(score.user_id), score.comment)
-            i += pos + 1
-
-            # Write varianz
-            ws.write(line, i, image_file.varianz_eye)
-            ws.write(line, i + 1, image_file.varianz_nose)
-            ws.write(line, i + 2, image_file.varianz_cheek)
-            ws.write(line, i + 3, image_file.varianz_ear)
-            ws.write(line, i + 4, image_file.varianz_whiskers)
-            ws.write(line, i + 5, image_file.varianz)
-
-            # TODO format later
-            #
-            # _list = [image_file.varianz_eye,
-            #          image_file.varianz_nose,
-            #          image_file.varianz_cheek,
-            #          image_file.varianz_ear,
-            #          image_file.varianz_whiskers]
-            # j = 0
-            # for val in _list:
-            #     j += 1
-            #     if val == 0:
-            #         print("OKAY", i, j)
-            #         ws.set_column(i + j, i + j, cell_format=format_OK)
-
-            # Write Data
-            for score in queryset:
-                pos = user_id_dict.get(score.user_id)
-
-                start_col = get_cell(65 + 5 + (pos * 7))
-                ws.write(line, 5 + (pos * 7), score.s_eye)
-                ws.write(line, 6 + (pos * 7), score.s_nose)
-                ws.write(line, 7 + (pos * 7), score.s_cheek)
-                ws.write(line, 8 + (pos * 7), score.s_ear)
-                ws.write(line, 9 + (pos * 7), score.s_whiskers)
-                end_col = get_cell(65 + 9 + (pos * 7))
-
-                if score.s_eye is not None or \
-                    score.s_nose is not None or \
-                    score.s_cheek is not None or \
-                    score.s_ear is not None or \
-                    score.s_whiskers is not None:
-                    ws.write_formula(line, 10 + (pos * 7), f"=SUM({start_col}{line + 1}:{end_col}{line + 1})")
-                    ws.write_formula(line, 11 + (pos * 7), f"=AVERAGE({start_col}{line + 1}:{end_col}{line + 1})")
-
-            line += 1
-
-        line += 2
-        for image_file in self.get_all_useless_files():
-            ws.write(line, 0, line)
-            ws.write(line, 1, image_file.path)
-            ws.write(line, 2, image_file.filename)
-            ws.write(line, 3, image_file.useless)
-            line += 1
-
-        writer.save()
-
-        return target
+        project_name = str(self.name)
+        # target = os.path.join(_path, f"{_file_template}.xlsx")
+        # writer = pd.ExcelWriter(target, engine='xlsxwriter')
+        # df.to_excel(writer, sheet_name=project_name)
+        #
+        # ws = writer.sheets[project_name]
+        # # workbook = writer.book
+        # # format_OK = workbook.add_format({'bg_color': '#00a077'})
+        #
+        # header = ["ID", "Path", "Filename", "Useless", "Score-Count"]
+        # i = 0
+        # for u_id in user_ids:
+        #     user_id_dict.update({u_id: i})
+        #     header.extend([f"Eyes_Scorer{u_id}",
+        #                    f"Nose_Scorer{u_id}",
+        #                    f"Cheeks_Scorer{u_id}",
+        #                    f"Ears_Scorer{u_id}",
+        #                    f"Whiskers_Scorer{u_id}",
+        #                    f"Sum_Scorer{u_id}",
+        #                    f"Mean_Scorer{u_id}"])
+        #     i += 1
+        #
+        # for u_id in user_ids:
+        #     header.append(f"Comment_Scorer{u_id}")
+        # header.extend(["Varianz-Eyes",
+        #                "Varianz-Nose",
+        #                "Varianz-Cheeks",
+        #                "Varianz-Ears",
+        #                "Varianz-Whiskers",
+        #                "Varianz (SUM)"])
+        #
+        # for i, name in enumerate(header, start=0):
+        #     ws.write(0, i, name)
+        #
+        # line = 1
+        #
+        # for image_file in _image_files:
+        #     queryset = image_file.get_scores_save(self).order_by("user__pk")
+        #     if len(queryset) == 0:
+        #         continue
+        #
+        #     dlog("Write Line", line, "=>", image_file)
+        #
+        #     ws.write(line, 0, line)
+        #     ws.write(line, 1, image_file.path)
+        #     ws.write(line, 2, image_file.filename)
+        #     ws.write(line, 3, image_file.useless)
+        #     ws.write(line, 4, image_file.scores.count())
+        #
+        #     # Write user-comments
+        #     pos = user_id_dict.get(max(user_id_dict, key=user_id_dict.get))
+        #     last_pos = 11 + (pos * 7)
+        #     i = last_pos + 1
+        #     for score in queryset:
+        #         ws.write(line, i + user_id_dict.get(score.user_id), score.comment)
+        #     i += pos + 1
+        #
+        #     # Write varianz
+        #     ws.write(line, i, image_file.varianz_eye)
+        #     ws.write(line, i + 1, image_file.varianz_nose)
+        #     ws.write(line, i + 2, image_file.varianz_cheek)
+        #     ws.write(line, i + 3, image_file.varianz_ear)
+        #     ws.write(line, i + 4, image_file.varianz_whiskers)
+        #     ws.write(line, i + 5, image_file.varianz)
+        #
+        #     # TODO format later
+        #     #
+        #     # _list = [image_file.varianz_eye,
+        #     #          image_file.varianz_nose,
+        #     #          image_file.varianz_cheek,
+        #     #          image_file.varianz_ear,
+        #     #          image_file.varianz_whiskers]
+        #     # j = 0
+        #     # for val in _list:
+        #     #     j += 1
+        #     #     if val == 0:
+        #     #         print("OKAY", i, j)
+        #     #         ws.set_column(i + j, i + j, cell_format=format_OK)
+        #
+        #     # Write Data
+        #     for score in queryset:
+        #         pos = user_id_dict.get(score.user_id)
+        #
+        #         start_col = get_cell(65 + 5 + (pos * 7))
+        #         ws.write(line, 5 + (pos * 7), score.s_eye)
+        #         ws.write(line, 6 + (pos * 7), score.s_nose)
+        #         ws.write(line, 7 + (pos * 7), score.s_cheek)
+        #         ws.write(line, 8 + (pos * 7), score.s_ear)
+        #         ws.write(line, 9 + (pos * 7), score.s_whiskers)
+        #         end_col = get_cell(65 + 9 + (pos * 7))
+        #
+        #         if score.s_eye is not None or \
+        #             score.s_nose is not None or \
+        #             score.s_cheek is not None or \
+        #             score.s_ear is not None or \
+        #             score.s_whiskers is not None:
+        #             ws.write_formula(line, 10 + (pos * 7), f"=SUM({start_col}{line + 1}:{end_col}{line + 1})")
+        #             ws.write_formula(line, 11 + (pos * 7), f"=AVERAGE({start_col}{line + 1}:{end_col}{line + 1})")
+        #
+        #     line += 1
+        #
+        # line += 2
+        # for image_file in self.get_all_useless_files():
+        #     ws.write(line, 0, line)
+        #     ws.write(line, 1, image_file.path)
+        #     ws.write(line, 2, image_file.filename)
+        #     ws.write(line, 3, image_file.useless)
+        #     line += 1
+        #
+        # writer.save()
+        #
+        # return target
 
     def get_existing_evaluations(self) -> dict:
         files = os.listdir(get_project_evaluation_dir(str(self.pk)))
@@ -225,7 +226,7 @@ class Project(models.Model):
         with open(os.path.join(_path, INFO_FILE_NAME), "w") as _file:
             _file.write(
                 "This is a helper-file which lists all the available images. Two were picked. If one of these is marked 'useless' the next will be chosen!\n")
-            _file.write("Staring below ###...\n")
+            _file.write("Starting below ###...\n")
             _file.write("####################\n")
             for image in _files:
                 if image == INFO_FILE_NAME:
@@ -295,15 +296,18 @@ class Project(models.Model):
                     if get_or_create_amount == 0:
                         return True
 
-                    image_file, created = ImageFile.objects.get_or_create(project=self,
-                                                                          filename=_file,
-                                                                          path=_path)
+                    image_file, created = ImageFile.objects.get_or_create(project=self, filename=_file, path=_path)
 
-                    print("=>", _file, created, "| Useless: ", image_file.useless)
+                    dlog("=>", _file, created, "| Useless: ", image_file.useless)
 
                     if created:
                         if enabled_log:
                             logger.info(f"Created ImageFile for {_path}{os.sep}{_file} #{get_or_create_amount}")
+
+                        if is_image(_file):
+                            with PilImage.open(_file) as img:
+                                width, height = img.size
+
                         image_file.date = timezone.now()
                         image_file.save()
                         get_or_create_amount -= 1
@@ -322,8 +326,21 @@ class Project(models.Model):
         return f"{_id} Project: {self.name}"
 
 
+class ScoreFeature(models.Model):
+    project = models.ForeignKey(Project, related_name="features", on_delete=models.CASCADE)
+    name = models.CharField(max_length=255, null=False)
+    bit = models.IntegerField(default=0, null=False, blank=True)
+    option_count = models.IntegerField(default=3, null=False, blank=True)
+
+    def __str__(self):
+        _id = ""
+        if os.getenv("DEBUG"):
+            _id = f"[{self.pk}] "
+        return f"{_id} Project: {self.project} > {self.name=}, {self.bit=}"
+
+
 class ImageFile(models.Model):
-    project = models.ForeignKey(Project, related_name='files', on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, related_name="files", on_delete=models.CASCADE)
     filename = models.CharField(max_length=50, null=False)
     path = models.CharField(max_length=500, null=False)
     useless = models.BooleanField(default=False)
@@ -336,6 +353,14 @@ class ImageFile(models.Model):
     varianz_ear = models.FloatField(default=None, null=True, blank=True)
     varianz_whiskers = models.FloatField(default=None, null=True, blank=True)
 
+    width = models.IntegerField(default=0, null=False, blank=True)
+    height = models.IntegerField(default=0, null=False, blank=True)
+
+    frame_x = models.IntegerField(default=0, null=False, blank=True)
+    frame_y = models.IntegerField(default=0, null=False, blank=True)
+    frame_w = models.IntegerField(default=0, null=False, blank=True)
+    frame_h = models.IntegerField(default=0, null=False, blank=True)
+
     date = models.DateTimeField(blank=True, null=True)
 
     def get_scores_save(self, project: Project):
@@ -343,24 +368,20 @@ class ImageFile(models.Model):
             .filter(user__in=project.users.all())
 
     def calc_varianz(self):
-        _params = ["s_eye", "s_nose", "s_cheek", "s_ear", "s_whiskers"]
-
         scores = self.get_scores_save(self.project)
+        scoring_fields = self.project.features.all().values_list("name", flat=True)
+        if len(scoring_fields) == 0:
+            elog("No ScoreFeatures found!")
+            return
 
         n = scores.distinct("user").count()
         if n >= 2:
 
             varianz = 0
-            varianz_list = {
-                "s_eye": [],
-                "s_nose": [],
-                "s_cheek": [],
-                "s_ear": [],
-                "s_whiskers": []
-            }
+            varianz_list = {key: [] for key in scoring_fields}
 
             for score in scores:
-                for val in _params:
+                for val in scoring_fields:
                     score_value = getattr(score, val)
                     if score_value is not None:
                         feature = varianz_list.get(val)
@@ -373,7 +394,7 @@ class ImageFile(models.Model):
                     continue
                 _varianz = round(statistics.pstdev(_list), 2)
                 varianz += _varianz
-                setattr(self, f"varianz_{key[2:]}", _varianz)
+                setattr(self, f"varianz_{key}", _varianz)
             self.varianz = round(varianz, 2)
             self.save()
             # print("V=", self.varianz, "\n")
@@ -400,35 +421,36 @@ class ImageScore(models.Model):
     project = models.ForeignKey(Project, related_name="scores", on_delete=models.CASCADE)
     comment = models.CharField(max_length=255, null=True, default="", blank=True)
 
-    s_eye = models.IntegerField(default=None, null=True, blank=True)
-    s_nose = models.IntegerField(default=None, null=True, blank=True)
-    s_cheek = models.IntegerField(default=None, null=True, blank=True)
-    s_ear = models.IntegerField(default=None, null=True, blank=True)
-    s_whiskers = models.IntegerField(default=None, null=True, blank=True)
+    data = models.JSONField(blank=True, default=dict)
 
     is_completed = models.BooleanField(default=False)
 
     date = models.DateTimeField(auto_created=True, null=True, blank=True)
 
     def check_completed(self):
-        if self.s_eye is not None and \
-               self.s_nose is not None and \
-               self.s_cheek is not None and \
-               self.s_ear is not None and \
-               self.s_whiskers is not None:
-            self.is_completed = True
-            self.save()
+        scoring_fields = self.project.features.all().values_list("name", flat=True)
+        for _field in scoring_fields:
+            if not self.data.get(_field):
+                return False
+
+        self.is_completed = True
+        self.save()
+        return True
 
     def __str__(self):
+        def readable(_field):
+            return str(_field) if _field is not None else "?"
+
         _id = ""
         if os.getenv("DEBUG"):
             _id = f"[{self.pk}] "
 
-        def readable(_field):
-            return str(_field) if _field is not None else "?"
-
-        scores = readable(self.s_eye) + readable(self.s_nose) + readable(self.s_cheek) + \
-                 readable(self.s_ear) + readable(self.s_whiskers)
+        scores = ""
+        scoring_fields = self.project.features.all().values_list("name", flat=True)
+        for _field in scoring_fields:
+            _data = self.data.get(_field)
+            if _data:
+                scores += readable(_data)
 
         return f"{_id} Score: {scores} for '{self.file.filename}' by {self.user.username}"
 

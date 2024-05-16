@@ -1,15 +1,18 @@
 import { FormCheck } from "react-bootstrap";
 import React from "react";
 import "../ui/css/ScoreGroup.css"
+import { range } from "../../helper";
 
-const ScoreGroup = ({callback, action}) => {
+const ScoreGroup = ({callback, action, options= 3}) => {
 
   return (
     <div key={ `inline-radio-${action}` } className="mb-3">
-      <FormCheck className={"pe-4 custom-radio"} inline name={"score-group"} type={ "radio" } id={ 0 } label={ 0 } onChange={() => callback(action, "0")}/>
-      <FormCheck className={"pe-4 custom-radio"} inline name={"score-group"} type={ "radio" } id={ 1 } label={ 1 } onChange={() => callback(action, "1")}/>
-      <FormCheck className={"pe-4 custom-radio"} inline name={"score-group"} type={ "radio" } id={ 2 } label={ 2 } onChange={() => callback(action, "2")}/>
-      <FormCheck className={"pe-4 custom-radio"} inline name={"score-group"} type={ "radio" } id={ 6 } label={ "Unclear" } onChange={() => callback(action, "X")}/>
+      { range(0, options).map(score => {
+        return <FormCheck className={"pe-4 custom-radio"} inline name={"score-group"} type={ "radio" }
+                          id={ score } label={ score } onChange={() => callback(action, score)}/>
+      })}
+      <FormCheck className={"pe-4 custom-radio"} inline name={"score-group"} type={ "radio" }
+                 id={ options + 1 } label={ "Unclear" } onChange={() => callback(action, "X")}/>
     </div>
   );
 };

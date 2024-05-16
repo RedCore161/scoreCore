@@ -26,11 +26,17 @@ class ViewSetCreateModel(object):
         score, created = ImageScore.objects.get_or_create(user=user,
                                                           project=image_file.project,
                                                           file=image_file)
-        score.s_eye = replace_none(data[0])
-        score.s_nose = replace_none(data[1])
-        score.s_cheek = replace_none(data[2])
-        score.s_ear = replace_none(data[3])
-        score.s_whiskers = replace_none(data[4])
+
+        scoring_fields = image_file.project.features.all().values_list("name", flat=True)
+        _i = 0
+
+        score.data = dict(zip(scoring_fields, data))
+        score.data = {k: replace_none(v) for k, v in zip(scoring_fields, data)}
+        # score.s_eye = replace_none(data[0])
+        # score.s_nose = replace_none(data[1])
+        # score.s_cheek = replace_none(data[2])
+        # score.s_ear = replace_none(data[3])
+        # score.s_whiskers = replace_none(data[4])
         image_file.calc_varianz()
 
         if created:

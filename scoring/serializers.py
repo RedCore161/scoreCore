@@ -3,7 +3,7 @@ from django.contrib.auth.password_validation import UserAttributeSimilarityValid
     MinimumLengthValidator
 from rest_framework import serializers
 
-from scoring.models import Project, ImageScore, ImageFile, Backup
+from scoring.models import Project, ImageScore, ImageFile, Backup, ScoreFeature
 from scoring.validators import NumberValidator
 
 
@@ -33,9 +33,18 @@ class PasswordSerializer(serializers.Serializer):
                                          validators=[UserAttributeSimilarityValidator,
                                                      MinimumLengthValidator,
                                                      NumberValidator,
-                                                     #TODO
-                                                     # CommonPasswordValidator(get_path_setup("common-passwords.txt.gz")),
+                                                     # TODO CommonPasswordValidator(get_path_setup("common-passwords.txt.gz")),
                                                      ])
+
+
+class ScoreFeaturesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScoreFeature
+        exclude = ["project"]
+
+    @staticmethod
+    def get_clazz_name(_):
+        return "scorefeature"
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -46,6 +55,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     scoresCount = serializers.SerializerMethodField("get_scores_count")
     scoresOwn = serializers.SerializerMethodField("get_own_scores_count")
     evaluations = serializers.SerializerMethodField("get_evaluations")
+    features = serializers.SerializerMethodField("get_features")
 
     class Meta:
         model = Project
@@ -56,53 +66,59 @@ class ProjectSerializer(serializers.ModelSerializer):
         return "project"
 
     @staticmethod
-    def get_is_finished(obj: Project):
-        return obj.is_finished()
+    def get_is_finished(project: Project):
+        return project.is_finished()
 
     @staticmethod
-    def get_total_images_count(obj: Project):
-        return obj.get_all_files_save().count()
+    def get_total_images_count(project: Project):
+        return project.get_all_files_save().count()
 
     @staticmethod
-    def get_useless_count(obj: Project):
-        return obj.files.filter(useless=True, hidden=False).count()
+    def get_useless_count(project: Project):
+        return project.files.filter(useless=True, hidden=False).count()
 
     @staticmethod
-    def get_scores_count(obj: Project):
-        return obj.get_all_scores_save().count()
+    def get_scores_count(project: Project):
+        return project.get_all_scores_save().count()
 
     @staticmethod
-    def get_evaluations(obj: Project):
-        return obj.get_existing_evaluations()
+    def get_evaluations(project: Project):
+        return project.get_existing_evaluations()
 
-    def get_own_scores_count(self, obj: Project):
-        if not self.context.get("user"):
+    @staticmethod
+    def get_features(project: Project):
+        return ScoreFeaturesSerializer(project.features.all(), many=True).data
+
+    def get_own_scores_count(self, project: Project):
+        _user = self.context.get("user")
+        if not _user:
             return 0
-        user = User.objects.get(pk=self.context.get("user"))
-        return obj.get_all_scores_save().filter(user=user).count()
+        user = User.objects.get(pk=_user)
+        return project.get_all_scores_save().filter(user=user).count()
 
 
 class ImageScoreSerializer(serializers.ModelSerializer):
     clazz = serializers.SerializerMethodField("get_clazz_name")
     file_name = serializers.SerializerMethodField("get_filename")
     full_path = serializers.SerializerMethodField("get_full_path")
+    # project = ProjectSerializer()
     user = MinimalUserSerializer(read_only=True)
 
     class Meta:
         model = ImageScore
-        exclude = ("date", "project", "file")
+        exclude = ["date", "project", "file"]
 
     @staticmethod
     def get_clazz_name(_):
         return "imagescore"
 
     @staticmethod
-    def get_filename(obj: ImageScore):
-        return obj.file.filename
+    def get_filename(score: ImageScore):
+        return score.file.filename
 
     @staticmethod
-    def get_full_path(obj: ImageScore):
-        return obj.file.path.replace("\\", "/") + "/" + obj.file.filename
+    def get_full_path(score: ImageScore):
+        return score.file.path.replace("\\", "/") + "/" + score.file.filename
 
 
 class ImageFileSerializer(serializers.ModelSerializer):
@@ -119,9 +135,9 @@ class ImageFileSerializer(serializers.ModelSerializer):
         return "imagefile"
 
     @staticmethod
-    def get_rel_path(obj: ImageFile):
+    def get_rel_path(file: ImageFile):
         # remove '../media/'
-        return obj.get_rel_path()
+        return file.get_rel_path()
 
 
 class BackupSerializer(serializers.ModelSerializer):

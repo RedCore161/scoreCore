@@ -1,12 +1,12 @@
 from rest_framework import viewsets
-from rest_framework.decorators import permission_classes, action
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from scoring.basics import parse_int
 from scoring.helper import build_abs_path, get_fields_from_bit
-from scoring.models import Project, ImageFile, ImageScore, scoring_fields
-from scoring.serializers import ProjectSerializer, ImageFileSerializer, ImageScoreSerializer
+from scoring.models import Project, ImageFile, ImageScore
+from scoring.serializers import ProjectSerializer, ImageFileSerializer, ImageScoreSerializer, ScoreFeaturesSerializer
 from scoring.views.viewsets.base_viewset import StandardResultsSetPagination
 from scoring.views.viewsets.viewset_creator import ViewSetCreateModel
 from server.views import RequestSuccess, RequestFailed
@@ -20,8 +20,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, url_path="list", methods=["GET"])
     def list_projects(self, request):
-        serializer = ProjectSerializer(Project.objects.filter(users=request.user), context={"user": request.user.pk},
-                                       many=True)
+        serializer = ProjectSerializer(Project.objects.filter(users=request.user),
+                                       context={"user": request.user.pk}, many=True)
         return Response(serializer.data)
 
     @action(detail=True, url_path="recalculate-varianz", methods=["GET"])
@@ -37,22 +37,25 @@ class ProjectViewSet(viewsets.ModelViewSet):
         _fields = parse_int(request.GET.get("fields", 0))
         bits = get_fields_from_bit(_fields)
 
+        scoring_fields = _project.features.all()
+
         _index = 0
         _filter = {}
-        for bit in bits:
-            if bit:
-                #print(f"{_index=} => {scoring_fields[_index]=}")
-                _filter.update({f"{scoring_fields[_index]}__isnull": False})
-            _index += 1
+        # for bit in bits:
+        #     if bit:
+        #         # print(f"{_index=} => {scoring_fields[_index]=}")
+        #         _filter.update({f"{scoring_fields[_index]}__isnull": False})
+        #     _index += 1
 
-        print("_filter", _filter)
+        print(f"{_filter=}, {bits=}")
         qs = ImageScore.objects.filter(project=pk, user=request.user, **_filter).order_by("-pk")
-        serializer = ImageScoreSerializer(qs, many=True, read_only=True)
+        serializer_scores = ImageScoreSerializer(qs, many=True, read_only=True)
+        serializer_features = ScoreFeaturesSerializer(_project.features.all(), many=True, read_only=True)
         if not _project.is_finished():
             data = ViewSetCreateModel.get_next_image(pk, request.user, request.GET.get("file"))
-            data.update({"history": serializer.data})
+            data.update({"history": serializer_scores.data, "features": serializer_features.data})
             return RequestSuccess(data)
-        return RequestSuccess({"is_finished": True, "files_left": 0, "history": serializer.data})
+        return RequestSuccess({"is_finished": True, "files_left": 0, "history": serializer_scores.data})
 
     @action(detail=True, url_path="images/all", methods=["GET"])
     def get_images_all(self, request, pk):

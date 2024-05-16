@@ -1,20 +1,34 @@
 #!/bin/bash
+function pprint() {
+   printf "\n\033[0;36m "
+   printf "${1}"
+   printf "scoring"
+}
 
-printf "\n\033[0;36m [INFO] Scoring-Backend will be started! \033[0m\n"
+pprint "[INFO] Scoring-Backend will be started!"
 
 if [ -z "${1}" ]; then
-  printf "\n\033[0;31m [EXIT] No Backend-Port given... \033[0m\n"
+  pprint "[EXIT] No Backend-Port given..."
   exit 1
 fi
 
 rm -rf server/__pycache__/
 rm -rf scoring/__pycache__/
 
-printf "\n\033[0;36m ### Running Django-Scripts \033[0m\n"
-python manage.py makemigrations
-python manage.py migrate
-python manage.py createadmin
+pprint "### Running Django-Scripts for ${DOMAIN}"
+pprint "[1] collectstatic"
 python manage.py collectstatic --noinput
 
-printf "\n\033[0;36m ### Starting Webserver \033[0m\n"
+pprint "[2] makemigrations"
+python manage.py makemigrations
+
+pprint "[3] migrate"
+python manage.py migrate
+
+if [ "$CELERY_ON_BOOT" = "1" ]; then
+  pprint "[4] celery worker"
+  celery -A server.celery worker --loglevel=info --logfile "${PROJECT_ROOT}/celery.log" -E -P eventlet &
+fi
+
+pprint "### Starting Webserver"
 daphne -b 0.0.0.0 -p "${1}" server.asgi:application
