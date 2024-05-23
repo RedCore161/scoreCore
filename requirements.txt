@@ -1,7 +1,7 @@
 asgiref~=3.8.1
 celery~=5.4.0
 channels~=4.1.0
-channels-redis~=4.2.0       # install https://visualstudio.microsoft.com/de/visual-cpp-build-tools/
+channels-redis~=4.2.0           # install https://visualstudio.microsoft.com/de/visual-cpp-build-tools/
 colorama~=0.4.6
 daphne~=4.1.2
 Django~=5.0.5
@@ -14,13 +14,13 @@ django-polymorphic~=3.1.0
 django-redis~=5.4.0
 djangorestframework~=3.15.1
 djangorestframework-simplejwt~=5.3.1
-docker~=7.0.0
+docker~=7.1.0
 eventlet~=0.36.1
 filetype~=1.2.0
 flower~=2.0.1
 gunicorn~=22.0.0
 hiredis~=2.3.2
-loguru~=0.6.0
+loguru~=0.7.2
 jsonfield~=3.1.0
 pandas
 numpy~=1.26.4
@@ -31,13 +31,14 @@ pip-review~=1.3.0               # Usage: pip-review --interactive
 psycopg2-binary~=2.9.9
 pyparsing~=3.1.2
 redis~=5.0.1
-requests~=2.31.0
-ruff~=0.4.3                     # ruff check --fix
+requests~=2.32.2
+ruff~=0.4.5                     # ruff check --fix
 simplejson~=3.19.2
 uvicorn~=0.29.0
 xlrd~=2.0.1
-xlsxwriter~=3.0.3
+XlsxWriter~=3.2.0
 
+setuptools~=70.0.0
 
 # CMDS
 # pip index versions redis  # list available versions

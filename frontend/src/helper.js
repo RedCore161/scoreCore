@@ -19,6 +19,20 @@ export const MULTISELECT_STYLE = {
   }
 };
 
+export function getGradiColor(a, b) {
+  // Ensure the value is within the range [0, 1]
+  let value = b !== 0 ? a / b : 0
+  if (value < 0) value = 0;
+  if (value > 1) value = 1;
+
+  // Calculate red and green components
+  const red = Math.round(255 * (1 - value));
+  const green = Math.round(255 * value);
+
+  // Return the color in RGB format
+  return `rgb(${red},${green},0)`;
+}
+
 export function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }

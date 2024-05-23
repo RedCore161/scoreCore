@@ -346,6 +346,7 @@ class Project(models.Model):
 
 class ScoreFeature(models.Model):
     project = models.ForeignKey(Project, related_name="features", on_delete=models.CASCADE)
+    icon = models.CharField(max_length=5, null=True, default="", blank=True)
     name = models.CharField(max_length=255, null=False)
     bit = models.IntegerField(default=0, null=False, blank=True)
     option_count = models.IntegerField(default=3, null=False, blank=True)
@@ -354,7 +355,7 @@ class ScoreFeature(models.Model):
         _id = ""
         if os.getenv("DEBUG"):
             _id = f"[{self.pk}] "
-        return f"{_id} Project: {self.project} > {self.name=}, {self.bit=}"
+        return f"{_id} Project: {self.project} > {self.icon}{self.name}, bit={self.bit}"
 
 
 class ImageFile(models.Model):
@@ -365,11 +366,12 @@ class ImageFile(models.Model):
     hidden = models.BooleanField(default=False)
     varianz = models.FloatField(default=0, null=True, blank=True)
 
-    varianz_eye = models.FloatField(default=None, null=True, blank=True)
-    varianz_nose = models.FloatField(default=None, null=True, blank=True)
-    varianz_cheek = models.FloatField(default=None, null=True, blank=True)
-    varianz_ear = models.FloatField(default=None, null=True, blank=True)
-    varianz_whiskers = models.FloatField(default=None, null=True, blank=True)
+    # varianz_eye = models.FloatField(default=None, null=True, blank=True)
+    # varianz_nose = models.FloatField(default=None, null=True, blank=True)
+    # varianz_cheek = models.FloatField(default=None, null=True, blank=True)
+    # varianz_ear = models.FloatField(default=None, null=True, blank=True)
+    # varianz_whiskers = models.FloatField(default=None, null=True, blank=True)
+    data = models.JSONField(blank=True, default=dict)
 
     width = models.IntegerField(default=0, null=False, blank=True)
     height = models.IntegerField(default=0, null=False, blank=True)
