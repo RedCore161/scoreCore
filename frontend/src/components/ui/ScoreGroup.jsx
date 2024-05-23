@@ -9,10 +9,11 @@ const ScoreGroup = ({callback, action, options= 3}) => {
     <div key={ `inline-radio-${action}` } className="mb-3">
       { range(0, options).map(score => {
         return <FormCheck className={"pe-4 custom-radio"} inline name={"score-group"} type={ "radio" }
-                          id={ score } label={ score } onChange={() => callback(action, score)}/>
+                          key={ `f-check-${score}` }
+                          id={ score } label={ score } onChange={() => callback(action, score)} />
       })}
       <FormCheck className={"pe-4 custom-radio"} inline name={"score-group"} type={ "radio" }
-                 id={ options + 1 } label={ "Unclear" } onChange={() => callback(action, "X")}/>
+                 id={ options + 1 } label={ "Unclear" } onChange={() => callback(action, "X")} />
     </div>
   );
 };

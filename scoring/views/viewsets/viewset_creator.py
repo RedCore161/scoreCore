@@ -2,12 +2,10 @@ import random
 
 from django.db.models import Count
 from django.utils import timezone
-from rest_framework.response import Response
 
-from scoring.helper import elog, dlog, ilog
+from scoring.helper import dlog
 from scoring.models import ImageFile, ImageScore, Project
 from scoring.serializers import ImageFileSerializer
-from server.views import RequestSuccess
 
 
 class ViewSetCreateModel(object):

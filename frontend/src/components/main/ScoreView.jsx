@@ -15,7 +15,7 @@ import { useAuthHeader } from "react-auth-kit";
 import { useSearchParams } from "react-router-dom";
 import { Multiselect } from "multiselect-react-dropdown";
 import Offcanvas from 'react-bootstrap/Offcanvas';
-import "../ui/css/ScoreView.css"
+import "../ui/css/ScoreView.css";
 import ScoreInfo from "../ui/ScoreInfo";
 
 const ScoreView = () => {
@@ -46,7 +46,7 @@ const ScoreView = () => {
       setImages(data);
       setLoadingDone(true);
       setSelectedFeatures(data.features.map(ft => ft.id));
-      dispatch({ type: actionTypes.SET_ACTIVE, payload: data.features[0].name })
+      dispatch({ type: actionTypes.SET_ACTIVE, payload: data.features[0].name });
     });
   };
 
@@ -56,10 +56,10 @@ const ScoreView = () => {
 
 
   const selectCallback = (action, value) => {
-    let _index = images.features.findIndex((ft) => ft.name === action)
-    let _next = ""
+    let _index = images.features.findIndex((ft) => ft.name === action);
+    let _next = "";
     if (_index > -1 && _index < images.features.length - 1) {
-      _next = images.features[_index + 1].name
+      _next = images.features[_index + 1].name;
     }
     dispatch({ type: actionTypes.SET_SCORE, payload: { action: action, value: value, next: _next } });
   };
@@ -140,16 +140,16 @@ const ScoreView = () => {
 
   function _get_variant(name) {
     if (state.active === name) {
-      return { variant: "info", clazz: "btnSelected" }
+      return { variant: "info", clazz: "btnSelected" };
     }
     if (name in state) {
-      return { variant: "success", clazz: "" }
+      return { variant: "success", clazz: "" };
     }
-    return { variant: "primary", clazz: "" }
+    return { variant: "primary", clazz: "" };
   }
 
   function get_state_score() {
-    return 1 // TODO
+    return 1; // TODO
   }
 
 
@@ -180,7 +180,8 @@ const ScoreView = () => {
                   <Multiselect
                     displayValue="name"
                     groupBy="level"
-                    onKeyPressFn={ function noRefCheck() {} }
+                    onKeyPressFn={ function noRefCheck() {
+                    } }
                     onRemove={ (selectedList) => setSelectedFeatures(selectedList.map(obj => obj.id)) }
                     onSelect={ (selectedList) => setSelectedFeatures(selectedList.map(obj => obj.id)) }
                     placeholder={ "Select Features" }
@@ -217,10 +218,11 @@ const ScoreView = () => {
               <Col md={ 8 }>
                 <ButtonGroup size="lg">
                   { images.features.map((feature, index) => {
-                    let style = _get_variant(feature.name)
+                    let style = _get_variant(feature.name);
                     return <Button variant={ style.variant }
                                    className={ style.clazz }
                                    disabled={ !selectedFeatures.includes(feature.id) }
+                                   key={ `btn-grp-${ index }` }
                                    onClick={ () => dispatch({
                                      type: actionTypes.SET_ACTIVE,
                                      payload: feature.name
@@ -258,9 +260,10 @@ const ScoreView = () => {
                 <Offcanvas.Title>Scoring History</Offcanvas.Title>
               </Offcanvas.Header>
               <Offcanvas.Body>
-
                 { images.history && images.history.map(score => {
-                  return <ScoreInfo score={ score } />
+                  return <ScoreInfo score={ score }
+                                    features={ images.features }
+                                    key={ `sc-info-${ score.id }` }/>;
                 }) }
               </Offcanvas.Body>
             </Offcanvas>

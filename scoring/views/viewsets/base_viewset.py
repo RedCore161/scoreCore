@@ -6,9 +6,9 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from scoring.serializers import RedcoreTokenObtainPairSerializer
 from server.views import RequestFailed, RequestSuccess
 
 
@@ -28,7 +28,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 
 class ExtendedTokenObtainPairView(TokenObtainPairView):
-    serializer_class = TokenObtainPairSerializer
+    serializer_class = RedcoreTokenObtainPairSerializer
 
     def post(self, request: Request, *args, **kwargs) -> Response:
         serializer = self.get_serializer(data=request.data)

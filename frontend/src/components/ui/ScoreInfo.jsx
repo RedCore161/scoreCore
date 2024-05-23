@@ -1,11 +1,21 @@
 import React from "react";
-import "../ui/css/ScoreInfo.css"
+import "../ui/css/ScoreInfo.css";
+import ReactTimeAgo from "react-time-ago";
 
-const ScoreInfo = ({score}) => {
+//  See https://dreamyguy.github.io/react-emojis/
+//  🐵🐶🐱🐷🐭🐰
+//  ✔⭕️❌
+//  🦵🦶👂👃🦷🦴👀👅👄
+
+const ScoreInfo = ({ score, features }) => {
+
+  const scored = Object.values(score.data).filter(e => e).length;
+  const scores = features.length;
 
   return (
     <div>
-      {Object.keys(score.data)}
+      { score.file_name } ({ scored } of { scores }) (<ReactTimeAgo date={ score.timestamp } locale="de-DE"/>)
+      {/*{Object.keys(data)}*/ }
     </div>
   );
 };

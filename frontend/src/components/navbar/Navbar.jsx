@@ -1,15 +1,16 @@
 import { Button, Col } from "react-bootstrap";
 import React from "react";
-import { useSignOut } from "react-auth-kit";
+import { useAuthUser, useSignOut } from "react-auth-kit";
 import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 
 const Navbar = () => {
 
-  const isAdmin = localStorage.getItem("is_staff")
   const singOut = useSignOut();
   const navigate = useNavigate();
   const location = useLocation();
+  const auth = useAuthUser();
+  const isAuth = auth()
 
   const logout = () => {
     singOut();
@@ -23,7 +24,7 @@ const Navbar = () => {
         window.location.reload();
       } }>Logout</Button>
       <Button href="/project/overview/" variant="info" className="w-100 mt-2" size="lg">Projects</Button>
-      { isAdmin === "true" && (
+      { isAuth.is_superuser && (
         <>
           <Button href="/project/evaluate/" variant="info" className="w-100 mt-2" size="lg">Evaluate</Button>
           <Button href="/project/backup/" variant="info" className="w-100 mt-2" size="lg">Backup</Button>
@@ -31,7 +32,6 @@ const Navbar = () => {
           <Button href={`${process.env.REACT_APP_BACKEND_URL}/admin`} variant="primary" className="w-100 mt-2" size="lg">Admin</Button>
         </>
       ) }
-
     </Col>
   );
 };

@@ -13,6 +13,24 @@ from scoring.helper import get_project_evaluation_dir, get_media_path, save_chec
     set_logging_file, INFO_FILE_NAME, is_image, elog
 from server.settings import BASE_DIR
 from loguru import logger
+from rest_framework import serializers
+import datetime
+
+
+class TimestampField(serializers.Field):
+    def to_representation(self, value):
+        # Convert the datetime value to a timestamp
+        if value is None:
+            return None
+        return int(value.timestamp() * 1000)
+
+    def to_internal_value(self, data):
+        # Convert the timestamp to a datetime value
+        try:
+            dt = datetime.datetime.fromtimestamp(int(data))
+            return dt
+        except (ValueError, TypeError):
+            raise serializers.ValidationError("Invalid timestamp")
 
 
 class Project(models.Model):

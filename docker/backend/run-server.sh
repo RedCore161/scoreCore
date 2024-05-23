@@ -2,7 +2,7 @@
 function pprint() {
    printf "\n\033[0;36m "
    printf "${1}"
-   printf "scoring"
+   printf "\033[0m\n"
 }
 
 pprint "[INFO] Scoring-Backend will be started!"

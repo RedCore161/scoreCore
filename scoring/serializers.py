@@ -2,8 +2,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import UserAttributeSimilarityValidator, \
     MinimumLengthValidator
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from scoring.models import Project, ImageScore, ImageFile, Backup, ScoreFeature
+from scoring.models import Project, ImageScore, ImageFile, Backup, ScoreFeature, TimestampField
 from scoring.validators import NumberValidator
 
 
@@ -101,12 +102,13 @@ class ImageScoreSerializer(serializers.ModelSerializer):
     clazz = serializers.SerializerMethodField("get_clazz_name")
     file_name = serializers.SerializerMethodField("get_filename")
     full_path = serializers.SerializerMethodField("get_full_path")
+    timestamp = TimestampField(source='date')
     # project = ProjectSerializer()
     user = MinimalUserSerializer(read_only=True)
 
     class Meta:
         model = ImageScore
-        exclude = ["date", "project", "file"]
+        exclude = ["project", "file"]
 
     @staticmethod
     def get_clazz_name(_):
@@ -119,6 +121,10 @@ class ImageScoreSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_full_path(score: ImageScore):
         return score.file.path.replace("\\", "/") + "/" + score.file.filename
+
+    # @staticmethod
+    # def get_timestamp(score: ImageScore):
+    #     return score.date
 
 
 class ImageFileSerializer(serializers.ModelSerializer):
@@ -150,3 +156,25 @@ class BackupSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_clazz_name(_):
         return "backup"
+
+
+class RedcoreTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+    def update(self, instance, validated_data):
+        pass
+
+    def create(self, validated_data):
+        pass
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token["username"] = user.username
+        token["is_staff"] = user.is_staff
+        token["is_superuser"] = user.is_superuser
+        token["is_demo"] = user.username in ["demo", "unit_tests"]
+        # ...
+
+        return token

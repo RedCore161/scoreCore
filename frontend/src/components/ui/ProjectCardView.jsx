@@ -2,11 +2,13 @@ import { Col, Row } from "react-bootstrap";
 import React from "react";
 import "../ui/css/ProjectCardView.css";
 import { useNavigate } from "react-router-dom";
+import { useAuthUser } from "react-auth-kit";
 
 const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, scoresOwn, users,
                            wanted_scores_per_user, wanted_scores_per_image, isFinished }) => {
   let navigate = useNavigate();
-  const isAdmin = localStorage.getItem("is_staff")
+  const auth = useAuthUser();
+  const isAuth = auth()
 
   function get_score_ratio() {
     if (imagesTotal === 0){
@@ -18,7 +20,7 @@ const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, sco
   const score_ratio = get_score_ratio()
 
   function navigateToUselessImages() {
-    if (isAdmin === "true") {
+    if (isAuth.is_superuser) {
       navigate(`/project/${ id }/useless`)
     }
   }
@@ -39,7 +41,7 @@ const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, sco
         <Row>
           <Col className={`project-Card-Header ${isFinished === true ? "bg-success" : "bg-info"}`}>
             <i className={"project-Card-Header-Content"} onClick={ () => navigate(`/project/${ id }/score`) }>{ name }</i>
-            { isAdmin === "true" && (
+            { isAuth.is_superuser && (
               <div className={"float-end"}>
                 <i className="project-Card-Header-Content bi bi-patch-check" onClick={() => navigate(`/project/${ id }/investigate`)}/>&nbsp;
                 <i className="project-Card-Header-Content bi bi-calculator-fill" onClick={() => navigate(`/project/${ id }/differences`)}/>
