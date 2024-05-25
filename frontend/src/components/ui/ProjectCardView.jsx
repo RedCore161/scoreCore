@@ -1,10 +1,10 @@
-import { Col, Row } from "react-bootstrap";
+import { Button, Col, Row } from "react-bootstrap";
 import React from "react";
 import "../ui/css/ProjectCardView.css";
 import { useNavigate } from "react-router-dom";
 import { useAuthUser } from "react-auth-kit";
 
-const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, scoresOwn, users,
+const ProjectCardView = ({ createProject, id, name, imagesTotal, uselessCount, scoresCount, scoresOwn, users,
                            wanted_scores_per_user, wanted_scores_per_image, isFinished }) => {
   let navigate = useNavigate();
   const auth = useAuthUser();
@@ -43,6 +43,7 @@ const ProjectCardView = ({ id, name, imagesTotal, uselessCount, scoresCount, sco
             <i className={"project-Card-Header-Content"} onClick={ () => navigate(`/project/${ id }/score`) }>{ name }</i>
             { isAuth.is_superuser && (
               <div className={"float-end"}>
+                <Button onClick={() => createProject()}>Create Project</Button>
                 <i className="project-Card-Header-Content bi bi-patch-check" onClick={() => navigate(`/project/${ id }/investigate`)}/>&nbsp;
                 <i className="project-Card-Header-Content bi bi-calculator-fill" onClick={() => navigate(`/project/${ id }/differences`)}/>
               </div>
