@@ -10,7 +10,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir, get_path_backup, dlog, \
-    set_logging_file, INFO_FILE_NAME, is_image, elog
+    set_logging_file, INFO_FILE_NAME, is_image, elog, get_rel_path
 from server.settings import BASE_DIR
 from loguru import logger
 from rest_framework import serializers
@@ -73,7 +73,7 @@ class Project(models.Model):
         return self.get_all_files_save().count()
 
     def is_finished(self):
-        print("XXX", self.get_score_count(), self.get_files_count(), self.get_score_count() >= self.get_files_count())
+        # dlog("XXX", self.get_score_count(), self.get_files_count(), self.get_score_count() >= self.get_files_count())
         return self.get_score_count() >= self.get_files_count() * self.wanted_scores_per_image
 
     def evaluate_data_as_xlsx(self, data):
@@ -299,7 +299,7 @@ class Project(models.Model):
         _path_infofile = os.path.join(_path, INFO_FILE_NAME)
 
         if os.path.exists(_path_infofile):
-            with open(_path_infofile, 'r') as f:
+            with open(_path_infofile, "r") as f:
                 lines = f.readlines()
                 images = lines[3:]
 
@@ -314,17 +314,20 @@ class Project(models.Model):
                     if get_or_create_amount == 0:
                         return True
 
-                    image_file, created = ImageFile.objects.get_or_create(project=self, filename=_file, path=_path)
-
-                    dlog("=>", _file, created, "| Useless: ", image_file.useless)
+                    image_file, created = ImageFile.objects.get_or_create(project=self, filename=_file,
+                                                                          path=get_rel_path(_path))
+                    full_path = os.path.join(_path, _file)
+                    dlog(f"=> {_file=}, {full_path}, {created=}, Useless={image_file.useless}")
 
                     if created:
                         if enabled_log:
-                            logger.info(f"Created ImageFile for {_path}{os.sep}{_file} #{get_or_create_amount}")
+                            logger.info(f"Created ImageFile for {full_path} #{get_or_create_amount}")
 
-                        if is_image(_file):
-                            with PilImage.open(_file) as img:
-                                width, height = img.size
+                        if is_image(full_path):
+                            with PilImage.open(full_path) as im:
+                                w, h = im.size
+                                image_file.width = w
+                                image_file.height = h
 
                         image_file.date = timezone.now()
                         image_file.save()
@@ -333,7 +336,7 @@ class Project(models.Model):
                     else:
                         if not image_file.useless:
                             if enabled_log:
-                                logger.info(f"Existing ImageFile for {_path}{os.sep}{_file} #{get_or_create_amount}")
+                                logger.info(f"Existing ImageFile for {full_path} #{get_or_create_amount}")
                             get_or_create_amount -= 1
         return False
 
@@ -366,11 +369,6 @@ class ImageFile(models.Model):
     hidden = models.BooleanField(default=False)
     varianz = models.FloatField(default=0, null=True, blank=True)
 
-    # varianz_eye = models.FloatField(default=None, null=True, blank=True)
-    # varianz_nose = models.FloatField(default=None, null=True, blank=True)
-    # varianz_cheek = models.FloatField(default=None, null=True, blank=True)
-    # varianz_ear = models.FloatField(default=None, null=True, blank=True)
-    # varianz_whiskers = models.FloatField(default=None, null=True, blank=True)
     data = models.JSONField(blank=True, default=dict)
 
     width = models.IntegerField(default=0, null=False, blank=True)
@@ -422,8 +420,7 @@ class ImageFile(models.Model):
         return 0
 
     def get_rel_path(self):
-        index = self.path.find("media")
-        return self.path[index + 6:]
+        return get_rel_path(self.path)
 
     def get_scored_users(self):
         return list(self.scores.order_by("user__username").values_list("user__username", flat=True))
@@ -469,8 +466,7 @@ class ImageScore(models.Model):
         scoring_fields = self.project.features.all().values_list("name", flat=True)
         for _field in scoring_fields:
             _data = self.data.get(_field)
-            if _data:
-                scores += readable(_data)
+            scores += readable(_data)
 
         return f"{_id} Score: {scores} for '{self.file.filename}' by {self.user.username}"
 

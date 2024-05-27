@@ -15,8 +15,8 @@ import { useAuthHeader } from "react-auth-kit";
 import { useSearchParams } from "react-router-dom";
 import { Multiselect } from "multiselect-react-dropdown";
 import Offcanvas from 'react-bootstrap/Offcanvas';
-import "../ui/css/ScoreView.css";
 import ScoreInfo from "../ui/ScoreInfo";
+import "../ui/css/ScoreView.css";
 
 const ScoreView = () => {
 
@@ -45,15 +45,23 @@ const ScoreView = () => {
     fetchImage(id, params).then((data) => {
       setImages(data);
       setLoadingDone(true);
-      setSelectedFeatures(data.features.map(ft => ft.id));
-      dispatch({ type: actionTypes.SET_ACTIVE, payload: data.features[0].name });
+      setSelectedFeatures(data?.features.map(ft => ft.id));
+      let init = data?.score?.data
+      if (init) {
+        Object.keys(init).forEach(key => {
+          if (init[key] === null) {
+            delete init[key];
+          }
+        });
+        dispatch({ type: actionTypes.SET_INIT, payload: init});
+      }
+      dispatch({ type: actionTypes.SET_ACTIVE, payload: data?.features[0].name });
     });
   };
 
   // useEffect(() => {
-  //   console.log("selectedFeatures", selectedFeatures);
-  // }, [selectedFeatures]);
-
+  //   console.log("images", images?.score?.data);
+  // }, [images]);
 
   const selectCallback = (action, value) => {
     let _index = images.features.findIndex((ft) => ft.name === action);
@@ -131,7 +139,7 @@ const ScoreView = () => {
   }
 
   function getImagePath() {
-    return [process.env.REACT_APP_BACKEND_URL, "media", images.image.rel_path, images.image.filename].join("/");
+    return [process.env.REACT_APP_BACKEND_URL, "media", images.image.path, images.image.filename].join("/");
   }
 
   function changeCommentListener(event) {
@@ -139,7 +147,7 @@ const ScoreView = () => {
   }
 
   function _get_variant(name) {
-    if (state.active === name) {
+    if (state._active === name) {
       return { variant: "info", clazz: "btnSelected" };
     }
     if (name in state) {
@@ -175,13 +183,12 @@ const ScoreView = () => {
               <Col>
                 <Form.Group>
                   <Form.Label>
-                    Rate features
+                    Active rating features
                   </Form.Label>
                   <Multiselect
                     displayValue="name"
                     groupBy="level"
-                    onKeyPressFn={ function noRefCheck() {
-                    } }
+                    onKeyPressFn={ function noRefCheck() {} }
                     onRemove={ (selectedList) => setSelectedFeatures(selectedList.map(obj => obj.id)) }
                     onSelect={ (selectedList) => setSelectedFeatures(selectedList.map(obj => obj.id)) }
                     placeholder={ "Select Features" }
@@ -194,6 +201,14 @@ const ScoreView = () => {
               </Col>
               <Col md={ 4 }>
                 Images left: { images.files_left }
+              </Col>
+            </Row>
+
+            <Row className={"pt-2"}>
+              <Col>
+                <Button size="lg" variant={ "primary" } onClick={ () => setShow(true) }>
+                  Show History
+                </Button>
               </Col>
             </Row>
 
@@ -237,7 +252,7 @@ const ScoreView = () => {
 
             <Row md={ 8 }>
               <Col>
-                <ScoreGroup callback={ selectCallback } action={ state.active }/>
+                <ScoreGroup callback={ selectCallback } action={ state._active }/>
               </Col>
             </Row>
 
@@ -250,23 +265,30 @@ const ScoreView = () => {
                 <Button className={ "ms-2" } size="lg" variant={ "danger" } onClick={ () => markAsUseless() }>
                   Mark as Useless
                 </Button>
-                <Button className={ "ms-2" } size="lg" variant={ "primary" } onClick={ () => setShow(true) }>
+              </Col>
+            </Row>
+            <Row className={"pt-2"}>
+              <Col>
+                <Button size="lg" variant={ "primary" } onClick={ () => setShow(true) }>
                   Show History
                 </Button>
               </Col>
             </Row>
+
+            {/* History-Side-Panel */}
             <Offcanvas show={ show } onHide={ handleClose } placement={ "end" } name={ "Scoring History" }>
               <Offcanvas.Header closeButton>
                 <Offcanvas.Title>Scoring History</Offcanvas.Title>
               </Offcanvas.Header>
               <Offcanvas.Body>
                 { images.history && images.history.map(score => {
-                  return <ScoreInfo score={ score }
+                  return <ScoreInfo project={ images.image.project } score={ score }
                                     features={ images.features }
                                     key={ `sc-info-${ score.id }` }/>;
                 }) }
               </Offcanvas.Body>
             </Offcanvas>
+
           </>
         )
       ) : <Row><LoadingIcon/></Row> }

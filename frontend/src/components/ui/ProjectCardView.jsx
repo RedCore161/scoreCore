@@ -4,7 +4,7 @@ import "../ui/css/ProjectCardView.css";
 import { useNavigate } from "react-router-dom";
 import { useAuthUser } from "react-auth-kit";
 
-const ProjectCardView = ({ createProject, id, name, imagesTotal, uselessCount, scoresCount, scoresOwn, users,
+const ProjectCardView = ({ id, name, features, icon, imagesTotal, uselessCount, scoresCount, scoresOwn, users,
                            wanted_scores_per_user, wanted_scores_per_image, isFinished }) => {
   let navigate = useNavigate();
   const auth = useAuthUser();
@@ -40,51 +40,52 @@ const ProjectCardView = ({ createProject, id, name, imagesTotal, uselessCount, s
       <div className={"project-Card bg-secondary m-1"} >
         <Row>
           <Col className={`project-Card-Header ${isFinished === true ? "bg-success" : "bg-info"}`}>
-            <i className={"project-Card-Header-Content"} onClick={ () => navigate(`/project/${ id }/score`) }>{ name }</i>
+            <span className={"project-Card-Header-Content"} onClick={ () => navigate(`/project/${ id }/score`) }>{ icon }{ name }</span>
             { isAuth.is_superuser && (
               <div className={"float-end"}>
-                <Button onClick={() => createProject()}>Create Project</Button>
                 <i className="project-Card-Header-Content bi bi-patch-check" onClick={() => navigate(`/project/${ id }/investigate`)}/>&nbsp;
                 <i className="project-Card-Header-Content bi bi-calculator-fill" onClick={() => navigate(`/project/${ id }/differences`)}/>
               </div>
             )}
           </Col>
         </Row>
-        <Row className={"pt-2"}>
-          <Col md={9}>
-            <Row>
-              <Col md={8} className={"project-Card-Item"}>Assigned Users:</Col>
-              <Col className={"project-Card-Content"}>{ users.length }</Col>
-            </Row>
-            <Row>
-              <Col md={8} className={"project-Card-Item"}>Scoreable Images:</Col>
-              <Col className={"project-Card-Content"}>{ imagesTotal }</Col>
-            </Row>
-            <Row>
-              <Col md={8} className={"project-Card-Item"}>Target Scores / User:</Col>
-              <Col className={"project-Card-Content"}>{ wanted_scores_per_user }</Col>
-            </Row>
-            <Row>
-              <Col md={8} className={"project-Card-Item"}>Target Scores / Image:</Col>
-              <Col className={`project-Card-Content ${wanted_scores_per_user > save_wanted_scores && "text-warning"}`}>{ wanted_scores_per_image }</Col>
-            </Row>
-            <Row>
-              <Col md={8} className={"project-Card-Item"}>Scores / Image:</Col>
-              <Col className={`project-Card-Content ${score_ratio > 0 && score_ratio === wanted_scores_per_image && "text-success"}`}>{ score_ratio }</Col>
-            </Row>
-            <Row onClick={() => {navigateToUselessImages()}}>
-              <Col md={8} className={"project-Card-Item"}>Useless Images:</Col>
-              <Col className={`project-Card-Content ${uselessCount > 0 && "text-danger"}`}>{ uselessCount }</Col>
-            </Row>
-            <Row>
-              <Col md={8} className={"project-Card-Item"}>Total Score-Count:</Col>
-              <Col className={"project-Card-Content"}>{ scoresCount }</Col>
-            </Row>
 
-            <Row>
-              <Col md={8} className={"project-Card-Item"}>Your Score-Count:</Col>
-              <Col className={`project-Card-Content ${scoresOwn > 0 && scoresOwn >= wanted_scores_per_user && "text-success"}`}>{ scoresOwn }</Col>
-            </Row>
+        <Row>
+          <Col md={6} className={"project-Card-Item"}>Features:</Col>
+          <Col className={"project-Card-Content"}>{ features.map(ft => ft.name).join(', ') }</Col>
+        </Row>
+        <Row>
+          <Col md={6} className={"project-Card-Item"}>Assigned Users:</Col>
+          <Col className={"project-Card-Content"}>{ users.length }</Col>
+        </Row>
+        <Row>
+          <Col md={6} className={"project-Card-Item"}>Scoreable Images:</Col>
+          <Col className={"project-Card-Content"}>{ imagesTotal }</Col>
+        </Row>
+        <Row>
+          <Col md={6} className={"project-Card-Item"}>Target Scores / User:</Col>
+          <Col className={"project-Card-Content"}>{ wanted_scores_per_user }</Col>
+        </Row>
+        <Row>
+          <Col md={6} className={"project-Card-Item"}>Target Scores / Image:</Col>
+          <Col className={`project-Card-Content ${wanted_scores_per_user > save_wanted_scores && "text-warning"}`}>{ wanted_scores_per_image }</Col>
+        </Row>
+        <Row>
+          <Col md={6} className={"project-Card-Item"}>Scores / Image:</Col>
+          <Col className={`project-Card-Content ${score_ratio > 0 && score_ratio === wanted_scores_per_image && "text-success"}`}>{ score_ratio }</Col>
+        </Row>
+        <Row onClick={() => {navigateToUselessImages()}}>
+          <Col md={6} className={"project-Card-Item"}>Useless Images:</Col>
+          <Col className={`project-Card-Content ${uselessCount > 0 && "text-danger"}`}>{ uselessCount }</Col>
+        </Row>
+        <Row>
+          <Col md={6} className={"project-Card-Item"}>
+            <div>Total Score-Count:</div>
+            <div>Your Score-Count:</div>
+          </Col>
+          <Col md={2} className={"project-Card-Content"}>
+            <div>{ scoresCount }</div>
+            <div className={`${scoresOwn > 0 && scoresOwn >= wanted_scores_per_user && "text-success"}`}>{ scoresOwn }</div>
           </Col>
           <Col className={"score-Info-Container"}>
             { save_wanted_scores === scoresOwn ? (

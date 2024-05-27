@@ -1,11 +1,14 @@
+import os
+
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from scoring.basics import parse_int
-from scoring.helper import build_abs_path, get_fields_from_bit
-from scoring.models import Project, ImageFile, ImageScore
+from scoring.helper import build_abs_path, get_fields_from_bit, get_path_projects, count_images_in_folder, dlog, \
+    get_rel_path, wlog
+from scoring.models import Project, ImageFile, ImageScore, ScoreFeature
 from scoring.serializers import ProjectSerializer, ImageFileSerializer, ImageScoreSerializer, ScoreFeaturesSerializer
 from scoring.views.viewsets.base_viewset import StandardResultsSetPagination
 from scoring.views.viewsets.viewset_creator import ViewSetCreateModel
@@ -31,6 +34,50 @@ class ProjectViewSet(viewsets.ModelViewSet):
             image.calc_varianz()
         return RequestSuccess()
 
+    @action(detail=False, url_path="available", methods=["GET"])
+    def get_available_folders(self, request):
+        project_dir = get_path_projects()
+        folders = os.listdir(project_dir)
+        data = []
+
+        for d in folders:
+            _path = os.path.join(project_dir, d)
+            _rel_path = get_rel_path(_path).replace("\\", "/")
+            _in_use = Project.objects.filter(users=request.user, image_dir=_rel_path).count()
+            count = count_images_in_folder(_path)
+            data.append({"name": d,
+                         "images": count,
+                         "in_use": _in_use > 0})
+
+        return RequestSuccess({"data": data})
+
+    @action(detail=False, url_path="create", methods=["POST"], permission_classes=[IsAdminUser])
+    def create_new_project(self, request):
+
+        name = request.data.get("name")
+        icon = request.data.get("icon")
+        folder = request.data.get("folder")
+        features = request.data.get("features", "").split(",")
+
+        project, created = Project.objects.get_or_create(name=name)
+
+        if not created:
+            return RequestFailed({"reason": "Project with this name already exists..."})
+
+        project.icon = icon
+        project.image_dir = folder
+        project.users.add(request.user)
+        project.save()
+
+        bit = 1
+        for _feature in features:
+            feature, created = ScoreFeature.objects.get_or_create(project=project, name=_feature)
+            feature.bit = bit
+            feature.save()
+            bit *= 2
+
+        return RequestSuccess()
+
     @action(detail=True, url_path="image", methods=["GET"])
     def get_next_image(self, request, pk):
         _project = Project.objects.get(pk=pk)
@@ -47,15 +94,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
         #         _filter.update({f"{scoring_fields[_index]}__isnull": False})
         #     _index += 1
 
-        print(f"{_filter=}, {bits=}")
+        dlog(f"{_filter=}, {bits=}")
         qs = ImageScore.objects.filter(project=pk, user=request.user, **_filter).order_by("-pk")
         serializer_scores = ImageScoreSerializer(qs, many=True, read_only=True)
         serializer_features = ScoreFeaturesSerializer(_project.features.all(), many=True, read_only=True)
+
         if not _project.is_finished():
             data = ViewSetCreateModel.get_next_image(pk, request.user, request.GET.get("file"))
-            data.update({"history": serializer_scores.data, "features": serializer_features.data})
+            data.update({"features": serializer_features.data,
+                         "history": serializer_scores.data})
             return RequestSuccess(data)
-        return RequestSuccess({"is_finished": True, "files_left": 0, "history": serializer_scores.data})
+        return RequestSuccess({"is_finished": True, "files_left": 0,
+                               "history": serializer_scores.data})
 
     @action(detail=True, url_path="images/all", methods=["GET"])
     def get_images_all(self, request, pk):
@@ -92,6 +142,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         project.read_images()
 
         return RequestSuccess()
+
 
     @action(detail=True, url_path="scores", methods=["GET"], permission_classes=[IsAdminUser])
     def get_scores(self, request, pk):

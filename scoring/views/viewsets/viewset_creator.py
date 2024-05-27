@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from scoring.helper import dlog
 from scoring.models import ImageFile, ImageScore, Project
-from scoring.serializers import ImageFileSerializer
+from scoring.serializers import ImageFileSerializer, ImageScoreSerializer
 
 
 class ViewSetCreateModel(object):
@@ -14,7 +14,7 @@ class ViewSetCreateModel(object):
     def create_or_update_imagescore(pk, user, data, comment="") -> bool:
 
         def replace_none(_str):
-            if _str == "X" or _str == '':
+            if _str == "X" or _str == "":
                 return None
             return _str
 
@@ -30,16 +30,14 @@ class ViewSetCreateModel(object):
 
         score.data = dict(zip(scoring_fields, data))
         score.data = {k: replace_none(v) for k, v in zip(scoring_fields, data)}
-        # score.s_eye = replace_none(data[0])
-        # score.s_nose = replace_none(data[1])
-        # score.s_cheek = replace_none(data[2])
-        # score.s_ear = replace_none(data[3])
-        # score.s_whiskers = replace_none(data[4])
         image_file.calc_varianz()
 
         if created:
             score.comment = comment
             score.date = timezone.now()
+
+        if score.comment != comment:
+            score.comment = comment
 
         score.save()
         score.check_completed()
@@ -78,12 +76,18 @@ class ViewSetCreateModel(object):
 
         if file:
             image_file = ImageFile.objects.get(pk=file, project=pk)
-            serializer = ImageFileSerializer(image_file, read_only=True)
-            return {"files_left": count, "image": serializer.data, "scores_ratio": scores_ratio}
+            score = ImageScore.objects.filter(user=user, file=image_file)
+            serializer_file = ImageFileSerializer(image_file, read_only=True)
+            data = {"files_left": count, "image": serializer_file.data, "scores_ratio": scores_ratio}
+
+            if score:
+                serializer_score = ImageScoreSerializer(score[0], read_only=True)
+                data.update({"score": serializer_score.data})
+            return data
 
         if len(images):
             rnd = random.randint(0, len(images) - 1)
-            serializer = ImageFileSerializer(images[rnd])
-            return {"files_left": count, "image": serializer.data, "scores_ratio": scores_ratio, "random": rnd}
+            serializer_file = ImageFileSerializer(images[rnd])
+            return {"files_left": count, "image": serializer_file.data, "scores_ratio": scores_ratio, "random": rnd}
 
         return {"files_left": 0, "scores_ratio": scores_ratio}

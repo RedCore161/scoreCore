@@ -24,21 +24,20 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, url_path="confirm", methods=["POST"])
     def confirm_image(self, request, pk):
+
+        project = request.data.get("project")
+        _project = Project.objects.get(pk=project)
+
         eye = request.data.get("eye")
         nose = request.data.get("nose")
         cheek = request.data.get("cheek")
         ear = request.data.get("ear")
         whiskers = request.data.get("whiskers")
         comment = request.data.get("comment", "")
-        project = request.data.get("project")
-
-        _project = Project.objects.get(pk=project)
 
         if not _project.is_finished():
-            success = ViewSetCreateModel().create_or_update_imagescore(pk, request.user, [eye, nose, cheek, ear, whiskers], comment)
-            if success:
-                return ProjectViewSet().get_next_image(request, project)
-            return RequestFailed({"already_scored": True})
+            ViewSetCreateModel().create_or_update_imagescore(pk, request.user, [eye, nose, cheek, ear, whiskers], comment)
+            return ProjectViewSet().get_next_image(request, project)
         return RequestFailed({"is_finished": True})
 
     @action(detail=True, url_path="useless", methods=["POST"])

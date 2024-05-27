@@ -43,13 +43,4 @@ export const configMail = {
   }
 }
 
-export const configCashBooking = {
-  required: {
-    value: true,
-    message: "This field is required!"
-  },
-  pattern: {
-    value: /^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[012])\.((20)?\d{2});[\-\w\d_äöüÄÖÜß&(),#+ ]+;[\-\w\d_äöüÄÖÜß&(),#+ ]+;[+-]?[0-9]+([.,][0-9]{0,2})?$/gm,
-    message: "No valid Cash-Line",
-  }
-}
+

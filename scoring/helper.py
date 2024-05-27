@@ -103,7 +103,7 @@ def set_logging_file(_log_filename="default.log"):
 def save_check_dir(*dirs):
     for _d in dirs:
         if not os.path.isdir(_d):
-            print(f"Created {_d}")
+            dlog(_d, tag="[CREATED]")
             pathlib.Path(_d).mkdir(parents=True, exist_ok=True)
 
 
@@ -113,19 +113,22 @@ def get_media_path() -> str:
 
 def get_path_setup(*args) -> str:
     from server.settings import SETUP_DIR
-
     return os.path.join(SETUP_DIR, *args)
 
 
 def get_path_backup(*args) -> str:
     from server.settings import BACKUP_DIR
-
     return os.path.join(BACKUP_DIR, *args)
 
 
 def get_path_logs(*args) -> str:
     from server.settings import LOGS_DIR
     return os.path.join(LOGS_DIR, *args)
+
+
+def get_path_projects(*args) -> str:
+    from server.settings import PROJECT_DIR
+    return os.path.join(PROJECT_DIR, *args)
 
 
 def get_project_evaluation_dir(project_id) -> str:
@@ -138,6 +141,11 @@ def build_abs_path(path_list: list) -> str:
     from server.settings import MEDIA_ROOT
     _abs_path = os.path.abspath(MEDIA_ROOT)
     return os.path.join(_abs_path, *path_list)
+
+
+def get_rel_path(_path, _dir="media") -> str:
+    index = _path.find(_dir)
+    return _path[index + len(_dir) + 1:]
 
 
 def random_string(letter_count, digit_count):
@@ -224,6 +232,18 @@ def find_uploaded_file(base_dir, filename_pattern):
         for filename in fnmatch.filter(files, _base_name):
             return os.path.join(root, filename)
     return None
+
+
+def count_images_in_folder(folder_path):
+
+    # Initialize image counter
+    image_count = 0
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            if is_image(file):
+                image_count += 1
+
+    return image_count
 
 
 def pretty_sizeof(num, suffix="b"):
