@@ -1,4 +1,6 @@
 # Scoring-Tool
+Welcome to the **Scoring-Tool** repository! This README will guide you through the setup and usage of the project. Follow these steps to get your development environment up and running smoothly.
+
 This project is a fully-dockerized tool to score images by different users for scientific purpose. It's a [redcore](https://github.com/RedCore161/redcore "redcore")-derivative. It connects:
 
 * Backend: Django using rest_framework
@@ -6,4 +8,75 @@ This project is a fully-dockerized tool to score images by different users for s
 * Database: Postgres
 * Reverse-Proxy: Nginx
 
-A better documentation will follow in the future...
+## Getting Started
+
+### Prerequisites
+
+Before you begin, ensure you have the following installed on your system:
+
+- Docker
+- Python
+- Node.js and npm
+
+## Setup Instructions
+
+1. **Copy environment templates:**
+
+   ```sh
+   cp .env.template .env
+   cp django.template django.env
+   ```
+
+
+2. **Edit the environment files as needed:**
+
+    Open .env and django.env in your favorite text editor and configure them according to your requirements.
+
+3. **Start the Docker containers:**
+   This will start all necessary services in the background.
+   ```sh
+    docker compose up -d
+   ```
+
+## Local Development
+### Backend
+
+To start the local backend server, follow these steps:
+
+1. **Apply migrations:**
+
+   ```sh
+    python manage.py makemigrations
+    python manage.py migrate
+   ```
+
+2. **Create a superuser:**
+   
+   This command will prompt you to enter details for the admin user.
+   ```sh
+    python manage.py createadmin
+   ```
+
+3. **Start backend-server:**
+   ```sh
+    python manage.py runserver localhost:8000
+    ```
+### Frontend
+
+To start the local frontend server, follow these steps:
+   ```sh
+    cd frontend
+    npm install
+    npm start
+   ```
+
+This will open a browser with the frontend visible.
+
+[comment]: <> (## License)
+[comment]: <> (This project is licensed under the MIT License. See the LICENSE file for more details.)
+
+## Contact
+
+For any inquiries or issues, please open an issue on GitHub
+
+Happy coding! 🎉🚀

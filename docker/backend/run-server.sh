@@ -25,9 +25,12 @@ python manage.py makemigrations
 pprint "[3] migrate"
 python manage.py migrate
 
+pprint "[4] createadmin"
+python manage.py createadmin
+
 if [ "$CELERY_ON_BOOT" = "1" ]; then
-  pprint "[4] celery worker"
-  celery -A server.celery worker --loglevel=info --logfile "${PROJECT_ROOT}/celery.log" -E -P eventlet &
+  pprint "[5] celery worker"
+  celery -A scoring.celery worker --loglevel=info --logfile "${PROJECT_ROOT}/celery.log" -E -P eventlet &
 fi
 
 pprint "### Starting Webserver"

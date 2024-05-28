@@ -5,23 +5,25 @@ services:
     container_name: scoring-database
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "${LIMITED_ACCESS}${POSTGRES_PORT}:${POSTGRES_PORT}"
     env_file:
       - django.env
     networks:
       defaultnet:
+        aliases:
+          - scoring-database
 
   # Used for django websocket connections
   scoring-redis:
     image: redis:latest
     container_name: scoring-redis
     restart: always
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
     ports:
       - "6380:6379"
     networks:
       defaultnet:
+        aliases:
+          - scoring-redis
 
   # Django backend (using REST-API)
   scoring-backend:
@@ -29,22 +31,21 @@ services:
     restart: unless-stopped
     env_file:
       - django.env
-    environment:
-      - CONTROL_BACKEND_URL=${CONTROL_BACKEND_URL}
-      - CONTROL_BACKEND_PORT=${CONTROL_BACKEND_PORT}
+      - .env
     build:
       context: .
       dockerfile: docker/backend/Dockerfile
       args:
-        CONTROL_BACKEND_PORT: ${CONTROL_BACKEND_PORT}
-        DB_HOST: scoring-database   # TODO unify django.env and .env.docker
-        DB_PORT: 5432               # TODO unify django.env and .env.docker
         MEDIA_VOLUME: ${MEDIA_VOLUME}
+        CONTROL_BACKEND_URL: ${CONTROL_BACKEND_URL}
+        CONTROL_BACKEND_PORT: ${CONTROL_BACKEND_PORT}
+        DB_HOST: ${POSTGRES_HOST}
+        DB_PORT: ${POSTGRES_PORT}
     depends_on:
       - scoring-database
       - scoring-redis
     ports:
-      - ${CONTROL_BACKEND_PORT}:${CONTROL_BACKEND_PORT}
+      - "${LIMITED_ACCESS}${CONTROL_BACKEND_PORT}:${CONTROL_BACKEND_PORT}"
     volumes:
       - ${MEDIA_VOLUME}:/usr/src/app/media
       - /var/run/docker.sock:/var/run/docker.sock:rw
