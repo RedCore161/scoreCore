@@ -8,7 +8,7 @@ from scoring.routing import ws_pattern
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
 
-    'websocket': AllowedHostsOriginValidator(
+    "websocket": AllowedHostsOriginValidator(
         AuthMiddlewareStack(
             URLRouter(ws_pattern)
         )

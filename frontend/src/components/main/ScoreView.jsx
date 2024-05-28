@@ -93,6 +93,7 @@ const ScoreView = () => {
           showSuccessBar(enqueueSnackbar, "Scoring confirmed!");
           setImages(response.data);
           dispatch({ type: actionTypes.SET_RESET });
+          dispatch({ type: actionTypes.SET_ACTIVE, payload: images.features[0].name });
         } else {
           if (response.data.is_finished) {
             showErrorBar(enqueueSnackbar, "Project is already finished!");

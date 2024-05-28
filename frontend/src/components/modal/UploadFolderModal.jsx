@@ -86,14 +86,14 @@ const UploadFolderModal = ({
   ]);
 
   useEffect(() => {
-    if (folders.length === 0) {
+    if (show.modalUploadFolder && folders.length === 0) {
       fetchFolders(setFolders);
     }
   }, []);
 
-  useEffect(() => {
-    console.log("XXX", folders);
-  }, [folders]);
+  // useEffect(() => {
+  //   console.log("XXX", folders);
+  // }, [folders]);
 
   useEffect(() => {
     if (acceptedFiles.length) {

@@ -2,13 +2,16 @@ import { Button, Col, Row } from "react-bootstrap";
 import React from "react";
 import "../ui/css/ProjectCardView.css";
 import { useNavigate } from "react-router-dom";
-import { useAuthUser } from "react-auth-kit";
+import { useAuthHeader, useAuthUser } from "react-auth-kit";
+import axiosConfig from "../../axiosConfig";
+import { showSuccessBar } from "./Snackbar";
 
 const ProjectCardView = ({ id, name, features, icon, imagesTotal, uselessCount, scoresCount, scoresOwn, users,
                            wanted_scores_per_user, wanted_scores_per_image, isFinished }) => {
   let navigate = useNavigate();
   const auth = useAuthUser();
   const isAuth = auth()
+  const authHeader = useAuthHeader();
 
   function get_score_ratio() {
     if (imagesTotal === 0){
@@ -35,6 +38,22 @@ const ProjectCardView = ({ id, name, features, icon, imagesTotal, uselessCount, 
 
   const save_wanted_scores = get_save_wanted_scores()
 
+  function login(url) {
+    const _header = authHeader();
+    axiosConfig.updateToken(_header);
+    axiosConfig.holder.post(`/api/user/login/`,{token: _header.substring(7)}).then((response) => {
+      if (response.data.success) {
+        window.open(url, "_blank");
+      }
+    }, (error) => {
+      if (error.response) {
+        console.log(error.response.data);
+      } else {
+        console.error(error);
+      }
+    });
+  }
+
   return (
     <Col key={ id } md={ 4 } className={"pb-4"}>
       <div className={"project-Card bg-secondary m-1"} >
@@ -43,8 +62,9 @@ const ProjectCardView = ({ id, name, features, icon, imagesTotal, uselessCount, 
             <span className={"project-Card-Header-Content"} onClick={ () => navigate(`/project/${ id }/score`) }>{ icon }{ name }</span>
             { isAuth.is_superuser && (
               <div className={"float-end"}>
-                <i className="project-Card-Header-Content bi bi-patch-check" onClick={() => navigate(`/project/${ id }/investigate`)}/>&nbsp;
-                <i className="project-Card-Header-Content bi bi-calculator-fill" onClick={() => navigate(`/project/${ id }/differences`)}/>
+                <i className="project-Card-Header-Content bi bi-pencil-fill me-2" onClick={() => login(`${process.env.REACT_APP_BACKEND_URL}/admin/scoring/project/${ id }/change/`)}/>
+                <i className="project-Card-Header-Content bi bi-patch-check me-2" onClick={() => navigate(`/project/${ id }/investigate`)}/>
+                <i className="project-Card-Header-Content bi bi-calculator-fill me-2" onClick={() => navigate(`/project/${ id }/differences`)}/>
               </div>
             )}
           </Col>

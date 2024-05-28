@@ -1,7 +1,6 @@
 import json
 import os
 import filetype
-import pandas as pd
 import statistics
 from PIL import Image as PilImage
 from django.core.validators import RegexValidator
@@ -48,10 +47,11 @@ class Project(models.Model):
         _path = get_project_evaluation_dir(str(self.pk))
 
         _file_template = datetime.datetime.now().strftime("%Y-%m-%d_-_%H%M%S")
-        with open(os.path.join(_path, f"{_file_template}.json"), "w") as _file:
+        _filename = os.path.join(_path, f"{_file_template}.json")
+        with open(_filename, "w") as _file:
             json.dump(data, _file, ensure_ascii=True, indent=4)
 
-        with open(os.path.join(_path, f"{_file_template}.json"), "r") as _file:
+        with open(_filename, "r") as _file:
             data = json.load(_file)
             dlog("DATA", data.get("imagefiles"))
 
@@ -72,7 +72,6 @@ class Project(models.Model):
         return self.get_all_files_save().count()
 
     def is_finished(self):
-        # dlog("XXX", self.get_score_count(), self.get_files_count(), self.get_score_count() >= self.get_files_count())
         return self.get_score_count() >= self.get_files_count() * self.wanted_scores_per_image
 
     def evaluate_data_as_xlsx(self, data):
@@ -106,9 +105,8 @@ class Project(models.Model):
 
         _file_template = datetime.datetime.now().strftime("%Y-%m-%d_-_%H%M%S")
 
-        df = pd.DataFrame()
-
-        project_name = str(self.name)
+        # df = pd.DataFrame()
+        # project_name = str(self.name)
         # target = os.path.join(_path, f"{_file_template}.xlsx")
         # writer = pd.ExcelWriter(target, engine='xlsxwriter')
         # df.to_excel(writer, sheet_name=project_name)

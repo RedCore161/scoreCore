@@ -5,6 +5,16 @@ from rest_framework.response import Response
 
 from scoring.serializers import UserSerializer, PasswordSerializer
 from server.views import RequestSuccess, RequestFailed
+from django.contrib.auth import login
+from rest_framework_simplejwt.tokens import AccessToken
+
+
+def authenticate(request, user_id=None):
+    try:
+        user = User.objects.get(pk=user_id)
+        return user
+    except User.DoesNotExist:
+        return None
 
 
 class IsAdminOrIsSelf(object):
@@ -33,7 +43,7 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             return RequestFailed(serializer.errors)
 
-    @action(detail=False, url_path="recent")
+    @action(detail=False, url_path="recent", methods=["GET"])
     def recent_users(self, request):
         recent_users = User.objects.all().order_by("-last_login")
 
@@ -44,3 +54,23 @@ class UserViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(recent_users, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, url_path="login", methods=["POST"])
+    def login_user(self, request):
+        token = request.data.get("token")
+        if not token:
+            return RequestFailed({"error": "Token is required"})
+
+        try:
+            access_token = AccessToken(token)
+            user_id = access_token["user_id"]
+            user = authenticate(request, user_id=user_id)
+
+            if user is not None:
+                login(request, user)
+                return RequestSuccess({"message": "Session created"})
+            else:
+                return RequestFailed({"error": "Invalid credentials"})
+
+        except Exception as e:
+            return RequestFailed({"error": str(e)})

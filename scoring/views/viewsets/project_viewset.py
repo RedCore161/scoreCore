@@ -6,8 +6,8 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from scoring.basics import parse_int
-from scoring.helper import build_abs_path, get_fields_from_bit, get_path_projects, count_images_in_folder, dlog, \
-    get_rel_path
+from scoring.helper import build_abs_path, get_path_projects, count_images_in_folder, get_rel_path, get_fields_from_bit, \
+    dlog
 from scoring.models import Project, ImageFile, ImageScore, ScoreFeature
 from scoring.serializers import ProjectSerializer, ImageFileSerializer, ImageScoreSerializer, ScoreFeaturesSerializer
 from scoring.views.viewsets.base_viewset import StandardResultsSetPagination, BasisViewSet
@@ -92,19 +92,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_next_image(self, request, pk):
         _project = Project.objects.get(pk=pk)
         _fields = parse_int(request.GET.get("fields", 0))
+
         bits = get_fields_from_bit(_fields)
-
         scoring_fields = _project.features.all()
-
         _index = 0
         _filter = {}
-        # for bit in bits:
-        #     if bit:
-        #         # print(f"{_index=} => {scoring_fields[_index]=}")
-        #         _filter.update({f"{scoring_fields[_index]}__isnull": False})
-        #     _index += 1
-
+        for bit in bits:
+            if bit:
+                # print(f"{_index=} => {scoring_fields[_index]=}")
+                _filter.update({f"{scoring_fields[_index]}__isnull": False})
+            _index += 1
         dlog(f"{_filter=}, {bits=}")
+
         qs = ImageScore.objects.filter(project=pk, user=request.user, **_filter).order_by("-pk")
         serializer_scores = ImageScoreSerializer(qs, many=True, read_only=True)
         serializer_features = ScoreFeaturesSerializer(_project.features.all(), many=True, read_only=True)
@@ -152,7 +151,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
         project.read_images()
 
         return RequestSuccess()
-
 
     @action(detail=True, url_path="scores", methods=["GET"], permission_classes=[IsAdminUser])
     def get_scores(self, request, pk):

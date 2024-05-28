@@ -42,5 +42,3 @@ export const configMail = {
     message: "No valid E-Mail",
   }
 }
-
-

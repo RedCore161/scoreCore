@@ -12,7 +12,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from scoring.basics import parse_file_name
-from scoring.helper import save_check_dir, get_path_projects
+from scoring.helper import save_check_dir, get_path_projects, dlog
 from scoring.serializers import RedcoreTokenObtainPairSerializer
 from server.settings import PROJECT_DIR
 from server.views import RequestFailed, RequestSuccess
@@ -80,7 +80,7 @@ class BasisViewSet:
                 _new_file = fs.save(_path, _file)
                 # _new_path = os.path.join(PROJECT_DIR, _new_file)
 
-                print(f"B {_path=} | {_new_file=}")
+                dlog(f"{_new_file=}", tag="[UPLOAD]")
 
                 # response.update({name: {"created": 1, "cached": 0, "name": name,
                 #                         "error": None, "path": _new_path[len(PROJECT_DIR) + 1:]}})

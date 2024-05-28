@@ -10,7 +10,15 @@ import { configText, configTextNeeded } from "../form/config";
 import "../ui/css/CustomModal.css"
 import { fetchFolders } from "../../helper";
 
-const icons = ["🐵","🐶","🐱","🐷","🐭","🐰"]
+const suggestions = [
+  {icon: "🐵"},
+  {icon: "🐶"},
+  {icon: "🐱"},
+  {icon: "🐷"},
+  {icon: "🐭", txt: "Eye, Nose, Cheek, Ear, Whisker"},
+  {icon: "🐰"}
+  ]
+
 const defaultForm = {
   name: "",
   icon: "",
@@ -18,7 +26,7 @@ const defaultForm = {
 };
 
 const CreateProjectModal = ( {callBackData = () => {}} ) => {
-  const { control, register, formState: { errors }, setValue, handleSubmit, reset } = useForm({ defaultValues: defaultForm });
+  const { register, formState: { errors }, setValue, setFocus, handleSubmit, reset } = useForm({ defaultValues: defaultForm });
   const [show, setShow] = useContext(CoreModalContext)
   const [folders, setFolders] = useState([]);
   const [folder, setFolder] = useState([]);
@@ -60,8 +68,9 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
   };
 
 
-  function isDisabledYet() {
-    return false; //TODO
+  function advSetValue(_field, _val) {
+    setValue(_field, _val,{ shouldTouch: false })
+    setFocus(_field, false)
   }
 
   return (
@@ -82,20 +91,37 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
             <Form.Control type="text" placeholder="Project name" { ...register("name", configTextNeeded) } />
           </Form.Group>
 
-          <Form.Group controlId="formIcon">
+          <Form.Group controlId="formIcon" className={"mt-3"}>
             <Form.Label>
-              Icon 📷 (Suggestions: {icons.map((ic, _i) => {
-                return <span key={`sug-sp-${_i}`} onClick={() => setValue("icon", ic)}>{ic}</span>
+              Icon 📷 (Suggestions: {suggestions.map(({ icon }, _i) => {
+                return <span key={`sug-sp-${_i}`} onClick={() => advSetValue("icon", icon)}>{icon}</span>
               })})
               <div className={ "modalErrors" }>
                 { errors.icon?.type === "required" && errors.icon?.message }
               </div>
             </Form.Label>
-            <Form.Control className="w-25" type="text" width={ 5 } placeholder="Icon" { ...register("icon", configText) } />
+            <Form.Control className="ctl-short" type="text" width={ 5 } placeholder="Icon" { ...register("icon", configText) } />
           </Form.Group>
 
-          <Form.Group controlId="formFolder" className={ "mb-4" }>
-            <Form.Label>Folder 📂</Form.Label>
+          <Form.Group controlId="formFeature" className={ "mt-3" }>
+            <Form.Label>
+              Features (Suggestions: {suggestions.map((icon, _i) => {
+                if (!icon.txt) {
+                  return
+                }
+                return <span key={`sug-fe-${_i}`} onClick={() => advSetValue("features", icon.txt)}>{icon.icon}</span>
+              })})
+              <div className={ "modalErrors" }>
+                { errors.features?.type === "required" && errors.features?.message }
+                { errors.features?.type === "minLength" && errors.features?.message }
+              </div>
+            </Form.Label>
+            <Form.Control type="text" placeholder="Rateable features (comma seperated)"
+                          { ...register("features", configTextNeeded) } />
+          </Form.Group>
+
+          <Form.Group controlId="formFolder" className={ "mt-3" }>
+            <Form.Label>Folder 📂 (optional)</Form.Label>
             <Typeahead
               id="folder-chooser"
               labelKey={ opt => `${opt.name} Images: ${opt.images} ${opt.in_use === true && ", 📌"}` }
@@ -108,29 +134,14 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
             />
           </Form.Group>
 
-          <Form.Group controlId="formFeature">
-            <Form.Label>
-              Features
-              <div className={ "modalErrors" }>
-                { errors.features?.type === "required" && errors.features?.message }
-                { errors.features?.type === "minLength" && errors.features?.message }
-              </div>
-            </Form.Label>
-            <Form.Control type="text" placeholder="Rateable features (comma seperated)"
-                          { ...register("features", configTextNeeded) } />
-          </Form.Group>
-
-
         </Modal.Body>
 
         <Modal.Footer>
           <Button variant="secondary" onClick={ handleClose }>Close</Button>
-          <Button variant="success" onClick={ handleSubmit(onSubmit) } disabled={ isDisabledYet() }>Create</Button>
+          <Button variant="success" onClick={ handleSubmit(onSubmit) }>Create</Button>
         </Modal.Footer>
       </Modal>
     </Form>
   );
-
 };
-
 export default CreateProjectModal;

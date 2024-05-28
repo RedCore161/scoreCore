@@ -141,16 +141,16 @@ def build_abs_path(path_list: list) -> str:
 
 def get_rel_path(_path, _dir="media") -> str:
     index = _path.find(_dir)
-    return _path[index + len(_dir) + 1:]
+    return _path[index + 1:]
 
 
 def random_string(letter_count, digit_count):
-    str1 = ''.join((random.choice(string.ascii_letters) for x in range(letter_count)))
-    str1 += ''.join((random.choice(string.digits) for x in range(digit_count)))
+    str1 = "".join((random.choice(string.ascii_letters) for _ in range(letter_count)))
+    str1 += "".join((random.choice(string.digits) for _ in range(digit_count)))
 
     sam_list = list(str1)       # it converts the string to list.
     random.shuffle(sam_list)    # It uses a random.shuffle() function to shuffle the string.
-    return ''.join(sam_list)
+    return "".join(sam_list)
 
 # ##############################################################
 
@@ -231,14 +231,12 @@ def find_uploaded_file(base_dir, filename_pattern):
 
 
 def count_images_in_folder(folder_path):
-
     # Initialize image counter
     image_count = 0
     for root, dirs, files in os.walk(folder_path):
         for file in files:
             if is_image(file):
                 image_count += 1
-
     return image_count
 
 

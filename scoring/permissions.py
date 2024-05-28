@@ -1,7 +1,5 @@
 from rest_framework.permissions import BasePermission
 
-
-
 class HasSuperUserPermission(BasePermission):
     """
     Allows access only to authenticated users.

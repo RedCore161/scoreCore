@@ -8,7 +8,6 @@ class RequestSuccess(Response):
         data['success'] = True
         super().__init__(data=data, status=200, **kwargs)
 
-
     def update_data(self, data: dict):
         self.data.update(data)
 

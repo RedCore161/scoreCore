@@ -5,3 +5,7 @@
 .modalErrors {
     color: red;
 }
+
+.ctl-short {
+    width: 50px !important;
+}

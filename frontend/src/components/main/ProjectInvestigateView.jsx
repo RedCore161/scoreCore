@@ -16,7 +16,8 @@ const ScoreFileLink = ({id, filename, path, users}) => {
 
   return (
     <div>
-      <Link color={"initial"} target={"_blank"} href={getImagePath()}>{ filename }</Link> ({users.join(", ")})<br/>
+      {/*color={"initial"}*/}
+      <Link target={"_blank"} href={getImagePath()}>{ filename }</Link> ({users.join(", ")})<br/>
     </div>
   )
 }
