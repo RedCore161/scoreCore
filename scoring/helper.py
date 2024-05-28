@@ -107,10 +107,6 @@ def save_check_dir(*dirs):
             pathlib.Path(_d).mkdir(parents=True, exist_ok=True)
 
 
-def get_media_path() -> str:
-    return "media"
-
-
 def get_path_setup(*args) -> str:
     from server.settings import SETUP_DIR
     return os.path.join(SETUP_DIR, *args)

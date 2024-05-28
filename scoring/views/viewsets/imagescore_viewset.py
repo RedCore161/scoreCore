@@ -14,6 +14,15 @@ from scoring.views.viewsets.viewset_creator import ViewSetCreateModel
 from server.views import RequestSuccess, RequestFailed
 
 
+def get_scores_from_request(request, fields) -> list:
+    scores = []
+    for feature in fields:
+        name = request.data.get(feature)
+        if name is not None:
+            scores.append(name)
+    return scores
+
+
 class ImageScoreViewSet(viewsets.ModelViewSet):
     serializer_class = ImageScoreSerializer
     permission_classes = [IsAuthenticated]
@@ -27,16 +36,13 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
 
         project = request.data.get("project")
         _project = Project.objects.get(pk=project)
-
-        eye = request.data.get("eye")
-        nose = request.data.get("nose")
-        cheek = request.data.get("cheek")
-        ear = request.data.get("ear")
-        whiskers = request.data.get("whiskers")
         comment = request.data.get("comment", "")
 
         if not _project.is_finished():
-            ViewSetCreateModel().create_or_update_imagescore(pk, request.user, [eye, nose, cheek, ear, whiskers], comment)
+            scoring_fields = _project.features.all().values_list("name", flat=True)
+            scores = get_scores_from_request(request, scoring_fields)
+
+            ViewSetCreateModel().create_or_update_imagescore(pk, request.user, scoring_fields, scores, comment)
             return ProjectViewSet().get_next_image(request, project)
         return RequestFailed({"is_finished": True})
 

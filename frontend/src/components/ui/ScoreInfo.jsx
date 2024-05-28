@@ -13,7 +13,7 @@ import "../ui/css/ScoreInfo.css";
 
 const ScoreInfo = ({ project, score, features }) => {
 
-  const scored = Object.values(score.data).filter(e => e).length;
+  const scored = Object.values(score.data).filter(e => e !== undefined).length;
   const scores = features.length;
   const col = getGradiColor(scored, scores)
 

@@ -64,6 +64,9 @@ const ScoreView = () => {
   // }, [images]);
 
   const selectCallback = (action, value) => {
+    if (action.length === 0) {
+      return
+    }
     let _index = images.features.findIndex((ft) => ft.name === action);
     let _next = "";
     if (_index > -1 && _index < images.features.length - 1) {
@@ -157,9 +160,13 @@ const ScoreView = () => {
   }
 
   function get_state_score() {
-    return 1; // TODO
+    return Object.keys(state).filter(e => e[0] !== "_").length
   }
 
+  function get_feature_option_count() {
+    const feature = images?.features?.find(i => i.name === state._active)
+    return feature?.option_count ? feature.option_count : 3
+  }
 
   return (
     <>
@@ -214,7 +221,7 @@ const ScoreView = () => {
 
             <Row md={ 8 }>
               <Col className="mt-2">
-                <img src={ getImagePath() } alt="Score-Image"/>
+                <img src={ getImagePath() } alt="Score-Image" />
               </Col>
             </Row>
 
@@ -224,7 +231,7 @@ const ScoreView = () => {
                   <Form.Control type="text" className={ "input-form" }
                                 placeholder="Comment (optional)"
                                 value={ state._comment }
-                                onChange={ changeCommentListener }/>
+                                onChange={ changeCommentListener } />
                 </Form.Group>
               </Col>
             </Row>
@@ -245,14 +252,15 @@ const ScoreView = () => {
                       { capitalizeFirstLetter(feature.name) } ({ feature.name in state ? state[feature.name] : "?" })
                     </Button>;
                   }) }
-
                 </ButtonGroup>
               </Col>
             </Row>
 
             <Row md={ 8 }>
               <Col>
-                <ScoreGroup callback={ selectCallback } action={ state._active }/>
+                <ScoreGroup callback={ selectCallback }
+                            options={ get_feature_option_count() }
+                            action={ state._active } />
               </Col>
             </Row>
 
@@ -267,6 +275,7 @@ const ScoreView = () => {
                 </Button>
               </Col>
             </Row>
+
             <Row className={"pt-2"}>
               <Col>
                 <Button size="lg" variant={ "primary" } onClick={ () => setShow(true) }>
@@ -288,12 +297,10 @@ const ScoreView = () => {
                 }) }
               </Offcanvas.Body>
             </Offcanvas>
-
           </>
         )
       ) : <Row><LoadingIcon/></Row> }
     </>
   );
 };
-
 export default ScoreView;

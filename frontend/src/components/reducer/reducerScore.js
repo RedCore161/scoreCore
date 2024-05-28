@@ -3,7 +3,7 @@ import * as actionTypes from "./reducerTypes";
 export const defaultStateScore = {
   "_comment": "",
   "_key": false,
-  "active": ""
+  "_active": ""
 };
 
 export const reducerScore = (state, action) => {

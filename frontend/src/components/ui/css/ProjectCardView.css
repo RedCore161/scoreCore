@@ -7,6 +7,7 @@
 .project-Card-Header {
     font-size: 25px;
     padding-bottom: 8px;
+    padding-top: 6px;
     border-bottom: white 2px solid;
     color: white;
 }

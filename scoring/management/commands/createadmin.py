@@ -4,10 +4,12 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
+from scoring.helper import save_check_dir
+from server.settings import BACKUP_DIR, SETUP_DIR, UPLOAD_DIR, EXPORT_DIR, LOGS_DIR, PROJECT_DIR
 
 
 class Command(BaseCommand):
-    help = 'Create Admin-Django user from environment'
+    help = "Create Admin-Django user from environment"
 
     def handle(self, *args, **options):
 
@@ -23,8 +25,9 @@ class Command(BaseCommand):
                 user.objects.create_superuser(username, mail, pw)
                 self.stdout.write(self.style.SUCCESS('Created Admin!'))
 
-            # # Create a Token for watch-dog
-            # _user = user.objects.get(username=username)
-            # token, _ = Token.objects.get_or_create(user=_user)
-            # with open(os.path.join(BASE_DIR, "token"), 'w') as f:
-            #     f.write(token.key)
+        save_check_dir(BACKUP_DIR)
+        save_check_dir(SETUP_DIR)
+        save_check_dir(UPLOAD_DIR)
+        save_check_dir(EXPORT_DIR)
+        save_check_dir(LOGS_DIR)
+        save_check_dir(PROJECT_DIR)

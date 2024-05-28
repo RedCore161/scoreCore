@@ -67,6 +67,44 @@ export async function fetchImagesAll(id, page=1) {
   return result.data
 }
 
+export async function fetchFolders(setter) {
+  await axiosConfig.holder.get(`/api/project/available/`).then((response) => {
+    setter(response.data);
+  }, (error) => {
+    if (error.response) {
+      console.error(error.response.data);
+    } else {
+      console.error(error);
+    }
+  });
+}
+
+export function updateOrAppend(elements, newData, field = "id") {
+  if (elements !== undefined) {
+    let index = elements.findIndex(element => element[field] === newData[field]);
+    if (index === -1) {
+      elements.push(newData);
+      return elements;
+    } else {
+      elements[index] = newData;
+    }
+  }
+  return elements;
+}
+
+export function updateOrPrepend(elements, newData, field = "id") {
+  if (elements !== undefined) {
+    let index = elements.findIndex(element => element[field] === newData[field]);
+    if (index === -1) {
+      elements.unshift(newData);
+      return elements;
+    } else {
+      elements[index] = newData;
+    }
+  }
+  return elements;
+}
+
 export function SelectListened({ options, onChange, disabled }) {
   return (
     <select className={ "form-select mb-3" } disabled={ disabled || null } onChange={ onChange }>

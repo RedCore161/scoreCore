@@ -1,4 +1,3 @@
-import datetime
 import json
 import os
 import filetype
@@ -9,8 +8,8 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-from scoring.helper import get_project_evaluation_dir, get_media_path, save_check_dir, get_path_backup, dlog, \
-    set_logging_file, INFO_FILE_NAME, is_image, elog, get_rel_path
+from scoring.helper import get_project_evaluation_dir, save_check_dir, get_path_backup, dlog, \
+    set_logging_file, INFO_FILE_NAME, is_image, elog, get_rel_path, get_path_projects
 from server.settings import BASE_DIR
 from loguru import logger
 from rest_framework import serializers
@@ -227,7 +226,7 @@ class Project(models.Model):
         return {"files": files}
 
     def get_images_dir(self):
-        return os.path.join(get_media_path(), str(self.image_dir))
+        return get_path_projects(str(self.image_dir))
 
     def check_create_infofiles(self):
         _path = self.get_images_dir()
@@ -278,7 +277,7 @@ class Project(models.Model):
         for _, dirs, filenames in os.walk(_path):
             files += len(filenames)
             folders += len(dirs)
-        dlog(f"Project has: {files} Files in {folders} Folders")
+        dlog(f"Project has: {files} Files in {folders} Folders, {_path=}")
 
         if folders == 0:
             self.create_script()
@@ -447,9 +446,8 @@ class ImageScore(models.Model):
     def check_completed(self):
         scoring_fields = self.project.features.all().values_list("name", flat=True)
         for _field in scoring_fields:
-            if not self.data.get(_field):
+            if self.data.get(_field) is None:
                 return False
-
         self.is_completed = True
         self.save()
         return True

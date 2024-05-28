@@ -122,15 +122,10 @@ class ImageScoreSerializer(serializers.ModelSerializer):
     def get_full_path(score: ImageScore):
         return score.file.path.replace("\\", "/") + "/" + score.file.filename
 
-    # @staticmethod
-    # def get_timestamp(score: ImageScore):
-    #     return score.date
-
 
 class ImageFileSerializer(serializers.ModelSerializer):
     clazz = serializers.SerializerMethodField("get_clazz_name")
     scores = ImageScoreSerializer(many=True, read_only=True)
-    # rel_path = serializers.SerializerMethodField("get_rel_path")
 
     class Meta:
         model = ImageFile
@@ -139,11 +134,6 @@ class ImageFileSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_clazz_name(_):
         return "imagefile"
-
-    # @staticmethod
-    # def get_rel_path(file: ImageFile):
-    #     # remove '../media/'
-    #     return file.get_rel_path()
 
 
 class BackupSerializer(serializers.ModelSerializer):

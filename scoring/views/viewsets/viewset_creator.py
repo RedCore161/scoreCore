@@ -11,12 +11,7 @@ from scoring.serializers import ImageFileSerializer, ImageScoreSerializer
 class ViewSetCreateModel(object):
 
     @staticmethod
-    def create_or_update_imagescore(pk, user, data, comment="") -> bool:
-
-        def replace_none(_str):
-            if _str == "X" or _str == "":
-                return None
-            return _str
+    def create_or_update_imagescore(pk, user, scoring_fields, data, comment="") -> bool:
 
         dlog(f"create_or_update_imagescore | {data=}, {comment=}")
         image_file = ImageFile.objects.get(pk=pk)
@@ -25,11 +20,8 @@ class ViewSetCreateModel(object):
                                                           project=image_file.project,
                                                           file=image_file)
 
-        scoring_fields = image_file.project.features.all().values_list("name", flat=True)
-        _i = 0
-
-        score.data = dict(zip(scoring_fields, data))
-        score.data = {k: replace_none(v) for k, v in zip(scoring_fields, data)}
+        _zip = zip(scoring_fields, data)
+        score.data = dict(_zip)
         image_file.calc_varianz()
 
         if created:
@@ -48,20 +40,20 @@ class ViewSetCreateModel(object):
     def get_next_image(pk, user, file=None) -> dict:
         project = Project.objects.get(pk=pk)
 
-        base_request = ImageFile.objects.filter(project=pk)\
-                                        .exclude(hidden=True)\
-                                        .exclude(useless=True)\
-                                        .exclude(scores__user=user)\
-                                        .annotate(scores_ratio=Count("scores"))
+        base_request = ImageFile.objects.filter(project=pk) \
+            .exclude(hidden=True) \
+            .exclude(useless=True) \
+            .exclude(scores__user=user) \
+            .annotate(scores_ratio=Count("scores"))
 
         available_images = len(base_request)
 
         if available_images == 0:
             return {"files_left": 0}
 
-        self_scored = ImageFile.objects.filter(project=pk, scores__user=user)\
-                                       .exclude(hidden=True)\
-                                       .exclude(useless=True).count()
+        self_scored = ImageFile.objects.filter(project=pk, scores__user=user) \
+            .exclude(hidden=True) \
+            .exclude(useless=True).count()
 
         scores_ratio = base_request.order_by("scores_ratio")[0].scores_ratio
 

@@ -7,10 +7,10 @@ from rest_framework.response import Response
 
 from scoring.basics import parse_int
 from scoring.helper import build_abs_path, get_fields_from_bit, get_path_projects, count_images_in_folder, dlog, \
-    get_rel_path, wlog
+    get_rel_path
 from scoring.models import Project, ImageFile, ImageScore, ScoreFeature
 from scoring.serializers import ProjectSerializer, ImageFileSerializer, ImageScoreSerializer, ScoreFeaturesSerializer
-from scoring.views.viewsets.base_viewset import StandardResultsSetPagination
+from scoring.views.viewsets.base_viewset import StandardResultsSetPagination, BasisViewSet
 from scoring.views.viewsets.viewset_creator import ViewSetCreateModel
 from server.views import RequestSuccess, RequestFailed
 
@@ -24,7 +24,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @action(detail=False, url_path="list", methods=["GET"])
     def list_projects(self, request):
         serializer = ProjectSerializer(Project.objects.filter(users=request.user),
-                                       context={"user": request.user.pk}, many=True)
+                                                              context={"user": request.user.pk}, many=True)
         return Response(serializer.data)
 
     @action(detail=True, url_path="recalculate-varianz", methods=["GET"])
@@ -64,8 +64,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if not created:
             return RequestFailed({"reason": "Project with this name already exists..."})
 
+        if folder:
+            project.image_dir = folder
         project.icon = icon
-        project.image_dir = folder
         project.users.add(request.user)
         project.save()
 
@@ -76,7 +77,16 @@ class ProjectViewSet(viewsets.ModelViewSet):
             feature.save()
             bit *= 2
 
-        return RequestSuccess()
+        project.read_images(False)
+        serializer = self.get_serializer(project, read_only=True)
+
+        return RequestSuccess({"model": serializer.data})
+
+    @action(detail=False, url_path="upload", methods=["POST"], permission_classes=[IsAdminUser])
+    def upload_images(self, request, *args, **kwargs):
+        project_name = request.data.get("projectName")
+        response = BasisViewSet.base_upload_document(request, project_name, *args, **kwargs)
+        return RequestSuccess(response)
 
     @action(detail=True, url_path="image", methods=["GET"])
     def get_next_image(self, request, pk):

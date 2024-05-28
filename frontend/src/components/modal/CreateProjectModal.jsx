@@ -8,6 +8,7 @@ import { Typeahead } from "react-bootstrap-typeahead";
 import axiosConfig from "../../axiosConfig";
 import { configText, configTextNeeded } from "../form/config";
 import "../ui/css/CustomModal.css"
+import { fetchFolders } from "../../helper";
 
 const icons = ["🐵","🐶","🐱","🐷","🐭","🐰"]
 const defaultForm = {
@@ -30,30 +31,22 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
 
   useEffect(() => {
     if (show.modalProjectModal) {
-      fetchFolders();
+      fetchFolders(setFolders);
     }
   }, [show]);
 
-  async function fetchFolders() {
-    await axiosConfig.holder.get(`/api/project/available/`).then((response) => {
-      setFolders(response.data);
-    }, (error) => {
-      if (error.response) {
-        console.error(error.response.data);
-      } else {
-        console.error(error);
-      }
-    });
-  }
 
   const onSubmit = (data) => {
     console.log("FOLDER", folder);
+    let additonal = {}
+    if (folder.length > 0) {
+      additonal["folder"] = folder[0].name
+    }
     axiosConfig.holder.post(`/api/project/create/`, {
       ...data,
-      folder: folder[0].name,
+      ...additonal
     }).then((response) => {
       if (response.data.success) {
-        console.log(response);
         callBackData(response.data.model);
         handleClose();
       }
