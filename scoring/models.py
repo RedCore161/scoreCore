@@ -305,7 +305,9 @@ class Project(models.Model):
                     if len(_file) == 0:
                         break
 
-                    if not filetype.is_image(os.path.join(_path, _file)):
+                    full_path = os.path.join(_path, _file)
+
+                    if not filetype.is_image(full_path):
                         continue
 
                     if get_or_create_amount == 0:
@@ -313,7 +315,6 @@ class Project(models.Model):
 
                     image_file, created = ImageFile.objects.get_or_create(project=self, filename=_file,
                                                                           path=get_rel_path(_path))
-                    full_path = os.path.join(_path, _file)
                     dlog(f"=> {_file=}, {full_path}, {created=}, Useless={image_file.useless}")
 
                     if created:
@@ -346,7 +347,6 @@ class Project(models.Model):
 
 class ScoreFeature(models.Model):
     project = models.ForeignKey(Project, related_name="features", on_delete=models.CASCADE)
-    icon = models.CharField(max_length=5, null=True, default="", blank=True)
     name = models.CharField(max_length=255, null=False)
     bit = models.IntegerField(default=0, null=False, blank=True)
     option_count = models.IntegerField(default=3, null=False, blank=True)
@@ -355,7 +355,7 @@ class ScoreFeature(models.Model):
         _id = ""
         if os.getenv("DEBUG"):
             _id = f"[{self.pk}] "
-        return f"{_id} Project: {self.project} > {self.icon}{self.name}, bit={self.bit}"
+        return f"{_id} Project: {self.project} > {self.name}, bit={self.bit}"
 
 
 class ImageFile(models.Model):
@@ -436,10 +436,9 @@ class ImageScore(models.Model):
     comment = models.CharField(max_length=255, null=True, default="", blank=True)
 
     data = models.JSONField(blank=True, default=dict)
+    date = models.DateTimeField(auto_created=True, null=True, blank=True)
 
     is_completed = models.BooleanField(default=False)
-
-    date = models.DateTimeField(auto_created=True, null=True, blank=True)
 
     def check_completed(self):
         scoring_fields = self.project.features.all().values_list("name", flat=True)

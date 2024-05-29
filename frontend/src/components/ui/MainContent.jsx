@@ -23,27 +23,10 @@ const MainContent = () => {
   const authHeader = useAuthHeader();
   const location = useLocation();
 
-  const { wsMessage } = useContext(WebSocketContext);
-
-  useEffect(() => {
-    if (wsMessage) {
-      console.log("WS received =>", wsMessage);
-
-      if (wsMessage.type === "chain_event") {
-        switch (wsMessage.event) {
-          case "status":
-            break;
-        }
-      }
-    }
-  }, [wsMessage]);
-
-
   if (authHeader()) {
     return <>
-
       <Navbar />
-      <Col md={ 10 } className={ "ps-3" }>
+      <Col className={ "ps-2" }>
         <Routes>
           {/*Authenticated-Routes*/ }
           <Route exact path="/project/overview/" element={ <RequireAuth loginPath={ `/login?forward=${ location.pathname }` }>
@@ -79,7 +62,7 @@ const MainContent = () => {
 
   return <Routes>
     <Route path={`/login`} element={ <LoginForm /> }/>
-    <Route path="/*" element={ <Navigate exact from="/" to="/login"/> }/>
+    <Route path="/*" element={ <Navigate exact from="/" to={`/login?forward=${location.pathname}`}/> }/>
   </Routes>
 
 };

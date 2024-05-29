@@ -7,16 +7,14 @@ import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
 import { getAcceptesTypes } from "../datatables/configs";
 import { fetchFolders } from "../../helper";
 
-const UploadFolderModal = ({
-                             enqueueSnackbar, accept = "doc", callBackData = () => {
-  }
-                           }) => {
+const UploadFolderModal = ({enqueueSnackbar, accept = "image", callBackData = () => {} }) => {
 
   const [show, setShow] = useContext(CoreModalContext);
   const [dirName, setDirName] = useState(undefined);
   const [folders, setFolders] = useState([]);
 
   const _types = getAcceptesTypes(accept);
+  const config = { webkitdirectory: true, directory: true }
 
   const dropzoneOptions = {
     accept: _types,
@@ -31,20 +29,7 @@ const UploadFolderModal = ({
   };
 
   let acceptedFiles, getRootProps, getInputProps, isFocused, isDragAccept, isDragReject;
-  ( {
-    acceptedFiles,
-    getRootProps,
-    getInputProps,
-    isFocused,
-    isDragAccept,
-    isDragReject
-  } = useDropzone(dropzoneOptions) );
-
-
-  useEffect(() => {
-    if (show.modalUploadFolder) {
-    }
-  }, [show]);
+  ( { acceptedFiles, getRootProps, getInputProps, isFocused, isDragAccept, isDragReject } = useDropzone(dropzoneOptions) );
 
   const baseStyle = {
     flex: 1,
@@ -91,15 +76,16 @@ const UploadFolderModal = ({
     }
   }, []);
 
-  // useEffect(() => {
-  //   console.log("XXX", folders);
-  // }, [folders]);
-
   useEffect(() => {
     if (acceptedFiles.length) {
       uploadFile();
     }
   }, [acceptedFiles]);
+
+  useEffect(() => {
+    if (show.modalUploadFolder) {
+    }
+  }, [show]);
 
   async function uploadFile() {
     let formData = new FormData();
@@ -133,6 +119,7 @@ const UploadFolderModal = ({
     setShow((show) => ( { ...show, modalUploadFolder: false } ));
   };
 
+
   return (
     <Form>
       <Modal show={ show.modalUploadFolder } onHide={ handleClose } dialogClassName={ "wide-modal" }>
@@ -146,7 +133,6 @@ const UploadFolderModal = ({
               <Form.Control type="text" placeholder={ "Directory-name..." }
                             value={ dirName }
                             onChange={ (e) => setDirName(e.target.value) }/>
-
             </Col>
           </Row>
           <Row>
@@ -157,7 +143,7 @@ const UploadFolderModal = ({
                 ) : (
                   <Form.Group controlId="formValue">
                     <div { ...getRootProps({ style }) }>
-                      <input { ...getInputProps() } webkitdirectory="true" directory="true" multiple/>
+                      <input { ...getInputProps() } {...config} multiple/>
                       <p>Drag 'n' drop some files here, or click to select files</p>
                     </div>
                   </Form.Group>

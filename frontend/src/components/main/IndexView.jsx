@@ -46,13 +46,16 @@ const IndexView = () => {
             <Col>
               <Button className={"me-2"} variant={"warning"} onClick={() => setModalState({ ...modalState, modalUploadFolder: true, title: "Upload images-folder" })}>1. Upload Images</Button>
               <Button className={"me-2"} variant={"warning"} onClick={() => setModalState({ ...modalState, modalProjectModal: true })}>2. Create New Project</Button>
+              <Button className={"me-2"} variant={"primary"} href={`${process.env.REACT_APP_BACKEND_URL}/admin/auth/user/add/`} target={"_blank"}>Add User</Button>
             </Col>
           </Row>
+
           <Row>
             { data.map((project) => {
-              return <ProjectCardView key={ project.id } { ...project } />;
-            }) }
+              return <ProjectCardView key={ project.id } { ...project } />
+            })}
           </Row>
+
         </BoxContainer>
       </div>
     ) : ( <Row><LoadingIcon/></Row> )

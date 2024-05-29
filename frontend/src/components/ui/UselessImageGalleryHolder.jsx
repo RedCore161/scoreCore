@@ -10,7 +10,7 @@ import "./css/ImageGalleryHolder.css";
 
 const UselessImageGalleryHolder = ({ overlaySetter, imagefile }) => {
 
-  const path = [process.env.REACT_APP_BACKEND_URL, "media", imagefile.path, imagefile.filename].join("/")
+  const path = [process.env.REACT_APP_BACKEND_URL, imagefile.path, imagefile.filename].join("/")
 
   const reloadCallback = () => {
     window.location.reload(true);

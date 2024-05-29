@@ -140,8 +140,8 @@ def build_abs_path(path_list: list) -> str:
 
 
 def get_rel_path(_path, _dir="media") -> str:
-    index = _path.find(_dir)
-    return _path[index + 1:]
+    _index = _path.find(_dir)
+    return _path[_index:]
 
 
 def random_string(letter_count, digit_count):

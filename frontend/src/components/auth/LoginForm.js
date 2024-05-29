@@ -6,17 +6,20 @@ import { useNavigate } from "react-router";
 import { useSignIn } from "react-auth-kit";
 import { jwtDecode } from "jwt-decode";
 import { useSearchParams } from "react-router-dom";
+import { useSnackbar } from "notistack";
+import { showErrorBar } from "../ui/Snackbar";
 
-const LoginForm = (props) => {
+const LoginForm = () => {
 
   const liveTime = process.env.REACT_APP_LOGIN_TIME | 3600
 
   const signIn = useSignIn()
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-
-  const { register, handleSubmit } = useForm();
   const [showPasswd, setShowPasswd] = useState(false);
+
+  const { enqueueSnackbar } = useSnackbar();
+  const { register, handleSubmit } = useForm();
 
   const onSubmit = async (data) => {
     try {
@@ -38,6 +41,7 @@ const LoginForm = (props) => {
 
     } catch (err) {
       console.log("Error: ", err);
+      showErrorBar(enqueueSnackbar, "Login failed!");
     }
   };
 

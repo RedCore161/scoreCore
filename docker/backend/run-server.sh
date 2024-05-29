@@ -1,8 +1,6 @@
 #!/bin/bash
 function pprint() {
-   printf "\n\033[0;36m "
-   printf "${1}"
-   printf "\033[0m\n"
+   printf "\n\033[0;36m${1}\033[0m\n"
 }
 
 pprint "[INFO] Scoring-Backend will be started!"
@@ -28,9 +26,12 @@ python manage.py migrate
 pprint "[4] createadmin"
 python manage.py createadmin
 
+pprint "[5] clear_token"
+python manage.py clear_token
+
 if [ "$CELERY_ON_BOOT" = "1" ]; then
-  pprint "[5] celery worker"
-  celery -A scoring.celery worker --loglevel=info --logfile "${PROJECT_ROOT}/celery.log" -E -P eventlet &
+  pprint "[6] celery worker"
+  celery -A scoring.celery worker --loglevel=info --logfile "${PROJECT_ROOT}/celery.log" -E -P eventlet --uid=1001 &
 fi
 
 pprint "### Starting Webserver"

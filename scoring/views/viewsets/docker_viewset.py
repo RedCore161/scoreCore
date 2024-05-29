@@ -3,8 +3,10 @@ from docker.errors import NotFound
 from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from scoring.consumer import get_docker_status
 from server.views import RequestSuccess, RequestFailed
@@ -12,7 +14,8 @@ from server.views import RequestSuccess, RequestFailed
 
 class DockerViewSet(viewsets.ViewSet):
 
-    authentication_classes = (TokenAuthentication, )
+    authentication_classes = (TokenAuthentication, JWTAuthentication)
+    permission_classes = [IsAuthenticated]
 
     @action(detail=False, url_path="status", methods=["GET"])
     def docker_status(self, request: Request):

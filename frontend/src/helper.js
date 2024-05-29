@@ -1,5 +1,7 @@
 import React from "react";
 import axiosConfig from "./axiosConfig";
+import ReactTimeAgo from "react-time-ago";
+
 export const MULTISELECT_STYLE = {
   chips: {
     background: "green"
@@ -114,3 +116,52 @@ export function SelectListened({ options, onChange, disabled }) {
     </select>
   );
 }
+
+export const columnScores = [
+  {
+    id: 1,
+    name: "",
+    sortable: true,
+    width: "45px",
+    cell: row => row.is_completed ? "✔" : "⭕",
+    selector: row => row.is_completed,
+  },
+  {
+    id: 2,
+    name: "Filename",
+    sortable: true,
+    minwidth: "50px",
+    maxwidth: "100px",
+    cell: row => row.file_name,
+    selector: row => row.file_name,
+  },
+  {
+    id: 3,
+    name: "Info",
+    sortable: true,
+    minwidth: "60px",
+    cell: row => <ReactTimeAgo date={ row.timestamp } locale="en"/>,
+    selector: row => row.timestamp,
+  }
+];
+
+export const conditionalScoreRowStyles = [
+  {
+    when: row => row.date_end,
+    style: {
+      backgroundColor: "rgba(255,22,0,0.1)",
+    },
+  },
+  {
+    when: row => row.invoice_relevant,
+    style: {
+      backgroundColor: 'rgba(255, 255, 0, 0.1)',
+    },
+  },
+  {
+    when: row => row.ignore_export,
+    style: {
+      color: 'rgba(125, 125, 125, 0.5)',
+    },
+  },
+];

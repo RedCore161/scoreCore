@@ -11,7 +11,7 @@ import { useAuthHeader } from "react-auth-kit";
 
 const ScoreFileLink = ({id, filename, path, users}) => {
   function getImagePath() {
-    return [process.env.REACT_APP_BACKEND_URL, "media", path, filename].join("/");
+    return [process.env.REACT_APP_BACKEND_URL, path, filename].join("/");
   }
 
   return (

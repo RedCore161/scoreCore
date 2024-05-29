@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useReducer, useState } from "react";
+import React, { useLayoutEffect, useReducer, useState } from "react";
 import { defaultStateScore, reducerScore } from "../reducer/reducerScore";
 import { Form, Button, ButtonGroup, Col, Row } from "react-bootstrap";
 import useWindowSize from "react-use/lib/useWindowSize";
@@ -6,17 +6,26 @@ import Confetti from "react-confetti";
 import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
 import { useSnackbar } from "notistack";
 import { useParams } from "react-router";
-import { capitalizeFirstLetter, fetchImage, MULTISELECT_STYLE } from "../../helper";
+import {
+  capitalizeFirstLetter,
+  columnScores,
+  conditionalScoreRowStyles,
+  fetchImage,
+  MULTISELECT_STYLE
+} from "../../helper";
 import LoadingIcon from "../ui/LoadingIcon";
 import ScoreGroup from "../ui/ScoreGroup";
+import ScorePanel from "../ui/ScorePanel";
 import * as actionTypes from "../reducer/reducerTypes";
 import axiosConfig from "../../axiosConfig";
 import { useAuthHeader } from "react-auth-kit";
 import { useSearchParams } from "react-router-dom";
 import { Multiselect } from "multiselect-react-dropdown";
-import Offcanvas from 'react-bootstrap/Offcanvas';
-import ScoreInfo from "../ui/ScoreInfo";
+
 import "../ui/css/ScoreView.css";
+import { FormControlLabel, Switch } from "@mui/material";
+import DataTable from "react-data-table-component";
+import Offcanvas from "react-bootstrap/Offcanvas";
 
 const ScoreView = () => {
 
@@ -58,10 +67,6 @@ const ScoreView = () => {
       dispatch({ type: actionTypes.SET_ACTIVE, payload: data?.features[0].name });
     });
   };
-
-  // useEffect(() => {
-  //   console.log("images", images?.score?.data);
-  // }, [images]);
 
   const selectCallback = (action, value) => {
     if (action.length === 0) {
@@ -143,7 +148,7 @@ const ScoreView = () => {
   }
 
   function getImagePath() {
-    return [process.env.REACT_APP_BACKEND_URL, "media", images.image.path, images.image.filename].join("/");
+    return [process.env.REACT_APP_BACKEND_URL, images.image.path, images.image.filename].join("/");
   }
 
   function changeCommentListener(event) {
@@ -186,119 +191,135 @@ const ScoreView = () => {
             />
           </>
         ) : (
-          <>
-            <Row md={ 8 } className="mt-2" id={ `counter-${ images.files_left }` }>
-              <Col>
-                <Form.Group>
-                  <Form.Label>
-                    Active rating features
-                  </Form.Label>
-                  <Multiselect
-                    displayValue="name"
-                    groupBy="level"
-                    onKeyPressFn={ function noRefCheck() {} }
-                    onRemove={ (selectedList) => setSelectedFeatures(selectedList.map(obj => obj.id)) }
-                    onSelect={ (selectedList) => setSelectedFeatures(selectedList.map(obj => obj.id)) }
-                    placeholder={ "Select Features" }
-                    options={ images.features }
-                    selectedValues={ images.features }
-                    showCheckbox
-                    style={ MULTISELECT_STYLE }
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={ 4 }>
-                Images left: { images.files_left }
-              </Col>
-            </Row>
+          <Row>
+            <Col md={ 8 }>
+              <Row className={ "mt-2" } id={ `counter-${ images.files_left }` }>
+                <Col>
+                  <Form.Group>
+                    <Form.Label>
+                      Active rating features
+                    </Form.Label>
+                    <Multiselect
+                      displayValue="name"
+                      groupBy="level"
+                      onKeyPressFn={ function noRefCheck() {} }
+                      onRemove={ (selectedList) => setSelectedFeatures(selectedList.map(obj => obj.id)) }
+                      onSelect={ (selectedList) => setSelectedFeatures(selectedList.map(obj => obj.id)) }
+                      placeholder={ "Select Features" }
+                      options={ images.features }
+                      selectedValues={ images.features }
+                      showCheckbox
+                      style={ MULTISELECT_STYLE }
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={ 4 }>
+                  Images left: { images.files_left }
+                </Col>
+              </Row>
 
-            <Row className={"pt-2"}>
-              <Col>
-                <Button size="lg" variant={ "primary" } onClick={ () => setShow(true) }>
-                  Show History
-                </Button>
-              </Col>
-            </Row>
+              <Row className={ "mt-2" }>
+                <Col>
+                  <Button size="lg" variant={ "primary" } onClick={ () => setShow(true) }>
+                    Show History
+                  </Button>
+                </Col>
+              </Row>
 
-            <Row md={ 8 }>
-              <Col className="mt-2">
-                <img src={ getImagePath() } alt="Score-Image" />
-              </Col>
-            </Row>
+              <Row>
+                <Col className="mt-2">
+                  <img src={ getImagePath() } alt="Score-Image" />
+                </Col>
+              </Row>
 
-            <Row>
-              <Col md={ 5 } className={ "pt-3" }>
-                <Form.Group controlId="formComment">
-                  <Form.Control type="text" className={ "input-form" }
-                                placeholder="Comment (optional)"
-                                value={ state._comment }
-                                onChange={ changeCommentListener } />
-                </Form.Group>
-              </Col>
-            </Row>
+              <Row>
+                <Col md={ 5 } className={ "pt-3" }>
+                  <Form.Group controlId="formComment">
+                    <Form.Control type="text" className={ "input-form" }
+                                  placeholder="Comment (optional)"
+                                  value={ state._comment }
+                                  onChange={ changeCommentListener } />
+                  </Form.Group>
+                </Col>
+              </Row>
 
-            <Row className={ "py-4" }>
-              <Col md={ 8 }>
-                <ButtonGroup size="lg">
-                  { images.features.map((feature, index) => {
-                    let style = _get_variant(feature.name);
-                    return <Button variant={ style.variant }
-                                   className={ style.clazz }
-                                   disabled={ !selectedFeatures.includes(feature.id) }
-                                   key={ `btn-grp-${ index }` }
-                                   onClick={ () => dispatch({
-                                     type: actionTypes.SET_ACTIVE,
-                                     payload: feature.name
-                                   }) }>
-                      { capitalizeFirstLetter(feature.name) } ({ feature.name in state ? state[feature.name] : "?" })
-                    </Button>;
-                  }) }
-                </ButtonGroup>
-              </Col>
-            </Row>
+              <Row className={ "py-4" }>
+                <Col md={ 8 }>
+                  <ButtonGroup size="lg">
+                    { images.features.map((feature, index) => {
+                      let style = _get_variant(feature.name);
+                      return <Button variant={ style.variant }
+                                     className={ style.clazz }
+                                     disabled={ !selectedFeatures.includes(feature.id) }
+                                     key={ `btn-grp-${ index }` }
+                                     onClick={ () => dispatch({
+                                       type: actionTypes.SET_ACTIVE,
+                                       payload: feature.name
+                                     }) }>
+                        { capitalizeFirstLetter(feature.name) } ({ feature.name in state ? state[feature.name] : "?" })
+                      </Button>;
+                    }) }
+                  </ButtonGroup>
+                </Col>
+              </Row>
 
-            <Row md={ 8 }>
-              <Col>
-                <ScoreGroup callback={ selectCallback }
-                            options={ get_feature_option_count() }
-                            action={ state._active } />
-              </Col>
-            </Row>
+              <Row>
+                <Col>
+                  <ScoreGroup callback={ selectCallback }
+                              options={ get_feature_option_count() }
+                              action={ state._active } />
+                </Col>
+              </Row>
 
-            <Row>
-              <Col>
-                <Button size="lg" variant={ "success" } onClick={ () => confirmScore() }
-                        disabled={ get_state_score() === 0 }>
-                  Confirm
-                </Button>
-                <Button className={ "ms-2" } size="lg" variant={ "danger" } onClick={ () => markAsUseless() }>
-                  Mark as Useless
-                </Button>
-              </Col>
-            </Row>
+              <Row>
+                <Col>
+                  <Button size="lg" variant={ "success" } onClick={ () => confirmScore() }
+                          disabled={ get_state_score() === 0 }>
+                    Confirm
+                  </Button>
+                  <Button className={ "ms-2" } size="lg" variant={ "danger" } onClick={ () => markAsUseless() }>
+                    Mark as Useless
+                  </Button>
+                </Col>
+              </Row>
 
-            <Row className={"pt-2"}>
-              <Col>
-                <Button size="lg" variant={ "primary" } onClick={ () => setShow(true) }>
-                  Show History
-                </Button>
-              </Col>
-            </Row>
+              <Row className={"mt-2"}>
+                <Col>
+                  <Button size="lg" variant={ "primary" } onClick={ () => setShow(true) }>
+                    Show History
+                  </Button>
+                </Col>
+              </Row>
 
-            {/* History-Side-Panel */}
-            <Offcanvas show={ show } onHide={ handleClose } placement={ "end" } name={ "Scoring History" }>
-              <Offcanvas.Header closeButton>
-                <Offcanvas.Title>Scoring History</Offcanvas.Title>
-              </Offcanvas.Header>
-              <Offcanvas.Body>
-                { images.history && images.history.map(score => {
-                  return <ScoreInfo project={ images.image.project } score={ score }
-                                    features={ images.features }
-                                    key={ `sc-info-${ score.id }` }/>;
-                }) }
-              </Offcanvas.Body>
-            </Offcanvas>
-          </>
+              {/* History-Side-Panel */}
+              <ScorePanel images={ images } show={show} handleClose={handleClose} />
+
+            </Col>
+            <Col className={"mt-2"}>
+              {/*<Form.Group controlId="formHide" className={"pb-3"}>*/}
+              {/*  <FormControlLabel*/}
+              {/*    control={ <Switch checked={ hideCompleted }*/}
+              {/*                      onChange={ (e) => setHideCompleted(e.target.checked) }*/}
+              {/*                      name="hideCompleted" /> }*/}
+              {/*    label="Hide completed?"*/}
+              {/*  />*/}
+              {/*</Form.Group>*/}
+
+              <DataTable
+                columns={ columnScores }
+                conditionalRowStyles={ conditionalScoreRowStyles }
+                data={ images.history }
+                onRowClicked={(row) => window.location.replace(`/project/${id}/score/?file=${row.file}`)}
+                highlightOnHover
+                defaultSortFieldId={ 2 }
+                defaultSortAsc={ false }
+                fixedHeader={ true }
+                allowOverflow={ false }
+                theme="dark"
+              />
+            </Col>
+
+          </Row>
         )
       ) : <Row><LoadingIcon/></Row> }
     </>
