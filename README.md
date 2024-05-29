@@ -18,6 +18,31 @@ Before you begin, ensure you have the following installed on your system:
 - Python
 - Node.js and npm
 
+
+Add some URLs to your hosts-file, so they are locally available!
+
+**Unix**
+
+   ```sh
+   sudo tee -a /etc/hosts > /dev/null <<EOT
+   
+   127.0.0.1 api.scoring.com
+   127.0.0.1 scoring.com   
+   127.0.0.1 api.scoring.local
+   127.0.0.1 scoring.local
+  
+   EOT
+   ```
+
+**Windows:**
+1. Shame on you for using should a bad OS!
+2. Your host-file is at:
+   ```sh
+   %windir%\System32\drivers\etc
+   ```
+3. Copy the above code (between EOT) and save the file
+
+
 ## Setup Instructions
 
 1. **Copy environment templates:**

@@ -43,7 +43,7 @@ class ViewSetCreateModel(object):
         base_request = ImageFile.objects.filter(project=pk) \
             .exclude(hidden=True) \
             .exclude(useless=True) \
-            .exclude(scores__user=user) \
+            .exclude(scores__user=user, scores__is_completed=True) \
             .annotate(scores_ratio=Count("scores"))
 
         available_images = len(base_request)
@@ -51,7 +51,7 @@ class ViewSetCreateModel(object):
         if available_images == 0:
             return {"files_left": 0}
 
-        self_scored = ImageFile.objects.filter(project=pk, scores__user=user) \
+        self_scored = ImageFile.objects.filter(project=pk, scores__user=user, scores__is_completed=True) \
             .exclude(hidden=True) \
             .exclude(useless=True).count()
 

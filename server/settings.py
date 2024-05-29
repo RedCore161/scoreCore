@@ -242,10 +242,15 @@ EXPORT_DIR = os.path.join(MEDIA_ROOT, os.getenv("EXPORT_DIR", "export"))
 LOGS_DIR = os.path.join(MEDIA_ROOT, os.getenv("LOGS_DIR", "logs"))
 PROJECT_DIR = os.path.join(MEDIA_ROOT, os.getenv("PROJECT_DIR", "projects"))
 
-DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
-DBBACKUP_STORAGE_OPTIONS = {'location': BACKUP_DIR}
-DBBACKUP_CONNECTOR_MAPPING = {
-    "django.db.backends.postgresql_psycopg2": "dbbackup.db.postgresql.PgDumpConnector",
+DBBACKUP_STORAGE = "django.core.files.storage.FileSystemStorage"
+DBBACKUP_STORAGE_OPTIONS = {"location": BACKUP_DIR}
+DBBACKUP_CONNECTORS = {
+    "default": {
+        "USER": os.getenv("POSTGRES_USER"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+        "HOST": os.getenv("POSTGRES_HOST"),
+        "CONNECTOR": "dbbackup.db.postgresql.PgDumpConnector"
+    }
 }
 
 # Security
