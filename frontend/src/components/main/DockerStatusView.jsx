@@ -30,10 +30,10 @@ const DockerStatusView = () => {
     if (wsMessage) {
       let elements
       console.log("WS received =>", wsMessage);
-      if (wsMessage.type === 'docker_status') {
+      if (wsMessage.type === "docker_status") {
         switch (wsMessage.event) {
 
-          case 'updated':
+          case "updated":
             elements = status.container
 
             for (const [key, value] of Object.entries(wsMessage.data)) {

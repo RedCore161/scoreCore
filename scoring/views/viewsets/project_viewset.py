@@ -72,7 +72,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         bit = 1
         for _feature in features:
-            feature, created = ScoreFeature.objects.get_or_create(project=project, name=_feature)
+            feature, created = ScoreFeature.objects.get_or_create(project=project, name=_feature.strip())
             feature.bit = bit
             feature.save()
             bit *= 2

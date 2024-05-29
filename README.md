@@ -26,10 +26,8 @@ Add some URLs to your hosts-file, so they are locally available!
    ```sh
    sudo tee -a /etc/hosts > /dev/null <<EOT
    
-   127.0.0.1 api.scoring.com
-   127.0.0.1 scoring.com   
    127.0.0.1 api.scoring.local
-   127.0.0.1 scoring.local
+   127.0.0.1 scoring.local   
   
    EOT
    ```

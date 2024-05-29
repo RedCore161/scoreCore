@@ -19,7 +19,7 @@ const Navbar = () => {
 
   return (
     <Col md={ 2 } id={ "main-Navbar" }>
-      <Button variant="primary" className="w-100 mt-2" size="lg" onClick={ () => {
+      <Button variant="primary" className="w-100 mt-4" size="lg" onClick={ () => {
         logout();
         window.location.reload();
       } }>Logout</Button>

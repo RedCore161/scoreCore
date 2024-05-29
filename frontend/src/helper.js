@@ -122,7 +122,7 @@ export const columnScores = [
     id: 1,
     name: "",
     sortable: true,
-    width: "45px",
+    width: "40px",
     cell: row => row.is_completed ? "✔" : "⭕",
     selector: row => row.is_completed,
   },
@@ -137,7 +137,7 @@ export const columnScores = [
   },
   {
     id: 3,
-    name: "Info",
+    name: "Last Change",
     sortable: true,
     minwidth: "60px",
     cell: row => <ReactTimeAgo date={ row.timestamp } locale="en"/>,

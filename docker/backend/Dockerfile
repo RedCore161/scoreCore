@@ -45,7 +45,6 @@ RUN apt update && \
     apt install -y nano iputils-ping cron postgresql-client
 
 ENV DOMAIN="${DB_HOST}:${DB_PORT}"
-ENV PORT=${CONTROL_BACKEND_PORT}
 
 RUN echo "0 5 * * * /usr/src/app/scripts/createBackup.sh" >> /tmp/backUpJob
 RUN crontab /tmp/backUpJob
@@ -54,4 +53,4 @@ RUN sed -i -e 's/\r$//' ./scripts/*.sh
 RUN chmod +x ./scripts/*.sh
 
 #USER scoring # Fix later
-CMD ./wait-for-it.sh $DOMAIN -- ./run-server.sh "${PORT}"
+CMD ./wait-for-it.sh $DOMAIN -- ./run-server.sh "${CONTROL_BACKEND_PORT}"

@@ -5,7 +5,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
-from scoring.helper import build_abs_path, set_logging_file
+from scoring.helper import build_abs_path, set_logging_file, dlog
 from scoring.models import Project, ImageFile, ImageScore
 from scoring.serializers import ImageScoreSerializer
 from scoring.views.viewsets.base_viewset import StandardResultsSetPagination
@@ -18,8 +18,7 @@ def get_scores_from_request(request, fields) -> list:
     scores = []
     for feature in fields:
         name = request.data.get(feature)
-        if name is not None:
-            scores.append(name)
+        scores.append(name)
     return scores
 
 
@@ -36,11 +35,12 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
 
         project = request.data.get("project")
         _project = Project.objects.get(pk=project)
-        comment = request.data.get("comment", "")
+        comment = request.data.get("_comment", "")
 
         if not _project.is_finished():
             scoring_fields = _project.features.all().values_list("name", flat=True)
             scores = get_scores_from_request(request, scoring_fields)
+            dlog("Scores", scores)
 
             ViewSetCreateModel().create_or_update_imagescore(pk, request.user, scoring_fields, scores, comment)
             return ProjectViewSet().get_next_image(request, project)

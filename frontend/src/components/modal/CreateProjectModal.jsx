@@ -15,7 +15,7 @@ const suggestions = [
   {icon: "🐶"},
   {icon: "🐱"},
   {icon: "🐷"},
-  {icon: "🐭", txt: "Eye, Nose, Cheek, Ear, Whisker"},
+  {icon: "🐭", txt: "Eyes, Nose, Cheeks, Ears, Whiskers"},
   {icon: "🐰"}
   ]
 
@@ -45,7 +45,6 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
 
 
   const onSubmit = (data) => {
-    console.log("FOLDER", folder);
     let additonal = {}
     if (folder.length > 0) {
       additonal["folder"] = folder[0].name
@@ -100,7 +99,7 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
                 { errors.icon?.type === "required" && errors.icon?.message }
               </div>
             </Form.Label>
-            <Form.Control className="ctl-short" type="text" width={ 5 } placeholder="Icon" { ...register("icon", configText) } />
+            <Form.Control className="ctl-short" type="text" placeholder="Icon" { ...register("icon", configText) } />
           </Form.Group>
 
           <Form.Group controlId="formFeature" className={ "mt-3" }>

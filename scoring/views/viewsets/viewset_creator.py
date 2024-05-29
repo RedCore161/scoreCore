@@ -26,11 +26,11 @@ class ViewSetCreateModel(object):
 
         if created:
             score.comment = comment
-            score.date = timezone.now()
 
         if score.comment != comment:
             score.comment = comment
 
+        score.date = timezone.now()
         score.save()
         score.check_completed()
 

@@ -13,7 +13,7 @@ export const reducerScore = (state, action) => {
     case actionTypes.SET_SCORE:
       let key = action.payload.action
       state[key] = action.payload.value
-      return { ...state, _active: action.payload.next };
+      return { ...state };
 
     case actionTypes.SET_COMMENT:
       return { ...state, _comment: action.payload};
