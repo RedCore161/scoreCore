@@ -37,6 +37,7 @@ services:
       dockerfile: docker/backend/Dockerfile
       args:
         MEDIA_VOLUME: ${MEDIA_VOLUME}
+        CONTROL_FRONTEND_URL: ${CONTROL_FRONTEND_URL}
         CONTROL_BACKEND_URL: ${CONTROL_BACKEND_URL}
         CONTROL_BACKEND_PORT: ${CONTROL_BACKEND_PORT}
         DB_HOST: ${POSTGRES_HOST}
