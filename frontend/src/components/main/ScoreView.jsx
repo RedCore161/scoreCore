@@ -26,7 +26,7 @@ const ScoreView = () => {
   const [images, setImages] = useState({ "files_left": 0 });
   const [loadingDone, setLoadingDone] = useState(false);
   const [uilock, setUILock] = useState(false);
-  const [updateUi, setUpdateUi] = useState(false)
+  const [updateUi, setUpdateUi] = useState(false);
   const [state, dispatch] = useReducer(reducerScore, defaultStateScore);
   const [searchParams, setSearchParams] = useSearchParams();
   const { enqueueSnackbar } = useSnackbar();
@@ -40,18 +40,17 @@ const ScoreView = () => {
   }, [searchParams]);
 
   const onSelectImage = (params) => {
-    setSearchParams(params)
-  }
+    setSearchParams(params);
+  };
 
   const resetPage = () => {
-    console.log("resetPage");
-    navigate(`/project/${id}/score/`)
-    setSearchParams({reload: Date.now()})
-  }
+    navigate(`/project/${ id }/score/`);
+    setSearchParams({ reload: Date.now() });
+  };
 
-  function findSelectNextActive(data, init= undefined) {
-    let keys = init ? Object.keys(init) : Object.keys(state).filter(s => s[0] !== "_")
-    let next = data.features.filter(ft => !keys.some(s => s === ft.name))
+  function findSelectNextActive(data, init = undefined) {
+    let keys = init ? Object.keys(init) : Object.keys(state).filter(s => s[0] !== "_");
+    let next = data.features.filter(ft => !keys.some(s => s === ft.name));
 
     if (next && next.length > 0) {
       dispatch({ type: actionTypes.SET_ACTIVE, payload: next[0].name });
@@ -59,12 +58,12 @@ const ScoreView = () => {
   }
 
   const loadData = (params) => {
-    console.log("fetchData", params);
+    console.log("loadData", params);
     axiosConfig.updateToken(authHeader());
     fetchImage(id, params).then((data) => {
       setImages(data);
       setLoadingDone(true);
-      let init = data?.score?.data
+      let init = data?.score?.data;
       if (data?.score?.comment) {
         dispatch({ type: actionTypes.SET_COMMENT, payload: data.score.comment });
       }
@@ -74,8 +73,8 @@ const ScoreView = () => {
             delete init[key];
           }
         });
-        dispatch({ type: actionTypes.SET_INIT, payload: init});
-        findSelectNextActive(data, init)
+        dispatch({ type: actionTypes.SET_INIT, payload: init });
+        findSelectNextActive(data, init);
       } else {
         dispatch({ type: actionTypes.SET_ACTIVE, payload: data.features[0].name });
       }
@@ -84,12 +83,12 @@ const ScoreView = () => {
 
   const selectCallback = (action, value) => {
     if (action.length === 0) {
-      return
+      return;
     }
     dispatch({ type: actionTypes.SET_SCORE, payload: { action: action, value: value } });
-    let obj = {}
-    obj[action] = value
-    findSelectNextActive(images, {...state, ...obj})
+    let obj = {};
+    obj[action] = value;
+    findSelectNextActive(images, { ...state, ...obj });
   };
 
   async function confirmScore() {
@@ -109,8 +108,8 @@ const ScoreView = () => {
         if (response.data.success) {
           showSuccessBar(enqueueSnackbar, "Scoring confirmed!");
           setImages(response.data);
-          findSelectNextActive(response.data)
-          resetPage()
+          findSelectNextActive(response.data);
+          resetPage();
 
         } else {
           if (response.data.is_finished) {
@@ -179,14 +178,13 @@ const ScoreView = () => {
   }
 
   function get_state_score() {
-    return Object.keys(state).filter(e => e[0] !== "_").length
+    return Object.keys(state).filter(e => e[0] !== "_").length;
   }
 
   function get_feature_option_count() {
-    const feature = images?.features?.find(i => i.name === state._active)
-    return feature?.option_count ? feature.option_count : 3
+    const feature = images?.features?.find(i => i.name === state._active);
+    return feature?.option_count ? feature.option_count : 3;
   }
-
 
   return (
     <>
@@ -209,7 +207,7 @@ const ScoreView = () => {
             <Col md={ 8 }>
               <Row className="mt-4">
                 <Col>
-                  <img src={ getImagePath() } alt="Score-Image" />
+                  <img src={ getImagePath() } alt="Score-Image"/>
                 </Col>
               </Row>
 
@@ -219,7 +217,7 @@ const ScoreView = () => {
                     <Form.Control type="text" className={ "input-form" }
                                   placeholder="Comment (optional)"
                                   value={ state._comment }
-                                  onChange={ changeCommentListener } />
+                                  onChange={ changeCommentListener }/>
                   </Form.Group>
                 </Col>
               </Row>
@@ -246,7 +244,7 @@ const ScoreView = () => {
               <Row>
                 <Col>
                   <ScoreGroup callback={ selectCallback } options={ get_feature_option_count() }
-                              action={ state._active } />
+                              action={ state._active }/>
                 </Col>
               </Row>
 
@@ -265,9 +263,9 @@ const ScoreView = () => {
                 </Col>
               </Row>
             </Col>
-            <Col className={"mt-2"}>
-              {/* History-Side-Panel */}
-              <ScorePanel images={ images } id={id} callback={onSelectImage} />
+            <Col className={ "mt-2" }>
+              {/* History-Side-Panel */ }
+              <ScorePanel images={ images } id={ id } callback={ onSelectImage }/>
             </Col>
 
           </Row>

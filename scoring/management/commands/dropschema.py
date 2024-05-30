@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand
 from django.db import connection
 
+
 class Command(BaseCommand):
-    help = 'Recreates db-schema'
+    help = "Recreates db-schema"
 
     def handle(self, *args, **options):
         with connection.cursor() as cursor:

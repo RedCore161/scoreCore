@@ -46,7 +46,5 @@ const ShowTextModal = (  ) => {
       </Modal>
     </Form>
   );
-
 };
-
 export default ShowTextModal;

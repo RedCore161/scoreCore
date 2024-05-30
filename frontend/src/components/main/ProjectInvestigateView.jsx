@@ -107,5 +107,4 @@ const ProjectInvestigateView = () => {
     ) : ( <Row><LoadingIcon/></Row> )
   );
 };
-
 export default ProjectInvestigateView;

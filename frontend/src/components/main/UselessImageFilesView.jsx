@@ -20,7 +20,7 @@ const UselessImageFilesView = () => {
     axiosConfig.updateToken(authHeader());
     const result = await axiosConfig.holder.get(`/api/project/${ id }/get-useless/`);
     setImageFiles(result.data);
-    setIsLoading(false)
+    setIsLoading(false);
     console.log("Found Images:", result.data);
   }
 
@@ -32,7 +32,7 @@ const UselessImageFilesView = () => {
 
   return (
     <>
-      {!isLoading && (
+      { !isLoading && (
         <BoxContainer title={ "Images marked as useless" }>
           <Row>
             { imageFiles.length === 0 ? (
@@ -46,12 +46,10 @@ const UselessImageFilesView = () => {
                 }) }
               </Gallery>
             ) }
-
           </Row>
         </BoxContainer>
       ) }
     </>
   );
 };
-
 export default UselessImageFilesView;

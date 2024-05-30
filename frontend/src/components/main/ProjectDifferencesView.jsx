@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import BoxContainer from "../ui/BoxContainer";
 import { Button, Col, Row } from "react-bootstrap";
@@ -31,7 +31,6 @@ const ProjectDifferencesView = () => {
       });
     }
   }, [pages]);
-
 
   const handlePaginator = ({ selected }) => {
     setPages({ ...pages, "varianzes": selected + 1 });
@@ -86,5 +85,4 @@ const ProjectDifferencesView = () => {
     ) : ( <Row><LoadingIcon/></Row> )
   );
 };
-
 export default ProjectDifferencesView;

@@ -69,7 +69,7 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
 
   function advSetValue(_field, _val) {
     setValue(_field, _val,{ shouldTouch: false })
-    setFocus(_field, false)
+    setFocus(_field, undefined)
   }
 
   return (

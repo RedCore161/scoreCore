@@ -21,11 +21,7 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "image", callBackData = ()
     maxSize: 1024 * 1024 * 5, // 5 MB
     onDrop: (acceptedFiles) => {
       console.log("Files dropped:", acceptedFiles);
-    },
-    onDropRejected: (fileRejections) => {
-      console.log("Rejected files:", fileRejections);
-    },
-    // Other options as needed
+    }
   };
 
   let acceptedFiles, getRootProps, getInputProps, isFocused, isDragAccept, isDragReject;
@@ -95,9 +91,7 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "image", callBackData = ()
     });
 
     await axiosConfig.holder.post("/api/project/upload/", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      }
+      headers: { "Content-Type": "multipart/form-data" }
     }).then((response) => {
       if (response.data.success) {
         showSuccessBar(enqueueSnackbar, "Successfully uploaded File(s)");
@@ -118,7 +112,6 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "image", callBackData = ()
   const handleClose = () => {
     setShow((show) => ( { ...show, modalUploadFolder: false } ));
   };
-
 
   return (
     <Form>

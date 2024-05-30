@@ -122,27 +122,23 @@ const BackupView = () => {
         </BoxContainer>
 
         <BoxContainer title="Available Backups">
-          { 'elements' in data && (
+          { "elements" in data && (
             <>
               { <CorePaginator pages={ data.pages }
                                handleChangePage={ handlePaginator } /> }
 
               { data.elements.map((backup) => {
-                return <BackupButton {...backup}
-                                     callbackRestore={restoreBackup}
-                                     callbackDelete={deleteBackup}
-                                     key={backup.id} />;
+                return <BackupButton key={backup.id}
+                                     callbackRestore={restoreBackup} callbackDelete={deleteBackup}
+                                     {...backup} />;
 
               }) }
             </>
           ) }
 
         </BoxContainer>
-
       </>
-
     ) : ( <Row><LoadingIcon/></Row> )
   );
 };
-
 export default BackupView;

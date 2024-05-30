@@ -3,7 +3,6 @@ import { FormControlLabel, Switch } from "@mui/material";
 import DataTable from "react-data-table-component";
 import { Col, Form, Row } from "react-bootstrap";
 import { columnScores, conditionalScoreRowStyles } from "../../helper";
-// import "../ui/css/ScorePanel.css";
 
 const ScorePanel = ({ images, callback }) => {
 
@@ -41,7 +40,7 @@ const ScorePanel = ({ images, callback }) => {
         highlightOnHover
         defaultSortFieldId={ 3 }
         defaultSortAsc={ false }
-        onRowClicked={(row) => callback({ file: row.file})}
+        onRowClicked={ (row) => callback({ file: row.file }) }
         fixedHeader={ true }
         allowOverflow={ false }
         theme="dark"
@@ -50,5 +49,4 @@ const ScorePanel = ({ images, callback }) => {
     </>
   );
 };
-
 export default ScorePanel;

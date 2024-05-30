@@ -19,11 +19,8 @@ const DockerStatusView = () => {
   const authHeader = useAuthHeader();
 
   useEffect(() => {
-    console.log("useEffect")
-
-
+    console.log("fetchDockerStatus")
     fetchDockerStatus();
-
   }, []);
 
   useEffect(() => {
@@ -44,10 +41,10 @@ const DockerStatusView = () => {
                 elements.unshift({ "id": key, ...value })
               }
             }
-            setStatus({...status, 'container': elements });
+            setStatus({...status, "container": elements });
             break;
 
-          case 'removed':
+          case "removed":
             elements = status.container
             wsMessage.data.forEach(doomed => {
               let foundIndex = elements.findIndex(x => x.id === doomed);
@@ -55,7 +52,7 @@ const DockerStatusView = () => {
                 elements.splice(foundIndex, 1)
               }
             })
-            setStatus({...status, 'container': elements });
+            setStatus({...status, "container": elements });
             break;
         }
       }
@@ -71,22 +68,22 @@ const DockerStatusView = () => {
 
   const columns = [
     {
-      name: 'Container',
+      name: "Container",
       sortable: true,
-      cell: row => (<div style={ { paddingTop: '12px', paddingBottom: '12px' } }>
+      cell: row => (<div style={ { paddingTop: "12px", paddingBottom: "12px" } }>
         <div className={ "dockerName" }>{ row["name"] }</div>{ row["id"] }
       </div>),
       selector: row => row.name,
     },
     {
-      name: 'Status',
-      width: '150px',
+      name: "Status",
+      width: "150px",
       sortable: true,
       selector: row => row.status,
     },
     {
-      name: 'Actions',
-      width: '300px',
+      name: "Actions",
+      width: "300px",
       cell: row => <DockerActionButtons modalState={modalState} setModalState={setModalState} {  ...row } />,
     }
   ];
@@ -95,13 +92,13 @@ const DockerStatusView = () => {
     {
       when: row => row.status === "running",
       style: {
-        backgroundColor: 'rgba(63, 195, 128, 0.7)',
+        backgroundColor: "rgba(63, 195, 128, 0.7)",
       },
     },
     {
       when: row => row.status === "exited",
       style: {
-        backgroundColor: 'rgba(255,22,0,0.7)',
+        backgroundColor: "rgba(255,22,0,0.7)",
       },
     },
   ];
@@ -109,7 +106,7 @@ const DockerStatusView = () => {
   const customStyles = {
     headCells: {
       style: {
-        fontSize: '22px'
+        fontSize: "22px"
       },
     }
   };
@@ -117,7 +114,6 @@ const DockerStatusView = () => {
   return (
     <>
       <ShowTextModal />
-
       { status.container ? (
         <DataTable
           title={ "Docker-Container Overview" }
@@ -130,7 +126,5 @@ const DockerStatusView = () => {
       ) : <Row><LoadingIcon /></Row> }
     </>
   );
-
 }
-
 export default DockerStatusView;

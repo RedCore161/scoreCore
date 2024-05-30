@@ -10,7 +10,8 @@ from scoring.models import Project
 
 
 class Command(BaseCommand):
-    help = 'Fills in initial test data'
+    # OUTDATED
+    help = "Fills in initial test data"
 
     def handle(self, *args, **options):
         username = os.getenv("DJANGO_SUPERUSER_USERNAME")
@@ -29,9 +30,7 @@ class Command(BaseCommand):
             _users = json.load(_file)
 
             for _user in _users:
-                user, created = User.objects.get_or_create(username=_user.get("username"),
-                                                           email=_user.get("email")
-                                                           )
+                user, created = User.objects.get_or_create(username=_user.get("username"), email=_user.get("email"))
 
                 if created:
                     user.set_password(_user.get("password", random_string(4, 4)))
