@@ -20,7 +20,7 @@ from django.urls import re_path, include
 
 from server import settings
 
-urlpatterns = [re_path('', include("scoring.urls")),
-               re_path('admin/', admin.site.urls)] \
+urlpatterns = [re_path("", include("scoring.urls")),
+               re_path("^admin/", admin.site.urls)] \
               + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) \
               + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -9,10 +9,8 @@ venv
 media/*
 
 frontend/node_moduless
-.env
 
 docker/backend/django.env
-docker/frontend/.env.production
 
 docker-compose.yml
 

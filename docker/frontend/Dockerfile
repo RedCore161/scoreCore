@@ -17,7 +17,6 @@ RUN sed -i -r "s/URL-TEMPLATE-WITH-PORT/${CONTROL_BACKEND_URL}:${CONTROL_BACKEND
 
 RUN npm install
 RUN npm run build
-#CMD ["tail", "-f", "/dev/null"]
 
 
 FROM nginx:stable-alpine
