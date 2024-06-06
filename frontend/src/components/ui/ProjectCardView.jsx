@@ -42,7 +42,7 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
   }
 
   function get_project_percentage() {
-    return Math.min(( ( scoresCount / ( save_wanted_scores * wanted_scores_per_user) ) * 100 ), 100).toFixed(2);
+    return Math.min(( ( scoresCount / ( users.length * wanted_scores_per_user) ) * 100 ), 100).toFixed(2);
   }
 
   function loginForwardTo(event, url) {
