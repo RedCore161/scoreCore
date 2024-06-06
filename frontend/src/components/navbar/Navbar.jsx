@@ -18,12 +18,9 @@ const Navbar = () => {
   };
 
   return (
-    <Col md={ 2 } id={ "main-Navbar" }>
-      <Button variant="primary" className="w-100 mt-4" size="lg" onClick={ () => {
-        logout();
-        window.location.reload();
-      } }>Logout</Button>
-      <Button href="/project/overview/" variant="info" className="w-100 mt-2" size="lg">Projects</Button>
+    <Col md={ 2 } id={ "main-Navbar" } className={" mt-4"}>
+      <Button href="/project/overview/" variant="info" className="w-100" size="lg">Projects</Button>
+
       { isAuth.is_superuser && (
         <>
           <Button href="/project/evaluate/" variant="info" className="w-100 mt-2" size="lg">Evaluate</Button>
@@ -32,6 +29,10 @@ const Navbar = () => {
           <Button href={`${process.env.REACT_APP_BACKEND_URL}/admin`} variant="primary" className="w-100 mt-2" size="lg">Admin</Button>
         </>
       ) }
+      <Button variant="primary" className="w-100 mt-2" size="lg" onClick={ () => {
+        logout();
+        window.location.reload();
+      } }>Logout</Button>
     </Col>
   );
 };

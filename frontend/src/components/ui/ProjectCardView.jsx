@@ -41,6 +41,10 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
     return Math.min(( ( scoresOwn / get_save_wanted_scores() ) * 100 ), 100).toFixed(2);
   }
 
+  function get_project_percentage() {
+    return Math.min(( ( scoresCount / ( save_wanted_scores * wanted_scores_per_user) ) * 100 ), 100).toFixed(2);
+  }
+
   function loginForwardTo(event, url) {
     event.stopPropagation();
 
@@ -101,7 +105,7 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
           </Col>
         </Row>
 
-        <Row>
+        <Row className={"pt-2"}>
           <Col md={ 6 } className={ "project-Card-Item" }>Features:</Col>
           <Col className={ "project-Card-Content" }>{ features.map(ft => ft.name).join(', ') }</Col>
         </Row>
@@ -114,14 +118,19 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
           <Col className={ "project-Card-Content" }>{ imagesTotal }</Col>
         </Row>
         <Row>
-          <Col md={ 6 } className={ "project-Card-Item" }>Target Scores / User:</Col>
-          <Col className={ "project-Card-Content" }>{ wanted_scores_per_user }</Col>
+          <Col md={ 6 } className={ "project-Card-Item" }>
+            <div>Target Scores / User:</div>
+            <div>Target Scores / Image:</div>
+          </Col>
+          <Col md={ 2 } className={ "project-Card-Content" }>
+            <div className={ wanted_scores_per_user > save_wanted_scores && "text-warning" }>{ wanted_scores_per_user }</div>
+            <div>{ wanted_scores_per_image }</div>
+          </Col>
+          <Col className={ "score-Info-Container" }>
+            <span className={ "score-Info" }>Project finished:<br/> { get_project_percentage() }%</span>
+          </Col>
         </Row>
-        <Row>
-          <Col md={ 6 } className={ "project-Card-Item" }>Target Scores / Image:</Col>
-          <Col className={ `project-Card-Content ${ wanted_scores_per_user > save_wanted_scores && "text-warning" }` }>
-            { wanted_scores_per_image }</Col>
-        </Row>
+
         <Row>
           <Col md={ 6 } className={ "project-Card-Item" }>Scores / Image:</Col>
           <Col
@@ -131,6 +140,7 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
           <Col md={ 6 } className={ "project-Card-Item" }>Useless Images:</Col>
           <Col className={ `project-Card-Content ${ uselessCount > 0 && "text-danger" }` }>{ uselessCount }</Col>
         </Row>
+
         <Row>
           <Col md={ 6 } className={ "project-Card-Item" }>
             <div>Total Score-Count:</div>
@@ -145,7 +155,7 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
             { save_wanted_scores === scoresOwn ? (
               imagesTotal > 0 && <i className="bi bi-check-lg text-success huge-icon score-Info"/>
             ) : (
-              <span className={ "score-Info" }>You finished:<br/> { get_own_percentage() }%</span>
+              <span className={ "score-Info" }>Your part finished:<br/> { get_own_percentage() }%</span>
             ) }
           </Col>
         </Row>
