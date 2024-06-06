@@ -55,9 +55,21 @@ class Project(models.Model):
             data = json.load(_file)
             dlog("DATA", data.get("imagefiles"))
 
+    def get_data(self, user):
+        data = {"imagesTotal": self.get_all_files_save().count()}
+        return data | self.get_scores(user)
+
+    def get_scores(self, user):
+        scores = self.get_all_scores_save()
+        data = {
+            "scoresCount": scores.count(),
+            "scoresOwn": scores.filter(user=user).count(),
+            "uselessCount": self.files.filter(useless=True, hidden=False).count()
+        }
+        return data
+
     def get_all_scores_save(self):
-        return self.scores.exclude(file__useless=True) \
-            .filter(user__in=self.users.all(), is_completed=False)
+        return self.scores.exclude(file__useless=True).filter(user__in=self.users.all(), is_completed=True)
 
     def get_score_count(self):
         return self.get_all_scores_save().count()

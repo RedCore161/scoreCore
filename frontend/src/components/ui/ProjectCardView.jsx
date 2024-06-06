@@ -6,13 +6,16 @@ import { useAuthHeader, useAuthUser } from "react-auth-kit";
 import axiosConfig from "../../axiosConfig";
 
 
-const ProjectCardView = ({ id, name, features, icon, imagesTotal, uselessCount, scoresCount, scoresOwn, users,
+const ProjectCardView = ({ id, name, features, icon, data, users,
                            wanted_scores_per_user, wanted_scores_per_image, isFinished }) => {
 
   const navigate = useNavigate();
   const auth = useAuthUser();
   const isAuth = auth();
   const authHeader = useAuthHeader();
+
+  const { imagesTotal, scoresCount, scoresOwn, uselessCount } = data
+
   const save_wanted_scores = get_save_wanted_scores();
 
   function get_score_ratio() {

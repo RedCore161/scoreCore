@@ -22,7 +22,6 @@ class ViewSetCreateModel(object):
 
         _zip = zip(scoring_fields, data)
         score.data = dict(_zip)
-        image_file.calc_varianz()
 
         if created:
             score.comment = comment
@@ -32,7 +31,10 @@ class ViewSetCreateModel(object):
 
         score.date = timezone.now()
         score.save()
-        score.check_completed()
+
+        if score.check_completed():
+            pass
+            #TODO image_file.calc_varianz()
 
         return created
 

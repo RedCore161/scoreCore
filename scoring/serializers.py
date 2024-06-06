@@ -51,12 +51,9 @@ class ScoreFeaturesSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
     clazz = serializers.SerializerMethodField("get_clazz_name")
     isFinished = serializers.SerializerMethodField("get_is_finished")
-    imagesTotal = serializers.SerializerMethodField("get_total_images_count")
-    uselessCount = serializers.SerializerMethodField("get_useless_count")
-    scoresCount = serializers.SerializerMethodField("get_scores_count")
-    scoresOwn = serializers.SerializerMethodField("get_own_scores_count")
     evaluations = serializers.SerializerMethodField("get_evaluations")
     features = serializers.SerializerMethodField("get_features")
+    data = serializers.SerializerMethodField("get_data")
 
     class Meta:
         model = Project
@@ -70,17 +67,9 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_is_finished(project: Project):
         return project.is_finished()
 
-    @staticmethod
-    def get_total_images_count(project: Project):
-        return project.get_all_files_save().count()
-
-    @staticmethod
-    def get_useless_count(project: Project):
-        return project.files.filter(useless=True, hidden=False).count()
-
-    @staticmethod
-    def get_scores_count(project: Project):
-        return project.get_all_scores_save().count()
+    def get_data(self, project: Project):
+        _user = self.context.get("user")
+        return project.get_data(_user)
 
     @staticmethod
     def get_evaluations(project: Project):
@@ -89,13 +78,6 @@ class ProjectSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_features(project: Project):
         return ScoreFeaturesSerializer(project.features.all(), many=True).data
-
-    def get_own_scores_count(self, project: Project):
-        _user = self.context.get("user")
-        if not _user:
-            return 0
-        user = User.objects.get(pk=_user)
-        return project.get_all_scores_save().filter(user=user).count()
 
 
 class ImageScoreSerializer(serializers.ModelSerializer):
