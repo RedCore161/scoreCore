@@ -14,7 +14,6 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "image", callBackData = ()
   const [folders, setFolders] = useState([]);
 
   const _types = getAcceptesTypes(accept);
-  const config = { webkitdirectory: true, directory: true }
 
   const dropzoneOptions = {
     accept: _types,
@@ -136,7 +135,7 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "image", callBackData = ()
                 ) : (
                   <Form.Group controlId="formValue">
                     <div { ...getRootProps({ style }) }>
-                      <input { ...getInputProps() } {...config} multiple/>
+                      <input { ...getInputProps() } webkitdirectory="true" directory="true" multiple/>
                       <p>Drag 'n' drop some files here, or click to select files</p>
                     </div>
                   </Form.Group>
