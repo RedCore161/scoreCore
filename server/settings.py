@@ -235,15 +235,12 @@ STATIC_URL = "/static/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
-BACKUP_DIR = os.path.join(MEDIA_ROOT, os.getenv("BACKUP_DIR", "backup"))
-SETUP_DIR = os.path.join(MEDIA_ROOT, os.getenv("SETUP_DIR", "setup"))
-UPLOAD_DIR = os.path.join(MEDIA_ROOT, os.getenv("UPLOAD_DIR", "upload"))
-EXPORT_DIR = os.path.join(MEDIA_ROOT, os.getenv("EXPORT_DIR", "export"))
-LOGS_DIR = os.path.join(MEDIA_ROOT, os.getenv("LOGS_DIR", "logs"))
-PROJECT_DIR = os.path.join(MEDIA_ROOT, os.getenv("PROJECT_DIR", "projects"))
+
+DEFAULT_DIRS = {_dir.strip(): os.path.join(MEDIA_ROOT, _dir.strip())
+                    for _dir in os.getenv("DEFAULT_DIRS", "").split(',')}
 
 DBBACKUP_STORAGE = "django.core.files.storage.FileSystemStorage"
-DBBACKUP_STORAGE_OPTIONS = {"location": BACKUP_DIR}
+DBBACKUP_STORAGE_OPTIONS = {"location": DEFAULT_DIRS.get("backup")}
 DBBACKUP_CONNECTORS = {
     "default": {
         "USER": os.getenv("POSTGRES_USER"),

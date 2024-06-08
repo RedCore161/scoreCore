@@ -68,12 +68,12 @@ const ProjectInvestigateView = () => {
       <>
         <BoxContainer title={ `Investigate '${ "project" in data && data.project.name }'` }>
           <Row>
-            <Col md={ 2 }>ImageFiles</Col>
+            <Col md={ 2 }>Image-files</Col>
             <Col>{ data.imageFilesCount }</Col>
           </Row>
 
           <Row className={ "py-3" }>
-            <Col md={ 2 }>Scores foreach ImageFiles</Col>
+            <Col md={ 2 }>Scores for each Image-file</Col>
             <Col>{ "scoresCount" in data && Object.keys(data.scoresCount).map(function (count, index) {
               let objects = data.scoresCount[count];
               let _elements = objects.map(obj => <ScoreFileLink key={ `file-${obj.id}` } {...obj} />);

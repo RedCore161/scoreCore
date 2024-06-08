@@ -19,31 +19,31 @@ const ProjectDifferencesView = () => {
   const { id } = useParams();
 
   const [data, setData] = useState({});
-  const [pages, setPages] = useState({ "varianzes": 1 });
+  const [pages, setPages] = useState({ "variances": 1 });
   const { enqueueSnackbar } = useSnackbar();
   const authHeader = useAuthHeader();
 
   useEffect(() => {
-    if ("varianzes" in pages) {
+    if ("variances" in pages) {
       axiosConfig.updateToken(authHeader());
-      fetchImagesAll(id, pages.varianzes).then((data) => {
+      fetchImagesAll(id, pages.variances).then((data) => {
         setData(data);
       });
     }
   }, [pages]);
 
   const handlePaginator = ({ selected }) => {
-    setPages({ ...pages, "varianzes": selected + 1 });
+    setPages({ ...pages, "variances": selected + 1 });
   };
 
-  async function recalcuateVarianz() {
+  async function recalcuateVariance() {
     axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.get(`/api/project/${ id }/recalculate-varianz/`)
+    await axiosConfig.holder.get(`/api/project/${ id }/recalculate-variance/`)
       .then((response) => {
         if (response.data) {
           if (response.data.success) {
             showSuccessBar(enqueueSnackbar, "Successfully recalculated!");
-            fetchImagesAll(id, pages.varianzes).then((data) => {
+            fetchImagesAll(id, pages.variances).then((data) => {
               setData(data);
             });
           }
@@ -63,7 +63,7 @@ const ProjectDifferencesView = () => {
         <BoxContainer title={ "Actions" }>
           <Row>
             <Col>
-              <Button variant={ "success" } onClick={ () => recalcuateVarianz() }>Recalculate Varianz</Button>
+              <Button variant={ "success" } onClick={ () => recalcuateVariance() }>Recalculate Variance</Button>
             </Col>
           </Row>
         </BoxContainer>

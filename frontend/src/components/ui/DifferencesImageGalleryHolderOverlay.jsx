@@ -6,17 +6,30 @@ import "./css/DifferencesImageGalleryHolderOverlay.css";
 
 const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
 
-  const elements = [
-    { "name": "File", "value": imagefile.filename, "format": false},
-    { "name": "Scorers", "value": imagefile.scores.length, "format": false },
-    { "name": "Eyes", "value": imagefile.varianz_eye ? imagefile.varianz_eye.toFixed(2) : 0 , "format": true },
-    { "name": "Nose", "value": imagefile.varianz_nose ? imagefile.varianz_nose.toFixed(2) : 0 , "format": true },
-    { "name": "Cheeks", "value": imagefile.varianz_cheek ? imagefile.varianz_cheek.toFixed(2) : 0 , "format": true },
-    { "name": "Ears", "value": imagefile.varianz_ear ? imagefile.varianz_ear.toFixed(2) : 0 , "format": true },
-    { "name": "Whiskers", "value": imagefile.varianz_whiskers ? imagefile.varianz_whiskers.toFixed(2) : 0 , "format": true },
-    { "name": "∑ Std.-Dev.", "value": imagefile.varianz ? imagefile.varianz.toFixed(2) : 0 , "format": true },
-  ];
+  const elements = getElements()
 
+  function getElements() {
+    let currentId = 10;
+    let variances = []
+    for (let key in imagefile.data) {
+      if (imagefile.data.hasOwnProperty(key)) {
+        let val = imagefile.data[key]
+        variances.push({
+          id: currentId++,
+          name: key,
+          value: val ? val.toFixed(2) : 0,
+          format: true
+        });
+      }
+    }
+
+    return [
+      { id: 1, name: "File", value: imagefile.filename, format: false},
+      { id: 2, name: "Scorers", value: imagefile.scores.length, format: false },
+      ...variances,
+      { id: 1000, name: "∑ Std.-Dev.", value: imagefile.variance ? imagefile.variance.toFixed(2) : 0 , format: true },
+    ];
+  }
 
   function getDifferences(element) {
     if (element.format) {

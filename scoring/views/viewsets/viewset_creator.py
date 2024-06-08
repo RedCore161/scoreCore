@@ -34,7 +34,7 @@ class ViewSetCreateModel(object):
 
         if score.check_completed():
             pass
-            #TODO image_file.calc_varianz()
+            #TODO image_file.calc_variance()
 
         return created
 

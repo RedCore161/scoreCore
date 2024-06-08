@@ -98,6 +98,56 @@ This will open a browser with the frontend visible.
 [comment]: <> (## License)
 [comment]: <> (This project is licensed under the MIT License. See the LICENSE file for more details.)
 
+## Securing your webserver with firewall (off-topic)
+If you run this on an accessible webserver (aka without VPN), you should secure it by only allowing the needed ports. i got you covered!
+
+   ```sh
+   # Install UFW on Debian/Ubuntu-based systems
+   sudo apt-get update
+   sudo apt-get install ufw
+   
+   # Install UFW on RHEL/CentOS-based systems
+   sudo yum install epel-release
+   sudo yum install ufw
+   
+   # Enable UFW
+   sudo ufw enable
+   
+   # Allow ports 22 (SSH), 80 (HTTP), and 443 (HTTPS)
+   sudo ufw allow 22/tcp
+   sudo ufw allow 80/tcp
+   sudo ufw allow 443/tcp
+   
+   # Deny all other incoming traffic
+   sudo ufw default deny incoming
+   
+   # Allow all outgoing traffic
+   sudo ufw default allow outgoing
+   
+   # Reload UFW to apply the changes
+   sudo ufw reload
+   
+   # Check UFW status
+   sudo ufw status
+   ```
+
+Output should look like this:
+   ```
+   Status: active
+   
+   To                         Action      From
+   --                         ------      ----
+   22/tcp                     ALLOW       Anywhere
+   80/tcp                     ALLOW       Anywhere
+   443/tcp                    ALLOW       Anywhere
+   22/tcp (v6)                ALLOW       Anywhere (v6)
+   80/tcp (v6)                ALLOW       Anywhere (v6)
+   443/tcp (v6)               ALLOW       Anywhere (v6)
+   ```
+
+Still, this project does not yet support HTTPS. But you can using [Certbot](https://certbot.eff.org/)
+
+
 ## Contact
 
 For any inquiries or issues, please open an issue on GitHub

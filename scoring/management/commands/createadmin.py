@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
 from scoring.helper import save_check_dir
-from server.settings import BACKUP_DIR, SETUP_DIR, UPLOAD_DIR, EXPORT_DIR, LOGS_DIR, PROJECT_DIR
+from server.settings import DEFAULT_DIRS
 
 
 class Command(BaseCommand):
@@ -25,9 +25,6 @@ class Command(BaseCommand):
                 user.objects.create_superuser(username, mail, pw)
                 self.stdout.write(self.style.SUCCESS('Created Admin!'))
 
-        save_check_dir(BACKUP_DIR)
-        save_check_dir(SETUP_DIR)
-        save_check_dir(UPLOAD_DIR)
-        save_check_dir(EXPORT_DIR)
-        save_check_dir(LOGS_DIR)
-        save_check_dir(PROJECT_DIR)
+        for _dir in DEFAULT_DIRS.keys():
+            save_check_dir(_dir)
+

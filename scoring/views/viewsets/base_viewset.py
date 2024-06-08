@@ -14,7 +14,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from scoring.basics import parse_file_name
 from scoring.helper import save_check_dir, get_path_projects, dlog
 from scoring.serializers import RedcoreTokenObtainPairSerializer
-from server.settings import PROJECT_DIR
+from server.settings import DEFAULT_DIRS
 from server.views import RequestFailed, RequestSuccess
 
 
@@ -64,7 +64,7 @@ class BasisViewSet:
     def base_upload_document(request, project_name, *args, **kwargs) -> dict:
 
         response = {}
-        fs = FileSystemStorage(location=PROJECT_DIR)
+        fs = FileSystemStorage(location=DEFAULT_DIRS.get("projects"))
 
         _dir = get_path_projects(project_name)
         save_check_dir(_dir)
@@ -78,11 +78,11 @@ class BasisViewSet:
 
                 _path = os.path.join(_dir, name)
                 _new_file = fs.save(_path, _file)
-                # _new_path = os.path.join(PROJECT_DIR, _new_file)
+                # _new_path = os.path.join(DEFAULT_DIRS.get("projects"), _new_file)
 
                 dlog(f"{_new_file=}", tag="[UPLOAD]")
 
                 # response.update({name: {"created": 1, "cached": 0, "name": name,
-                #                         "error": None, "path": _new_path[len(PROJECT_DIR) + 1:]}})
+                #                         "error": None, "path": _new_path[len(DEFAULT_DIRS.get("projects")) + 1:]}})
 
         return response

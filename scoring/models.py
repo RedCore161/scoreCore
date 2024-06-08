@@ -7,6 +7,8 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+
+from scoring.decorators import count_calls
 from scoring.helper import get_project_evaluation_dir, save_check_dir, get_path_backup, dlog, \
     set_logging_file, INFO_FILE_NAME, is_image, elog, get_rel_path, get_path_projects
 from server.settings import BASE_DIR
@@ -53,7 +55,7 @@ class Project(models.Model):
 
         with open(_filename, "r") as _file:
             data = json.load(_file)
-            dlog("DATA", data.get("imagefiles"))
+            dlog("evaluate_data", data.get("imagefiles"))
 
     def get_data(self, user):
         data = {"imagesTotal": self.get_all_files_save().count()}
@@ -113,7 +115,7 @@ class Project(models.Model):
         _image_files = self.get_all_files_save()
         dlog(f"Recalculate Varianz for {len(_image_files)} ImageFiles...")
         for _file in _image_files:
-            _file.calc_varianz()
+            _file.calc_variance()
 
         _file_template = datetime.datetime.now().strftime("%Y-%m-%d_-_%H%M%S")
 
@@ -175,21 +177,21 @@ class Project(models.Model):
         #         ws.write(line, i + user_id_dict.get(score.user_id), score.comment)
         #     i += pos + 1
         #
-        #     # Write varianz
-        #     ws.write(line, i, image_file.varianz_eye)
-        #     ws.write(line, i + 1, image_file.varianz_nose)
-        #     ws.write(line, i + 2, image_file.varianz_cheek)
-        #     ws.write(line, i + 3, image_file.varianz_ear)
-        #     ws.write(line, i + 4, image_file.varianz_whiskers)
-        #     ws.write(line, i + 5, image_file.varianz)
+        #     # Write variance
+        #     ws.write(line, i, image_file.variance_eye)
+        #     ws.write(line, i + 1, image_file.variance_nose)
+        #     ws.write(line, i + 2, image_file.variance_cheek)
+        #     ws.write(line, i + 3, image_file.variance_ear)
+        #     ws.write(line, i + 4, image_file.variance_whiskers)
+        #     ws.write(line, i + 5, image_file.variance)
         #
         #     # TODO format later
         #     #
-        #     # _list = [image_file.varianz_eye,
-        #     #          image_file.varianz_nose,
-        #     #          image_file.varianz_cheek,
-        #     #          image_file.varianz_ear,
-        #     #          image_file.varianz_whiskers]
+        #     # _list = [image_file.variance_eye,
+        #     #          image_file.variance_nose,
+        #     #          image_file.variance_cheek,
+        #     #          image_file.variance_ear,
+        #     #          image_file.variance_whiskers]
         #     # j = 0
         #     # for val in _list:
         #     #     j += 1
@@ -376,7 +378,7 @@ class ImageFile(models.Model):
     path = models.CharField(max_length=500, null=False)
     useless = models.BooleanField(default=False)
     hidden = models.BooleanField(default=False)
-    varianz = models.FloatField(default=0, null=True, blank=True)
+    variance = models.FloatField(default=0, null=True, blank=True)
 
     data = models.JSONField(blank=True, default=dict)
 
@@ -394,7 +396,8 @@ class ImageFile(models.Model):
         return self.scores.exclude(file__useless=True) \
             .filter(user__in=project.users.all())
 
-    def calc_varianz(self):
+    @count_calls
+    def calc_variance(self):
         scores = self.get_scores_save(self.project)
         scoring_fields = self.project.features.all().values_list("name", flat=True)
         if len(scoring_fields) == 0:
@@ -404,28 +407,29 @@ class ImageFile(models.Model):
         n = scores.distinct("user").count()
         if n >= 2:
 
-            varianz = 0
-            varianz_list = {key: [] for key in scoring_fields}
+            variance = 0
+            variance_list = {key: [] for key in scoring_fields}
 
             for score in scores:
+                _data = score.data
                 for val in scoring_fields:
-                    score_value = getattr(score, val)
+                    score_value = _data.get(val)
                     if score_value is not None:
-                        feature = varianz_list.get(val)
+                        feature = variance_list.get(val)
                         feature.append(score_value)
-                        varianz_list.update({val: feature})
+                        variance_list.update({val: feature})
 
-            for key, _list in varianz_list.items():
-                # print(key, "=>", _list)
+            for key, _list in variance_list.items():
+                dlog(key, "=>", _list)
                 if len(_list) < 2:
                     continue
-                _varianz = round(statistics.pstdev(_list), 2)
-                varianz += _varianz
-                setattr(self, f"varianz_{key}", _varianz)
-            self.varianz = round(varianz, 2)
+                _variance = round(statistics.pstdev(_list), 2)
+                variance += _variance
+                self.data.update({f"variance_{key}": _variance})
+            self.variance = round(variance, 2)
             self.save()
-            # print("V=", self.varianz, "\n")
-            return self.varianz
+            dlog("V=", self.variance, "\n")
+            return self.variance
         return 0
 
     def get_rel_path(self):

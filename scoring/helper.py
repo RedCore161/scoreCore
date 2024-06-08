@@ -107,24 +107,33 @@ def save_check_dir(*dirs):
             pathlib.Path(_d).mkdir(parents=True, exist_ok=True)
 
 
+def _get_path(name, *args) -> str:
+    from server.settings import DEFAULT_DIRS
+    return os.path.join(DEFAULT_DIRS.get(name), *args)
+
+
+def get_path_videos(*args) -> str:
+    return _get_path("upload", "video", args)
+
+
+def get_path_upload(*args) -> str:
+    return _get_path("upload", args)
+
+
 def get_path_setup(*args) -> str:
-    from server.settings import SETUP_DIR
-    return os.path.join(SETUP_DIR, *args)
+    return _get_path("setup", args)
 
 
 def get_path_backup(*args) -> str:
-    from server.settings import BACKUP_DIR
-    return os.path.join(BACKUP_DIR, *args)
+    return _get_path("backup", args)
 
 
 def get_path_logs(*args) -> str:
-    from server.settings import LOGS_DIR
-    return os.path.join(LOGS_DIR, *args)
+    return _get_path("logs", args)
 
 
 def get_path_projects(*args) -> str:
-    from server.settings import PROJECT_DIR
-    return os.path.join(PROJECT_DIR, *args)
+    return _get_path("projects", args)
 
 
 def get_project_evaluation_dir(project_id) -> str:

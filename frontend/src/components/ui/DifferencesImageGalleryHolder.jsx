@@ -14,11 +14,11 @@ const DifferencesImageGalleryHolder = ({ overlaySetter, imagefile }) => {
 
   function getBorderClazz() {
 
-    if (imagefile.varianz === 0) {
+    if (imagefile.variance === 0) {
       return "success-border"
     }
 
-    if (imagefile.varianz > 1.5) {
+    if (imagefile.variance > 1.5) {
       return "failed-border"
     }
 

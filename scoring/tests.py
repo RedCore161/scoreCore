@@ -68,7 +68,7 @@ class GeneralTestCase(TestCase):
                 user = User.objects.get(username=f"Tester{idx}")
                 ViewSetCreateModel().create_or_update_imagescore(image_file.pk, user, data)
 
-            self.assertEqual(image_file.calc_varianz(), _test.get("expected"))
+            self.assertEqual(image_file.calc_variance(), _test.get("expected"))
 
     def test_scoring(self):
 

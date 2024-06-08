@@ -27,11 +27,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
                                                               context={"user": request.user.pk}, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, url_path="recalculate-varianz", methods=["GET"])
-    def recalculate_varianz(self, request, pk):
+    @action(detail=True, url_path="recalculate-variance", methods=["GET"])
+    def recalculate_variance(self, request, pk):
         images = ImageFile.objects.filter(project=pk, useless=False, hidden=False)
         for image in images:
-            image.calc_varianz()
+            image.calc_variance()
         return RequestSuccess()
 
     @action(detail=False, url_path="available", methods=["GET"])
@@ -123,7 +123,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         images = ImageFile.objects.filter(project=pk) \
             .exclude(hidden=True) \
             .exclude(useless=True) \
-            .order_by("-varianz")
+            .order_by("-variance")
 
         page = self.paginate_queryset(images)
         if page is not None:
