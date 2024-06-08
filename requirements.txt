@@ -24,7 +24,7 @@ hiredis~=2.3.2
 loguru~=0.7.2
 jsonfield~=3.1.0
 pandas
-matplotlib~=3.9.0
+matplotlib
 numpy~=1.26.4
 opencv-python~=4.9.0.80
 packaging~=24.0

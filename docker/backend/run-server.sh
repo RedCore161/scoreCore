@@ -21,7 +21,7 @@ pprint "[2] makemigrations"
 python manage.py makemigrations
 
 pprint "[3] migrate"
-python manage.py migrate
+python manage.py migrate --noinput
 
 pprint "[4] createadmin"
 python manage.py createadmin
