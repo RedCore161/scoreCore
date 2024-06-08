@@ -414,7 +414,7 @@ class ImageFile(models.Model):
                 _data = score.data
                 for val in scoring_fields:
                     score_value = _data.get(val)
-                    if score_value is not None:
+                    if score_value is not None and score_value != 'X':
                         feature = variance_list.get(val)
                         feature.append(score_value)
                         variance_list.update({val: feature})
