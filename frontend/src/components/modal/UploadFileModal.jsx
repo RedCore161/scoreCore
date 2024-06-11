@@ -7,7 +7,7 @@ import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
 import { getAcceptesTypes } from "../datatables/configs";
 import { fetchFolders } from "../../helper";
 
-const UploadFileModal = ({enqueueSnackbar, accept = "image", callBackData = () => {} }) => {
+const UploadFileModal = ({enqueueSnackbar, accept = "video", callBackData = () => {} }) => {
 
   const [show, setShow] = useContext(CoreModalContext);
   const [dirName, setDirName] = useState(undefined);

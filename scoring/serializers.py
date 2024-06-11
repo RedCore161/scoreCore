@@ -37,8 +37,16 @@ class PasswordSerializer(serializers.Serializer):
                                                      # TODO CommonPasswordValidator(get_path_setup("common-passwords.txt.gz")),
                                                      ])
 
+    def update(self, instance, validated_data):
+        pass
+
+    def create(self, validated_data):
+        pass
+
 
 class ScoreFeaturesSerializer(serializers.ModelSerializer):
+    clazz = serializers.SerializerMethodField("get_clazz_name")
+
     class Meta:
         model = ScoreFeature
         exclude = ["project"]
@@ -85,8 +93,8 @@ class ImageScoreSerializer(serializers.ModelSerializer):
     file_name = serializers.SerializerMethodField("get_filename")
     full_path = serializers.SerializerMethodField("get_full_path")
     timestamp = TimestampField(source="date")
-    # project = ProjectSerializer()
     user = MinimalUserSerializer(read_only=True)
+    # project = ProjectSerializer()
 
     class Meta:
         model = ImageScore

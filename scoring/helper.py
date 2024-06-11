@@ -220,13 +220,13 @@ def sleep_ms(delay=0, msg=None):
 
 
 def is_image(filename):
-    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'}
+    image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp"}
     _, ext = os.path.splitext(filename)
     return ext.lower() in image_extensions
 
 
 def is_video(filename):
-    image_extensions = {'.mp4', '.wepm'}
+    image_extensions = {".mp4", ".wepm"}
     _, ext = os.path.splitext(filename)
     return ext.lower() in image_extensions
 

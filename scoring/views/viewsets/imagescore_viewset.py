@@ -38,7 +38,7 @@ class ImageScoreViewSet(viewsets.ModelViewSet):
         comment = request.data.get("_comment", "")
 
         if not _project.is_finished():
-            scoring_fields = _project.features.all().values_list("name", flat=True)
+            scoring_fields = _project.get_features_flat()
             scores = get_scores_from_request(request, scoring_fields)
             dlog("Scores", scores)
 

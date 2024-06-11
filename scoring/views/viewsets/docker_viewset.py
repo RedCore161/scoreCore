@@ -24,7 +24,6 @@ class DockerViewSet(viewsets.ViewSet):
     @action(detail=False, url_path="restart", methods=["POST"])
     def restart_docker_container(self, request: Request):
         container_id = request.data.get("container_id")
-
         if container_id:
             client = docker.from_env()
             container = client.containers.get(container_id)
@@ -36,9 +35,7 @@ class DockerViewSet(viewsets.ViewSet):
 
     @action(detail=False, url_path="remove", methods=["POST"])
     def remove_docker_container(self, request: Request):
-
         container_id = request.data.get("container_id")
-
         if container_id:
             client = docker.from_env()
             container = client.containers.get(container_id)
@@ -50,7 +47,6 @@ class DockerViewSet(viewsets.ViewSet):
 
     @action(detail=False, url_path="stop", methods=["POST"])
     def stop_docker_container(self, request: Request):
-
         container_id = request.data.get("container_id")
         if container_id:
             #TODO async_task(task_stop_docker_container, container_id, task_name="stopping-docker-container")
@@ -65,9 +61,7 @@ class DockerViewSet(viewsets.ViewSet):
 
     @action(detail=False, url_path="logs", methods=["POST"])
     def get_container_logs(self, request: Request):
-
         container_id = request.data.get("container_id")
-
         if container_id:
             client = docker.from_env()
             container = client.containers.get(container_id)

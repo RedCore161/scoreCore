@@ -1,5 +1,6 @@
 import os
 
+import docker
 from celery import Celery
 from celery.signals import setup_logging, task_postrun, task_prerun
 from celery.utils.log import get_task_logger
@@ -64,6 +65,19 @@ def task_completed_handler(task_id, task, *args, **kwargs):
     dlog("TaskResult", f"result={result.result}")
     if task_id in running_tasks:
         running_tasks[task_id].update({"status": "done", "time": timezone.now().strftime("%Y-%m-%d %H:%M:%S")})
+
+
+@celery_instance.task
+def task_stop_docker_container(container: str, *args, **kwargs):
+    """
+    stops a docker container
+    :param container: container-id
+    """
+    client = docker.from_env()
+    cont = client.containers.get(container)
+    if cont:
+        cont.stop()
+    return {"success": True}
 
 
 @celery_instance.task

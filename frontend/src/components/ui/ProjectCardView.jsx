@@ -86,7 +86,7 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
 
   return (
     <Col key={ id } md={ 4 } className={ "pb-4" }>
-      <div className={ "project-Card bg-secondary m-1" }>
+      <div className={ "project-Card bg-secondary m-1 h-100" }>
         <Row>
           <Col className={ `project-Card-Header ${ isFinished === true ? "bg-success" : "bg-info" }` }
                onClick={ (e) => advNavigate(e, `/project/${ id }/score`) }>
