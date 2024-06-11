@@ -85,7 +85,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @action(detail=False, url_path="upload", methods=["POST"], permission_classes=[IsAdminUser])
     def upload_images(self, request, *args, **kwargs):
         project_name = request.data.get("projectName")
-        response = BasisViewSet.base_upload_document(request, project_name, *args, **kwargs)
+        response = BasisViewSet.base_upload_file(request, project_name, *args, **kwargs)
         return RequestSuccess(response)
 
     @action(detail=True, url_path="image", methods=["GET"])

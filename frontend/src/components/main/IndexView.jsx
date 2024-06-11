@@ -10,6 +10,7 @@ import { CoreModalContext } from "../modal/coreModalContext";
 import CreateProjectModal from "../modal/CreateProjectModal";
 import UploadFolderModal from "../modal/UploadFolderModal";
 import { useSnackbar } from "notistack";
+import UploadFileModal from "../modal/UploadFileModal";
 
 const IndexView = () => {
 
@@ -42,12 +43,14 @@ const IndexView = () => {
       <div>
         <CreateProjectModal callBackData={ callBackData } />
         <UploadFolderModal enqueueSnackbar={ enqueueSnackbar } callBackData={ callBackUpload } />
+        <UploadFileModal enqueueSnackbar={ enqueueSnackbar } callBackData={ callBackUpload } />
 
         <BoxContainer title="Available Projects">
           { isAuth.is_superuser && (
             <Row className={"pb-3"}>
               <Col>
-                <Button className={"me-2"} variant={"warning"} onClick={() => setModalState({ ...modalState, modalUploadFolder: true, title: "Upload images-folder" })}>1. Upload Images</Button>
+                <Button className={"me-2"} variant={"warning"} onClick={() => setModalState({ ...modalState, modalUploadFolder: true, title: "Upload folder" })}>1a. Upload Folder</Button>
+                <Button className={"me-2"} variant={"warning"} onClick={() => setModalState({ ...modalState, modalUploadFiles: true, title: "Upload images/videos" })}>1b. Upload Images/Videos</Button>
                 <Button className={"me-2"} variant={"warning"} onClick={() => setModalState({ ...modalState, modalProjectModal: true })}>2. Create New Project</Button>
                 <Button className={"me-2"} variant={"primary"} href={`${process.env.REACT_APP_BACKEND_URL}/admin/auth/user/add/`} target={"_blank"}>Add User</Button>
               </Col>

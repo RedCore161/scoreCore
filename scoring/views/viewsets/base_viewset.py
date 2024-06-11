@@ -12,7 +12,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from scoring.basics import parse_file_name
-from scoring.helper import save_check_dir, get_path_projects, dlog
+from scoring.helper import save_check_dir, get_path_projects, dlog, is_video, is_image, get_path_videos, elog
 from scoring.serializers import RedcoreTokenObtainPairSerializer
 from server.settings import DEFAULT_DIRS
 from server.views import RequestFailed, RequestSuccess
@@ -61,13 +61,10 @@ class EmptyViewSet(viewsets.ModelViewSet):
 class BasisViewSet:
 
     @staticmethod
-    def base_upload_document(request, project_name, *args, **kwargs) -> dict:
+    def base_upload_file(request, project_name, *args, **kwargs) -> dict:
 
         response = {}
         fs = FileSystemStorage(location=DEFAULT_DIRS.get("projects"))
-
-        _dir = get_path_projects(project_name)
-        save_check_dir(_dir)
 
         for file in request.FILES:
             _file = request.FILES.get(file)
@@ -76,9 +73,17 @@ class BasisViewSet:
                 if not name:
                     return {"reason": f"No valid file-name: {name}"}
 
-                _path = os.path.join(_dir, name)
+                if is_video(name):
+                    some_dir = get_path_videos(project_name)
+                elif is_image(name):
+                    some_dir = get_path_projects(project_name)
+                else:
+                    elog(f"Unknown file-type: {name}", tag="[UPLOAD]")
+                    continue
+
+                save_check_dir(some_dir)
+                _path = os.path.join(some_dir, name)
                 _new_file = fs.save(_path, _file)
-                # _new_path = os.path.join(DEFAULT_DIRS.get("projects"), _new_file)
 
                 dlog(f"{_new_file=}", tag="[UPLOAD]")
 
