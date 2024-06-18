@@ -133,8 +133,6 @@ class Project(models.Model):
             BL_C = block_counter.get(3)
             BL_D = block_counter.get(4)
 
-            wlog(f"BLOCKS {BL_A}, {BL_B}, {BL_BL}, {BL_C}, {BL_D}")
-
             # Write Header
             for pos, head in enumerate(header):
                 ws.write(0, pos, head.get("name"), header_format)
@@ -160,8 +158,13 @@ class Project(models.Model):
                 # BLOCK B - Write Data
                 for score in queryset:
                     data = score.data
-                    pos = user_id_dict.get(score.user_id).get("pos")
 
+                    u_id = user_id_dict.get(score.user_id)
+                    if not u_id:
+                        elog("Unused Score:", score)
+                        continue
+
+                    pos = u_id.get("pos")
                     for j, ft in enumerate(features):
                         _pos = BL_A + j + (pos * (BL_BL + 1))
                         ws.write(line, _pos, data.get(ft), format_GRAY if data.get(ft) == "X" else None)
@@ -176,7 +179,10 @@ class Project(models.Model):
                 # BLOCK C - Write user-comments
                 pos = BL_A + BL_B
                 for score in queryset:
-                    ws.write(line, pos + user_id_dict.get(score.user_id).get("pos"), score.comment)
+                    u_id = user_id_dict.get(score.user_id)
+                    if not u_id:
+                        continue
+                    ws.write(line, pos + u_id.get("pos"), score.comment)
 
                 pos += 1 + BL_C
 
@@ -191,8 +197,6 @@ class Project(models.Model):
                 pos_var = BL_A + BL_B + BL_C + BL_D - 1
                 ws.write(line, pos_var, _sum, format_OK if _sum == 0 else None)
                 line += 1
-
-            print("user_id_dict", user_id_dict)
 
             # List users
             line += 2
@@ -458,7 +462,9 @@ class ImageScore(models.Model):
             _data = self.data.get(_field)
             scores += readable(_data)
 
-        return f"{_id} Score: {scores} for '{self.file.filename}' by {self.user.username}"
+        add_0 = f" Comment: {self.comment}" if self.comment else ""
+
+        return f"{_id} Score: {scores} for '{self.file.filename}' by {self.user.username}{add_0}"
 
 
 class Backup(models.Model):

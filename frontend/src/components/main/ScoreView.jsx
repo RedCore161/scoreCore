@@ -160,7 +160,7 @@ const ScoreView = () => {
   }
 
   function getImagePath() {
-    return [process.env.REACT_APP_BACKEND_URL, images.image.path, images.image.filename].join("/");
+    return [process.env.REACT_APP_BACKEND_URL, images?.image.path, images?.image.filename].join("/");
   }
 
   function changeCommentListener(event) {
