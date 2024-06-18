@@ -46,16 +46,19 @@ class ViewSetCreateModel(object):
             .exclude(useless=True)
 
         done_request = base_request.exclude(scores__user=user, scores__is_completed=False) \
-            .annotate(scores_ratio=Count("scores"))
+                                   .annotate(scores_ratio=Count("scores"))
 
         open_request = base_request.exclude(scores__user=user, scores__is_completed=True)
-        self_scored = open_request.count()
+        open_scores = open_request.count()
+        self_scored = ImageFile.objects.filter(project=pk, scores__user=user, scores__is_completed=True) \
+            .exclude(hidden=True) \
+            .exclude(useless=True).count()
         image_files = len(base_request)
 
-        #print("==> Done", len(done_request), "self_scored:", self_scored, "image_files:", image_files)
+        #print("==> Done", len(done_request), "open_scores:", open_scores, "self_scored:", self_scored, "image_files:", image_files)
 
         scores_ratio = done_request.order_by("scores_ratio")[0].scores_ratio
-        respond = {"files_left": image_files - len(done_request),
+        respond = {"files_left": image_files - self_scored,
                    "image_files": image_files,
                    "scores_ratio": scores_ratio}
 
@@ -64,9 +67,12 @@ class ViewSetCreateModel(object):
 
         images = done_request.filter(scores_ratio=scores_ratio)
 
-        count = project.wanted_scores_per_user - self_scored
-        if count > self_scored:
-            count = self_scored
+        print("scores_ratio", scores_ratio)
+        print("images", images)
+
+        count = project.wanted_scores_per_user - open_scores
+        if count > open_scores:
+            count = open_scores
 
         if file:
             image_file = ImageFile.objects.get(pk=file, project=pk)
@@ -83,11 +89,14 @@ class ViewSetCreateModel(object):
         if len(images):
             rnd = random.randint(0, len(images) - 1)
             _image_file = images[rnd]
+            print("_image_file", _image_file)
             serializer_file = ImageFileSerializer(_image_file)
             score = ImageScore.objects.filter(user=user, file=_image_file)
             _result = respond | {"image": serializer_file.data,
                                  "random": rnd}
-            if score:
+            print("_result", _result)
+
+            if len(score):
                 serializer_score = ImageScoreSerializer(score[0], read_only=True)
                 return _result | {"score": serializer_score.data}
             return _result
