@@ -2,6 +2,9 @@ import json
 import os
 import filetype
 import statistics
+import datetime
+import pandas as pd
+from collections import Counter
 from PIL import Image as PilImage
 from django.core.validators import RegexValidator
 from django.db import models
@@ -14,8 +17,6 @@ from scoring.helper import get_project_evaluation_dir, save_check_dir, get_path_
 from server.settings import BASE_DIR
 from loguru import logger
 from rest_framework import serializers
-import datetime
-import pandas as pd
 
 
 class TimestampField(serializers.Field):
@@ -100,7 +101,7 @@ class Project(models.Model):
         user_ids = self.get_all_scores_save().distinct("user").values_list("user__id", flat=True)
 
         _image_files = self.get_all_files_save()
-        dlog(f"Recalculate Varianz for {len(_image_files)} ImageFiles...")
+        dlog(f"Recalculate Variance for {len(_image_files)} ImageFiles...")
         for _file in _image_files:
             _file.calc_variance()
 
@@ -112,31 +113,33 @@ class Project(models.Model):
 
         features = self.get_features_flat()
         header = get_header(user_ids, features)
-        user_id_dict = get_user_dict(user_ids)
+        user_id_dict = get_user_dict(user_ids, _data.get("project").get("users"))
 
-        with pd.ExcelWriter(target, engine='xlsxwriter') as writer:
+        with pd.ExcelWriter(target, engine="xlsxwriter") as writer:
             df.to_excel(writer, sheet_name=project_name)
 
             ws = writer.sheets[project_name]
             workbook = writer.book
             format_OK = workbook.add_format({"bg_color": "#00a077"})
+            format_GRAY = workbook.add_format({"bg_color": "#bababa", "align": "center"})
             header_format = workbook.add_format({"text_wrap": True, "rotation": 90, "bold": True})
-
-            ws.set_row(0, 250, header_format)
+            ws.set_row(0, 150, header_format)
 
             # BLOCK widths
-            BL_A = 4 + 1
-            BL_B = len(features) + 2
-            BL_C = BL_A + (BL_B * len(user_id_dict)) + 1
-            BL_D = BL_C + len(user_id_dict) + 1
+            block_counter = Counter(head["bck"] for head in header)
+            BL_A = block_counter.get(1)
+            BL_B = block_counter.get(2)
+            BL_BL = len(features) + 2
+            BL_C = block_counter.get(3)
+            BL_D = block_counter.get(4)
 
-            wlog(f"BLOCKS {BL_A}, {BL_B}, {BL_C}, {BL_D}")
+            wlog(f"BLOCKS {BL_A}, {BL_B}, {BL_BL}, {BL_C}, {BL_D}")
 
             # Write Header
-            for i, name in enumerate(header):
-                ws.write(0, i, name, header_format)
-                if i == 0 or i > 3:
-                    ws.set_column(i, i, 3)
+            for pos, head in enumerate(header):
+                ws.write(0, pos, head.get("name"), header_format)
+                if pos == 0 or pos > 3:
+                    ws.set_column(pos, pos, 3)
 
             line = 1
             for image_file in _image_files:
@@ -152,48 +155,53 @@ class Project(models.Model):
                 ws.write(line, 2, image_file.filename)
                 ws.write(line, 3, image_file.useless)
                 ws.write(line, 4, image_file.scores.count())
+                ws.write(line, 5, "")
 
                 # BLOCK B - Write Data
                 for score in queryset:
                     data = score.data
-                    pos = user_id_dict.get(score.user_id)
+                    pos = user_id_dict.get(score.user_id).get("pos")
 
-                    start_col = get_cell(65 + BL_A + (pos * BL_B))
                     for j, ft in enumerate(features):
-                        ws.write(line, BL_A + j + 1 + (pos * BL_B), data.get(ft))
+                        _pos = BL_A + j + (pos * (BL_BL + 1))
+                        ws.write(line, _pos, data.get(ft), format_GRAY if data.get(ft) == "X" else None)
 
                     ABS_BL_B = BL_A + len(features)
-                    end_col = get_cell(65 + ABS_BL_B + (pos * BL_B))
 
-                    ws.write_formula(line, ABS_BL_B + 1 + (pos * BL_B), f"=SUM({start_col}{line + 1}:{end_col}{line + 1})")
-                    ws.write_formula(line, ABS_BL_B + 2 + (pos * BL_B), f"=AVERAGE({start_col}{line + 1}:{end_col}{line + 1})")
+                    start_col = get_cell(65 + BL_A + (pos * (BL_BL + 1)))
+                    end_col = get_cell(64 + ABS_BL_B + (pos * (BL_BL + 1)))
+                    ws.write_formula(line, ABS_BL_B + (pos * (BL_BL + 1)), f"=SUM({start_col}{line + 1}:{end_col}{line + 1})")
+                    ws.write_formula(line, ABS_BL_B + (pos * (BL_BL + 1) + 1), f"=AVERAGE({start_col}{line + 1}:{end_col}{line + 1})")
 
                 # BLOCK C - Write user-comments
-                pos = user_id_dict.get(max(user_id_dict, key=user_id_dict.get))
-                last_pos = 11 + (pos * 7)
-                i = last_pos + 1
+                pos = BL_A + BL_B
                 for score in queryset:
-                    ws.write(line, i + user_id_dict.get(score.user_id), score.comment)
-                i += pos + 1
+                    ws.write(line, pos + user_id_dict.get(score.user_id).get("pos"), score.comment)
+
+                pos += 1 + BL_C
 
                 # BLOCK D - Write variance
+                _sum = 0
                 for j, ft in enumerate(features):
-                    ws.write(line, i + j, variances.get(f"variance_{ft}"))
+                    _variance = variances.get(f"variance_{ft}")
+                    if _variance:
+                        _sum += _variance
+                    ws.write(line, pos + j, _variance)
 
-                # _list = [image_file.variance_eye,
-                #          image_file.variance_nose,
-                #          image_file.variance_cheek,
-                #          image_file.variance_ear,
-                #          image_file.variance_whiskers]
-                # j = 0
-                # for val in _list:
-                #     j += 1
-                #     if val == 0:
-                #         print("OKAY", i, j)
-                #         ws.set_column(i + j, i + j, cell_format=format_OK)
-
+                pos_var = BL_A + BL_B + BL_C + BL_D - 1
+                ws.write(line, pos_var, _sum, format_OK if _sum == 0 else None)
                 line += 1
 
+            print("user_id_dict", user_id_dict)
+
+            # List users
+            line += 2
+            for u_id, _dict in user_id_dict.items():
+                ws.write(line, 1, f"Scorer {u_id}")
+                ws.write(line, 2, _dict.get("name"))
+                line += 1
+
+            # List useless images
             line += 2
             for image_file in self.get_all_useless_files():
                 ws.write(line, 0, line)

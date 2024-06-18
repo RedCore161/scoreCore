@@ -4,7 +4,6 @@ channels~=4.1.0
 channels-redis~=4.2.0           # install https://visualstudio.microsoft.com/de/visual-cpp-build-tools/
 colorama~=0.4.6
 daphne~=4.1.2
-deeplabcut~=2.3.10
 Django~=5.0.5
 django-celery-results~=2.5.1
 django-cors-headers~=4.3.1
@@ -26,7 +25,7 @@ jsonfield~=3.1.0
 pandas
 matplotlib
 numpy~=1.26.4
-opencv-python~=4.9.0.80
+opencv-python~=4.10.0.84
 packaging~=24.0
 pillow~=10.3.0
 pip-review~=1.3.0               # Usage: pip-review --interactive
@@ -34,10 +33,9 @@ psycopg2-binary~=2.9.9
 pyparsing~=3.1.2
 redis~=5.0.1
 requests~=2.32.2
-ruff~=0.4.5                     # ruff check --fix
-scikit-image~=0.23.2
+ruff~=0.4.9                     # ruff check --fix
 simplejson~=3.19.2
-uvicorn~=0.29.0
+uvicorn~=0.30.1
 xlrd~=2.0.1
 XlsxWriter~=3.2.0
 

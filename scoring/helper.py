@@ -113,27 +113,27 @@ def _get_path(name, *args) -> str:
 
 
 def get_path_videos(*args) -> str:
-    return _get_path("upload", "video", args)
+    return _get_path("upload", "video", *args)
 
 
 def get_path_upload(*args) -> str:
-    return _get_path("upload", args)
+    return _get_path("upload", *args)
 
 
 def get_path_setup(*args) -> str:
-    return _get_path("setup", args)
+    return _get_path("setup", *args)
 
 
 def get_path_backup(*args) -> str:
-    return _get_path("backup", args)
+    return _get_path("backup", *args)
 
 
 def get_path_logs(*args) -> str:
-    return _get_path("logs", args)
+    return _get_path("logs", *args)
 
 
 def get_path_projects(*args) -> str:
-    return _get_path("projects", args)
+    return _get_path("projects", *args)
 
 
 def get_project_evaluation_dir(project_id) -> str:
@@ -261,3 +261,10 @@ def pretty_sizeof(num, suffix="b"):
 
 def pretty_now():
     return str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+
+def find_object_by_id(data, _id, _field="id"):
+    for obj in data:
+        if obj.get(_field) == _id:
+            return obj
+    return {}

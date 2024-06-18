@@ -61,6 +61,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     isFinished = serializers.SerializerMethodField("get_is_finished")
     evaluations = serializers.SerializerMethodField("get_evaluations")
     features = serializers.SerializerMethodField("get_features")
+    users = serializers.SerializerMethodField("get_users")
     data = serializers.SerializerMethodField("get_data")
 
     class Meta:
@@ -86,6 +87,10 @@ class ProjectSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_features(project: Project):
         return ScoreFeaturesSerializer(project.features.all(), many=True).data
+
+    @staticmethod
+    def get_users(project: Project):
+        return MinimalUserSerializer(project.users.all(), many=True).data
 
 
 class ImageScoreSerializer(serializers.ModelSerializer):
