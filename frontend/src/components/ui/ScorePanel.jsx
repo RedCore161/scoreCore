@@ -19,7 +19,9 @@ const ScorePanel = ({ images, callback }) => {
     <>
       <Row className={ "mt-2 pb-2" } id={ `counter-${ images.files_left }` }>
         <Col className={ "mt-2" } md={ 4 }>
-          Images left: { images.files_left }
+          <div>Images left: { images.files_left }</div>
+          <div>Scores started: { images.score_started }</div>
+          <div>Scores finished: { images.score_finished }</div>
         </Col>
         <Col>
           <Form.Group controlId="formHide">

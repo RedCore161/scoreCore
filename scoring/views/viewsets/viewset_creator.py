@@ -58,18 +58,19 @@ class ViewSetCreateModel(object):
         image_files = len(base_request)
 
         dlog(f"Done={len(done_request)}, {open_scores=}, {score_started=}, {score_finished=}, {image_files=}")
-
-        if len(done_request) == 0:
-            return {"files_left": image_files - score_started,
-                    "image_files": image_files}
-
-        scores_ratio = done_request.order_by("scores_ratio")[0].scores_ratio
         respond = {"files_left": image_files - score_started,
                    "image_files": image_files,
-                   "scores_ratio": scores_ratio}
+                   "score_started": score_started,
+                   "score_finished": score_finished}
+
+        if len(done_request) == 0:
+            return respond
 
         if score_started == image_files:
             return respond
+
+        scores_ratio = done_request.order_by("scores_ratio")[0].scores_ratio
+        respond.update({"scores_ratio": scores_ratio})
 
         images = done_request.filter(scores_ratio=scores_ratio)
         count = project.wanted_scores_per_user - score_started - score_finished
@@ -87,8 +88,7 @@ class ViewSetCreateModel(object):
             return data
 
         if count >= 0:
-            return {"files_left": image_files - score_started,
-                    "image_files": image_files}
+            return respond
 
         if len(images):
             rnd = random.randint(0, len(images) - 1)

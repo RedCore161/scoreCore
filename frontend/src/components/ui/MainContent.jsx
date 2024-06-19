@@ -1,11 +1,11 @@
 import { Col } from "react-bootstrap";
-import React, { useContext, useEffect } from "react";
-import { WebSocketContext, WebSocketProvider } from "../ws/websocketContext";
+import React from "react";
+import { WebSocketProvider } from "../ws/websocketContext";
 import BackupView from "../main/BackupView";
 import DockerStatusView from "../main/DockerStatusView";
 import LoginForm from "../auth/LoginForm";
 import { RequireAuth, useAuthHeader } from "react-auth-kit";
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from "react-router-dom";
 import IndexView from "../main/IndexView";
 import UselessImageFilesView from "../main/UselessImageFilesView";
 import ProjectEvaluateView from "../main/ProjectEvaluateView";
