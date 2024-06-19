@@ -232,7 +232,7 @@ def is_video(filename):
 
 
 def get_backend_url():
-    return f'{os.getenv("CONTROL_BACKEND_URL")}:{os.getenv("CONTROL_BACKEND_PORT")}'
+    return f'{os.getenv("PROTOCOL")}://{os.getenv("CONTROL_BACKEND_URL")}:{os.getenv("CONTROL_BACKEND_PORT")}'
 
 
 def find_uploaded_file(base_dir, filename_pattern):
