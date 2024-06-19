@@ -160,7 +160,10 @@ const ScoreView = () => {
   }
 
   function getImagePath() {
-    return [process.env.REACT_APP_BACKEND_URL, images?.image.path, images?.image.filename].join("/");
+    if (images?.image) {
+      return [process.env.REACT_APP_BACKEND_URL, images?.image.path, images?.image.filename].join("/");
+    }
+    return "";
   }
 
   function changeCommentListener(event) {
@@ -190,86 +193,93 @@ const ScoreView = () => {
     <>
       { loadingDone ? (
         images.files_left === 0 ? (
-          <>
-            <h1 className={ "pt-3" }>
-              { "is_finished" in images ?
-                "This project is already finished!" :
-                "Congratulations! You scored this project!"
-              }
-            </h1>
-            <Confetti
-              width={ width }
-              height={ height }
-            />
-          </>
-        ) : (
+            <>
+              <h1 className={ "pt-3" }>
+                { "is_finished" in images ?
+                  "This project is already finished!" :
+                  "Congratulations! You scored this project!"
+                }
+              </h1>
+              <Confetti
+                width={ width }
+                height={ height }
+              />
+            </>
+          ) :
           <Row>
-            <Col md={ 8 }>
-              <Row className="mt-4">
-                <Col>
-                  <img src={ getImagePath() } alt="Score-Image"/>
-                </Col>
-              </Row>
+            { images?.image ? (
+              <Col md={ 8 }>
+                <Row className="mt-4">
+                  <Col>
+                    <img src={ getImagePath() } alt="Score-Image"/>
+                  </Col>
+                </Row>
 
-              <Row>
-                <Col md={ 5 } className={ "pt-3" }>
-                  <Form.Group controlId="formComment">
-                    <Form.Control type="text" className={ "input-form" }
-                                  placeholder="Comment (optional)"
-                                  value={ state._comment }
-                                  onChange={ changeCommentListener }/>
-                  </Form.Group>
-                </Col>
-              </Row>
+                <Row>
+                  <Col md={ 5 } className={ "pt-3" }>
+                    <Form.Group controlId="formComment">
+                      <Form.Control type="text" className={ "input-form" }
+                                    placeholder="Comment (optional)"
+                                    value={ state._comment }
+                                    onChange={ changeCommentListener }/>
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-              <Row className={ "py-4" }>
-                <Col md={ 8 }>
-                  <ButtonGroup size="lg">
-                    { images.features.map((feature, index) => {
-                      let style = _get_variant(feature.name);
-                      return <Button variant={ style.variant }
-                                     className={ style.clazz }
-                                     key={ `btn-grp-${ index }` }
-                                     onClick={ () => dispatch({
-                                       type: actionTypes.SET_ACTIVE,
-                                       payload: feature.name
-                                     }) }>
-                        { capitalizeFirstLetter(feature.name) } ({ feature.name in state ? state[feature.name] : "?" })
-                      </Button>;
-                    }) }
-                  </ButtonGroup>
-                </Col>
-              </Row>
+                <Row className={ "py-4" }>
+                  <Col md={ 8 }>
+                    <ButtonGroup size="lg">
+                      { images.features.map((feature, index) => {
+                        let style = _get_variant(feature.name);
+                        return <Button variant={ style.variant }
+                                       className={ style.clazz }
+                                       key={ `btn-grp-${ index }` }
+                                       onClick={ () => dispatch({
+                                         type: actionTypes.SET_ACTIVE,
+                                         payload: feature.name
+                                       }) }>
+                          { capitalizeFirstLetter(feature.name) } ({ feature.name in state ? state[feature.name] : "?" })
+                        </Button>;
+                      }) }
+                    </ButtonGroup>
+                  </Col>
+                </Row>
 
-              <Row>
-                <Col>
-                  <ScoreGroup callback={ selectCallback } options={ get_feature_option_count() }
-                              action={ state._active }/>
-                </Col>
-              </Row>
+                <Row>
+                  <Col>
+                    <ScoreGroup callback={ selectCallback } options={ get_feature_option_count() }
+                                action={ state._active }/>
+                  </Col>
+                </Row>
 
-              <Row>
-                <Col>
-                  <Button size="lg" variant={ "success" } onClick={ () => confirmScore() }
-                          disabled={ get_state_score() === 0 }>
-                    Confirm
-                  </Button>
-                  <Button className={ "ms-2" } size="lg" variant={ "danger" } onClick={ () => markAsUseless() }>
-                    Mark as Useless
-                  </Button>
-                  <Button className={ "ms-2" } size="lg" variant={ "outline-primary" } onClick={ () => resetPage() }>
-                    Load random Image
-                  </Button>
-                </Col>
-              </Row>
-            </Col>
+                <Row>
+                  <Col>
+                    <Button size="lg" variant={ "success" } onClick={ () => confirmScore() }
+                            disabled={ get_state_score() === 0 }>
+                      Confirm
+                    </Button>
+                    <Button className={ "ms-2" } size="lg" variant={ "danger" } onClick={ () => markAsUseless() }>
+                      Mark as Useless
+                    </Button>
+                    <Button className={ "ms-2" } size="lg" variant={ "outline-primary" } onClick={ () => resetPage() }>
+                      Load random Image
+                    </Button>
+                  </Col>
+                </Row>
+              </Col>
+            ) : ( <Col md={ 8 }>
+              <h3 className={"mt-3"}>
+                You did your duty be reaching the desired "Scores per User".<br/>
+                Please finish the remaining images! 👉</h3>
+              <img src={"/assets/left.webp"} width={344} className={"mt-3 pe-2"}/>
+              <img src={"/assets/right.webp"} width={200} className={"mt-3 pe-2"}/>
+            </Col> ) }
+
             <Col className={ "mt-2" }>
               {/* History-Side-Panel */ }
               <ScorePanel images={ images } id={ id } callback={ onSelectImage }/>
             </Col>
-
           </Row>
-        )
       ) : <Row><LoadingIcon/></Row> }
     </>
   );
