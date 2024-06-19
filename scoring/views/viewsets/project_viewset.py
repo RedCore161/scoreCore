@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
-from scoring.basics import parse_int
+from scoring.basics import parse_int, parse_boolean
 from scoring.helper import build_abs_path, get_path_projects, count_images_in_folder, get_rel_path, get_fields_from_bit, \
     dlog
 from scoring.models import Project, ImageFile, ImageScore, ScoreFeature
@@ -109,7 +109,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer_features = ScoreFeaturesSerializer(_project.features.all(), many=True, read_only=True)
 
         if not _project.is_finished():
-            data = ViewSetCreateModel.get_next_image(pk, request.user, request.GET.get("file"))
+            data = ViewSetCreateModel.get_next_image(request, pk)
             data.update({"features": serializer_features.data,
                          "history": serializer_scores.data})
             return RequestSuccess(data)

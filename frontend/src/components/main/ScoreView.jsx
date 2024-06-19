@@ -45,7 +45,7 @@ const ScoreView = () => {
 
   const resetPage = () => {
     navigate(`/project/${ id }/score/`);
-    setSearchParams({ reload: Date.now() });
+    setSearchParams({ reload: Date.now(), autoload: searchParams.get("autoload") });
   };
 
   function findSelectNextActive(data, init = undefined) {
@@ -269,7 +269,7 @@ const ScoreView = () => {
               </Col>
             ) : ( <Col md={ 8 }>
               <h3 className={"mt-3"}>
-                You did your duty be reaching the desired "Scores per User".<br/>
+                You did your duty by reaching the desired "Scores per User".<br/>
                 Please finish the remaining images! 👉</h3>
               <img src={"/assets/left.webp"} width={344} className={"mt-3 pe-2"}/>
               <img src={"/assets/right.webp"} width={200} className={"mt-3 pe-2"}/>

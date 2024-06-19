@@ -3,6 +3,7 @@ import random
 from django.db.models import Count
 from django.utils import timezone
 
+from scoring.basics import parse_boolean
 from scoring.helper import dlog
 from scoring.models import ImageFile, ImageScore, Project
 from scoring.serializers import ImageFileSerializer, ImageScoreSerializer
@@ -38,7 +39,11 @@ class ViewSetCreateModel(object):
         return created
 
     @staticmethod
-    def get_next_image(pk, user, file=None) -> dict:
+    def get_next_image(request, pk) -> dict:
+
+        user = request.user
+        file = request.GET.get("file")
+        autoload = parse_boolean(request.GET.get("autoload", False))
         project = Project.objects.get(pk=pk)
 
         base_request = ImageFile.objects.filter(project=pk) \
@@ -79,15 +84,21 @@ class ViewSetCreateModel(object):
 
         if file:
             image_file = ImageFile.objects.get(pk=file, project=pk)
+        elif autoload:
+            req = score_request.exclude(scores__is_completed=True)
+            image_file = req[0] if len(req) else None
+        else:
+            image_file = None
+
+        if image_file:
             score = ImageScore.objects.filter(user=user, file=image_file)
             serializer_file = ImageFileSerializer(image_file, read_only=True)
-            data = respond | {"image": serializer_file.data,
-                              "count": count}
+            respond.update({"image": serializer_file.data})
 
             if score:
                 serializer_score = ImageScoreSerializer(score[0], read_only=True)
-                data.update({"score": serializer_score.data})
-            return data
+                respond.update({"score": serializer_score.data})
+            return respond
 
         if count <= 0:
             return respond

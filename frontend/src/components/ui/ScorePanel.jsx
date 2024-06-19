@@ -7,6 +7,7 @@ import { columnScores, conditionalScoreRowStyles } from "../../helper";
 const ScorePanel = ({ images, callback }) => {
 
   const [hideCompleted, setHideCompleted] = useState(true);
+  const [autoload, setAutoload] = useState(false);
 
   const getFilteredScores = () => {
     if (!hideCompleted) {
@@ -31,6 +32,12 @@ const ScorePanel = ({ images, callback }) => {
                                 name="hideCompleted"/> }
               label="Hide completed?"
             />
+            <FormControlLabel
+              control={ <Switch checked={ autoload }
+                                onChange={ (e) => setAutoload(e.target.checked) }
+                                name="autoload"/> }
+              label="Auto load next image"
+            />
           </Form.Group>
         </Col>
       </Row>
@@ -42,7 +49,7 @@ const ScorePanel = ({ images, callback }) => {
         highlightOnHover
         defaultSortFieldId={ 3 }
         defaultSortAsc={ false }
-        onRowClicked={ (row) => callback({ file: row.file }) }
+        onRowClicked={ (row) => callback({ autoload: autoload, file: row.file }) }
         fixedHeader={ true }
         allowOverflow={ false }
         theme="dark"
