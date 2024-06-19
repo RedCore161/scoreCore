@@ -94,7 +94,6 @@ class Project(models.Model):
         return self.get_score_count() >= self.get_files_count() * self.wanted_scores_per_image
 
     def evaluate_data_as_xlsx(self, data):
-
         _image_files = self.get_all_files_save()
         dlog(f"Recalculate Variance for {len(_image_files)} ImageFiles...")
         for _file in _image_files:
@@ -266,12 +265,15 @@ class ImageFile(models.Model):
             .filter(user__in=project.users.all())
 
     @count_calls
-    def calc_variance(self):
+    def calc_variance(self, save=True, users=None):
         scores = self.get_scores_save(self.project)
         scoring_fields = self.project.get_features_flat()
         if len(scoring_fields) == 0:
             elog("No ScoreFeatures found!")
             return
+
+        if users:
+            scores = scores.filter(user__in=users)
 
         n = scores.distinct("user").count()
         if n >= 2:
@@ -296,8 +298,9 @@ class ImageFile(models.Model):
                 variance += _variance
                 self.data.update({f"variance_{key}": _variance})
             self.variance = round(variance, 2)
-            self.save()
             dlog("V=", self.variance, "\n")
+            if save:
+                self.save()
             return self.variance
         return 0
 

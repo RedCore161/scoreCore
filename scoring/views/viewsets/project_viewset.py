@@ -27,6 +27,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
                                                               context={"user": request.user.pk}, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, url_path="cross-variance", methods=["GET"])
+    def cross_variance(self, request, pk):
+        images = ImageFile.objects.filter(project=pk, useless=False, hidden=False)
+        project = Project.objects.get(project=pk)
+        users = project.users
+        for image in images:
+            variance = image.calc_variance()
+        return RequestSuccess()
+
     @action(detail=True, url_path="recalculate-variance", methods=["GET"])
     def recalculate_variance(self, request, pk):
         images = ImageFile.objects.filter(project=pk, useless=False, hidden=False)
