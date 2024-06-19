@@ -192,7 +192,7 @@ const ScoreView = () => {
   return (
     <>
       { loadingDone ? (
-        images.files_left === 0 ? (
+        images.files_left === 0 || images.score_finished === images.score_desired ? (
             <>
               <h1 className={ "pt-3" }>
                 { "is_finished" in images ?

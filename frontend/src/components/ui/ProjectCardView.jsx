@@ -88,7 +88,7 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
     <Col key={ id } md={ 4 } className={ "pb-4" }>
       <div className={ "project-Card bg-secondary m-1 h-100" }>
         <Row>
-          <Col className={ `project-Card-Header ${ isFinished === true ? "bg-success" : "bg-info" }` }
+          <Col className={ `project-Card-Header ${ isFinished ? "bg-success" : "bg-info" }` }
                onClick={ (e) => advNavigate(e, `/project/${ id }/score`) }>
             <span className={ "project-Card-Header-Content" }>{ icon }{ name }</span>
             { isAuth.is_superuser && (
@@ -123,7 +123,7 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
             <div>Target Scores / Image:</div>
           </Col>
           <Col md={ 2 } className={ "project-Card-Content" }>
-            <div className={ wanted_scores_per_user > save_wanted_scores && "text-warning" }>{ wanted_scores_per_user }</div>
+            <div className={ wanted_scores_per_user > save_wanted_scores ? "text-warning" : ""}>{ wanted_scores_per_user }</div>
             <div>{ wanted_scores_per_image }</div>
           </Col>
           <Col className={ "score-Info-Container" }>

@@ -56,10 +56,13 @@ class ViewSetCreateModel(object):
         score_started = score_request.count()
         score_finished = score_request.filter(scores__is_completed=True).count()
         image_files = len(base_request)
+        count = project.wanted_scores_per_user - max(score_started, score_finished)
 
-        dlog(f"Done={len(done_request)}, {open_scores=}, {score_started=}, {score_finished=}, {image_files=}")
+        dlog(f"done={len(done_request)}, {count=}, {open_scores=}, {score_started=}, {score_finished=}, {image_files=}")
         respond = {"files_left": image_files - score_started,
                    "image_files": image_files,
+                   "count": count,
+                   "score_desired": project.wanted_scores_per_user,
                    "score_started": score_started,
                    "score_finished": score_finished}
 
@@ -73,7 +76,6 @@ class ViewSetCreateModel(object):
         respond.update({"scores_ratio": scores_ratio})
 
         images = done_request.filter(scores_ratio=scores_ratio)
-        count = project.wanted_scores_per_user - score_started - score_finished
 
         if file:
             image_file = ImageFile.objects.get(pk=file, project=pk)
@@ -87,7 +89,7 @@ class ViewSetCreateModel(object):
                 data.update({"score": serializer_score.data})
             return data
 
-        if count >= 0:
+        if count <= 0:
             return respond
 
         if len(images):

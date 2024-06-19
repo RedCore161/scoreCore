@@ -15,7 +15,7 @@ const CorePaginator = ({ pages, handleChangePage, handleChangeSize=()=>{} }) => 
         </span>
       </Col>
 
-      <Col md={ 4 } className={ "" }>
+      <Col md={ 4 }>
         <span className={ "paginatorContainer" }>
           <div className={ "paginatorContent" }>
             <ReactPaginate
