@@ -55,7 +55,7 @@ const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
 
         { elements.map((element) =>
           <Row className={ `${ getDifferences(element) }` } key={`diff-row-${element.name}`}>
-            <Col md={ 6 }>{ element.name }:</Col>
+            <Col md={ 6 }>{ element.name.replace(/^variance_/, '') }:</Col>
             <Col>{ element.value }</Col>
           </Row>
         ) }
