@@ -231,6 +231,10 @@ def is_video(filename):
     return ext.lower() in image_extensions
 
 
+def get_backend_url():
+    return f'{os.getenv("CONTROL_BACKEND_URL")}:{os.getenv("CONTROL_BACKEND_PORT")}'
+
+
 def find_uploaded_file(base_dir, filename_pattern):
     _base_name = os.path.basename(filename_pattern)
     for root, _, files in os.walk(base_dir):

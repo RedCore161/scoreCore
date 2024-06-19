@@ -1,22 +1,22 @@
+import datetime
 import json
 import os
-import filetype
 import statistics
-import datetime
-import pandas as pd
-from collections import Counter
+
+import filetype
 from PIL import Image as PilImage
+from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.db import models
-from django.contrib.auth.models import User
 from django.utils import timezone
-from scoring.decorators import count_calls
-from scoring.excel import get_header, get_cell, get_user_dict
-from scoring.helper import get_project_evaluation_dir, save_check_dir, get_path_backup, dlog, \
-    set_logging_file, INFO_FILE_NAME, is_image, elog, get_rel_path, get_path_projects, wlog
-from server.settings import BASE_DIR
 from loguru import logger
 from rest_framework import serializers
+
+from scoring.decorators import count_calls
+from scoring.excel import create_xlsx
+from scoring.helper import get_project_evaluation_dir, save_check_dir, get_path_backup, dlog, \
+    set_logging_file, INFO_FILE_NAME, is_image, elog, get_rel_path, get_path_projects
+from server.settings import BASE_DIR
 
 
 class TimestampField(serializers.Field):
@@ -93,128 +93,14 @@ class Project(models.Model):
     def is_finished(self):
         return self.get_score_count() >= self.get_files_count() * self.wanted_scores_per_image
 
-    def evaluate_data_as_xlsx(self, _data):
-
-        _path = get_project_evaluation_dir(str(self.pk))
-        save_check_dir(_path)
-
-        user_ids = self.get_all_scores_save().distinct("user").values_list("user__id", flat=True)
+    def evaluate_data_as_xlsx(self, data):
 
         _image_files = self.get_all_files_save()
         dlog(f"Recalculate Variance for {len(_image_files)} ImageFiles...")
         for _file in _image_files:
             _file.calc_variance()
 
-        _file_template = datetime.datetime.now().strftime("%Y-%m-%d_-_%H%M%S")
-
-        df = pd.DataFrame()
-        project_name = str(self.name)
-        target = os.path.join(_path, f"{_file_template}.xlsx")
-
-        features = self.get_features_flat()
-        header = get_header(user_ids, features)
-        user_id_dict = get_user_dict(user_ids, _data.get("project").get("users"))
-
-        with pd.ExcelWriter(target, engine="xlsxwriter") as writer:
-            df.to_excel(writer, sheet_name=project_name)
-
-            ws = writer.sheets[project_name]
-            workbook = writer.book
-            format_OK = workbook.add_format({"bg_color": "#00a077"})
-            format_GRAY = workbook.add_format({"bg_color": "#bababa", "align": "center"})
-            header_format = workbook.add_format({"text_wrap": True, "rotation": 90, "bold": True})
-            ws.set_row(0, 150, header_format)
-
-            # BLOCK widths
-            block_counter = Counter(head["bck"] for head in header)
-            BL_A = block_counter.get(1)
-            BL_B = block_counter.get(2)
-            BL_BL = len(features) + 2
-            BL_C = block_counter.get(3)
-            BL_D = block_counter.get(4)
-
-            # Write Header
-            for pos, head in enumerate(header):
-                ws.write(0, pos, head.get("name"), header_format)
-                if pos == 0 or pos > 3:
-                    ws.set_column(pos, pos, 3)
-
-            line = 1
-            for image_file in _image_files:
-                queryset = image_file.get_scores_save(self).order_by("user__pk")
-                variances = image_file.data
-
-                if len(queryset) == 0:
-                    continue
-
-                # BLOCK A
-                ws.write(line, 0, line)
-                ws.write(line, 1, image_file.path)
-                ws.write(line, 2, image_file.filename)
-                ws.write(line, 3, image_file.useless)
-                ws.write(line, 4, image_file.scores.count())
-                ws.write(line, 5, "")
-
-                # BLOCK B - Write Data
-                for score in queryset:
-                    data = score.data
-
-                    u_id = user_id_dict.get(score.user_id)
-                    if not u_id:
-                        elog("Unused Score:", score)
-                        continue
-
-                    pos = u_id.get("pos")
-                    for j, ft in enumerate(features):
-                        _pos = BL_A + j + (pos * (BL_BL + 1))
-                        ws.write(line, _pos, data.get(ft), format_GRAY if data.get(ft) == "X" else None)
-
-                    ABS_BL_B = BL_A + len(features)
-
-                    start_col = get_cell(65 + BL_A + (pos * (BL_BL + 1)))
-                    end_col = get_cell(64 + ABS_BL_B + (pos * (BL_BL + 1)))
-                    ws.write_formula(line, ABS_BL_B + (pos * (BL_BL + 1)), f"=SUM({start_col}{line + 1}:{end_col}{line + 1})")
-                    ws.write_formula(line, ABS_BL_B + (pos * (BL_BL + 1) + 1), f"=AVERAGE({start_col}{line + 1}:{end_col}{line + 1})")
-
-                # BLOCK C - Write user-comments
-                pos = BL_A + BL_B
-                for score in queryset:
-                    u_id = user_id_dict.get(score.user_id)
-                    if not u_id:
-                        continue
-                    ws.write(line, pos + u_id.get("pos"), score.comment)
-
-                pos += 1 + BL_C
-
-                # BLOCK D - Write variance
-                _sum = 0
-                for j, ft in enumerate(features):
-                    _variance = variances.get(f"variance_{ft}")
-                    if _variance:
-                        _sum += _variance
-                    ws.write(line, pos + j, _variance)
-
-                pos_var = BL_A + BL_B + BL_C + BL_D - 1
-                ws.write(line, pos_var, _sum, format_OK if _sum == 0 else None)
-                line += 1
-
-            # List users
-            line += 2
-            for u_id, _dict in user_id_dict.items():
-                ws.write(line, 1, f"Scorer {u_id}")
-                ws.write(line, 2, _dict.get("name"))
-                line += 1
-
-            # List useless images
-            line += 2
-            for image_file in self.get_all_useless_files():
-                ws.write(line, 0, line)
-                ws.write(line, 1, image_file.path)
-                ws.write(line, 2, image_file.filename)
-                ws.write(line, 3, image_file.useless)
-                line += 1
-
-        return target
+        return create_xlsx(self, data, _image_files)
 
     def get_existing_evaluations(self) -> dict:
         files = os.listdir(get_project_evaluation_dir(str(self.pk)))
