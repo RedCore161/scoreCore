@@ -108,12 +108,11 @@ class ViewSetCreateModel(object):
             _image_file = images[rnd]
             serializer_file = ImageFileSerializer(_image_file)
             score = ImageScore.objects.filter(user=user, file=_image_file)
-            _result = respond | {"image": serializer_file.data,
-                                 "random": rnd}
+            respond.update({"image": serializer_file.data,
+                            "random": rnd})
 
             if len(score):
                 serializer_score = ImageScoreSerializer(score[0], read_only=True)
-                return _result | {"score": serializer_score.data}
-            return _result
+                respond.update({"score": serializer_score.data})
 
         return respond

@@ -30,11 +30,26 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @action(detail=True, url_path="cross-variance", methods=["GET"])
     def cross_variance(self, request, pk):
         images = ImageFile.objects.filter(project=pk, useless=False, hidden=False)
-        project = Project.objects.get(project=pk)
-        users = project.users
-        for image in images:
-            variance = image.calc_variance()
-        return RequestSuccess()
+        project = Project.objects.get(pk=pk)
+        users = project.users.all().order_by("pk")
+        data = {}
+        for image in images[1:2]:
+            perm_images = []
+            for a in users:
+                perm_users = []
+                for b in users:
+                    if b.pk >= a.pk:
+                        continue
+
+                    variance = image.calc_variance(False, users=[a, b])
+                    perm_users.append(variance)
+
+                if len(perm_users):
+                    perm_images.append(perm_users)
+
+            data.update({image.pk: perm_images})
+
+        return RequestSuccess(data)
 
     @action(detail=True, url_path="recalculate-variance", methods=["GET"])
     def recalculate_variance(self, request, pk):
