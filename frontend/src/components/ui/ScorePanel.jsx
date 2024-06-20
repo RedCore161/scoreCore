@@ -18,13 +18,13 @@ const ScorePanel = ({ images, callback }) => {
   return (
     <>
       <Row className={ "my-2 pb-2" } id={ `counter-${ images.files_left }` }>
-        <Col className={ "mt-2" } md={ 3 }>
+        <Col className={ "mt-2" } sm={ 4 }>
           <div>Images left:</div>
           <div>Scores target:</div>
           <div>Scores finished:</div>
           <div>Scores started:</div>
         </Col>
-        <Col className={ "mt-2" } md={ 3 }>
+        <Col className={ "mt-2" } sm={ 3 }>
           <div>{ images.files_left }</div>
           <div>🚩 { images.score_desired }</div>
           <div>✔ { images.score_finished }</div>
@@ -52,9 +52,7 @@ const ScorePanel = ({ images, callback }) => {
         onRowClicked={ (row) => callback({ file: row.file }) }
         fixedHeader={ true }
         allowOverflow={ false }
-        theme="dark"
-      />
-
+        theme="dark" />
     </>
   );
 };
