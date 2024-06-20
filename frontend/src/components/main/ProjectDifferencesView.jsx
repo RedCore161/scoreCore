@@ -19,31 +19,31 @@ const ProjectDifferencesView = () => {
   const { id } = useParams();
 
   const [data, setData] = useState({});
-  const [pages, setPages] = useState({ "variances": 1 });
+  const [pages, setPages] = useState({ "stddevs": 1 });
   const { enqueueSnackbar } = useSnackbar();
   const authHeader = useAuthHeader();
 
   useEffect(() => {
-    if ("variances" in pages) {
+    if ("stddevs" in pages) {
       axiosConfig.updateToken(authHeader());
-      fetchImagesAll(id, pages.variances).then((data) => {
+      fetchImagesAll(id, pages.stddevs).then((data) => {
         setData(data);
       });
     }
   }, [pages]);
 
   const handlePaginator = ({ selected }) => {
-    setPages({ ...pages, "variances": selected + 1 });
+    setPages({ ...pages, "stddevs": selected + 1 });
   };
 
-  async function recalcuateVariance() {
+  async function recalcuateStdDev() {
     axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.get(`/api/project/${ id }/recalculate-variance/`)
+    await axiosConfig.holder.get(`/api/project/${ id }/recalculate-stddev/`)
       .then((response) => {
         if (response.data) {
           if (response.data.success) {
             showSuccessBar(enqueueSnackbar, "Successfully recalculated!");
-            fetchImagesAll(id, pages.variances).then((data) => {
+            fetchImagesAll(id, pages.stddevs).then((data) => {
               setData(data);
             });
           }
@@ -63,7 +63,7 @@ const ProjectDifferencesView = () => {
         <BoxContainer title={ "Actions" }>
           <Row>
             <Col>
-              <Button variant={ "success" } onClick={ () => recalcuateVariance() }>Recalculate Variance</Button>
+              <Button variant={ "success" } onClick={ () => recalcuateStdDev() }>Recalculate Std-Deviation</Button>
             </Col>
           </Row>
         </BoxContainer>

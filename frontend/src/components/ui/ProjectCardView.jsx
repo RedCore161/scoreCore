@@ -68,7 +68,7 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
 
     const _header = authHeader();
     axiosConfig.updateToken(_header);
-    axiosConfig.holder.get(`/api/project/${id}/cross-variance-all/`, { responseType: "blob"}).then((response) => {
+    axiosConfig.holder.get(`/api/project/${id}/cross-stddev-all/`, { responseType: "blob"}).then((response) => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const newTab = window.open();
       newTab.location = url;

@@ -102,9 +102,9 @@ class Project(models.Model):
 
     def evaluate_data_as_xlsx(self, data):
         _image_files = self.get_all_files_save()
-        dlog(f"Recalculate Variance for {len(_image_files)} ImageFiles...")
+        dlog(f"Recalculate Std-Deviation for {len(_image_files)} ImageFiles...")
         for _file in _image_files:
-            _file.calc_variance()
+            _file.calc_std_dev()
 
         return create_xlsx(self, data, _image_files)
 
@@ -253,7 +253,7 @@ class ImageFile(models.Model):
     path = models.CharField(max_length=500, null=False)
     useless = models.BooleanField(default=False)
     hidden = models.BooleanField(default=False)
-    variance = models.FloatField(default=0, null=True, blank=True)
+    stddev = models.FloatField(default=0, null=True, blank=True)
 
     data = models.JSONField(blank=True, default=dict)
 
@@ -272,7 +272,7 @@ class ImageFile(models.Model):
             .filter(user__in=project.users.all())
 
     @count_calls
-    def calc_variance(self, save=True, users=None):
+    def calc_std_dev(self, save=True, users=None):
         scores = self.get_scores_save(self.project)
         scoring_fields = self.project.get_features_flat()
         if len(scoring_fields) == 0:
@@ -285,30 +285,30 @@ class ImageFile(models.Model):
         n = scores.distinct("user").count()
         if n >= 2:
 
-            variance = 0
-            variance_list = {key: [] for key in scoring_fields}
+            stddev = 0
+            stddev_list = {key: [] for key in scoring_fields}
 
             for score in scores:
                 _data = score.data
                 for val in scoring_fields:
                     score_value = _data.get(val)
                     if score_value is not None and score_value != 'X':
-                        feature = variance_list.get(val)
+                        feature = stddev_list.get(val)
                         feature.append(score_value)
-                        variance_list.update({val: feature})
+                        stddev_list.update({val: feature})
 
-            for key, _list in variance_list.items():
+            for key, _list in stddev_list.items():
                 dlog(key, "=>", _list)
                 if len(_list) < 2:
                     continue
-                _variance = round(statistics.pstdev(_list), 2)
-                variance += _variance
-                self.data.update({f"variance_{key}": _variance})
-            self.variance = round(variance, 2)
-            dlog("V=", self.variance, "\n")
+                _stddev = round(statistics.pstdev(_list), 2)
+                stddev += _stddev
+                self.data.update({f"stddev_{key}": _stddev})
+            self.stddev = round(stddev, 2)
+            dlog("V=", self.stddev, "\n")
             if save:
                 self.save()
-            return self.variance
+            return self.stddev
         return 0
 
     def get_rel_path(self):

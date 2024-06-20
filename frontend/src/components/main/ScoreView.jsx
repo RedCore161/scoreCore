@@ -211,7 +211,7 @@ const ScoreView = () => {
               <Col md={ 8 }>
                 <Row className="mt-4">
                   <Col>
-                    <img src={ getImagePath() } alt={ `Missing Score-Image` } />
+                    <img src={ getImagePath() } alt={ `Missing Score-Image ${images?.image.filename}` } />
                   </Col>
                 </Row>
 

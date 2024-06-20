@@ -1,4 +1,3 @@
-import json
 import os
 
 from django.http import HttpResponse
@@ -7,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
-from scoring.basics import parse_int, parse_boolean
+from scoring.basics import parse_int
 from scoring.excel import data_to_image
 from scoring.helper import build_abs_path, get_path_projects, count_images_in_folder, get_rel_path, get_fields_from_bit, \
     dlog
@@ -32,8 +31,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
         ser = ProjectSerializer(Project.objects.filter(users=request.user), context={"user": request.user.pk}, many=True)
         return Response(ser.data)
 
-    @action(detail=True, url_path="cross-variance-all", methods=["GET"], permission_classes=[IsAdminUser])
-    def cross_variance_all(self, request, pk):
+    @action(detail=True, url_path="cross-stddev-all", methods=["GET"], permission_classes=[IsAdminUser])
+    def cross_std_dev_all(self, request, pk):
         images = ImageFile.objects.filter(project=pk, useless=False, hidden=False)
         project = Project.objects.get(pk=pk)
         _user = request.user
@@ -46,8 +45,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             for x, a in enumerate(users):
                 if _user.pk == a.pk:
                     continue
-                variance = image.calc_variance(False, users=[a, _user])
-                matrix[y, x] = variance
+                matrix[y, x] = image.calc_std_dev(False, users=[a, _user])
 
         y_axis = [img.filename for img in images]
         x_axis = [usr.username[:3] for usr in users]
@@ -60,8 +58,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         return HttpResponse(buf, content_type="image/png")
 
-    @action(detail=True, url_path="cross-variance", methods=["GET"], permission_classes=[IsAdminUser])
-    def cross_variance(self, request, pk):
+    @action(detail=True, url_path="cross-stddev", methods=["GET"], permission_classes=[IsAdminUser])
+    def cross_stddev(self, request, pk):
         file_id = request.GET.get("file_id")
         if file_id:
             images = ImageFile.objects.filter(pk=file_id)
@@ -80,8 +78,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 for y, b in enumerate(users):
                     if b.pk >= a.pk:
                         continue
-                    variance = image.calc_variance(False, users=[a, b])
-                    matrix[x, y] = matrix[y, x] = variance
+                    matrix[x, y] = matrix[y, x] = image.calc_std_dev(False, users=[a, b])
             break
 
         score, fts = project.get_max_score()
@@ -89,15 +86,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         axis = [usr.username[:3] for usr in users]
         title = f'Heatmap for Scores on image "{file_name}"'
-        buf = data_to_image(matrix, title, max_score=max_score, x_axis=axis, y_axis=axis)
+        buf = data_to_image(matrix, title, max_score=max_score, x_axis=axis, y_axis=axis, y_label="Images")
 
         return HttpResponse(buf, content_type="image/png")
 
-    @action(detail=True, url_path="recalculate-variance", methods=["GET"])
-    def recalculate_variance(self, request, pk):
+    @action(detail=True, url_path="recalculate-stddev", methods=["GET"], permission_classes=[IsAdminUser])
+    def recalculate_stddev(self, request, pk):
         images = ImageFile.objects.filter(project=pk, useless=False, hidden=False)
         for image in images:
-            image.calc_variance()
+            image.calc_std_dev()
         return RequestSuccess()
 
     @action(detail=False, url_path="available", methods=["GET"])
@@ -189,7 +186,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         images = ImageFile.objects.filter(project=pk) \
             .exclude(hidden=True) \
             .exclude(useless=True) \
-            .order_by("-variance")
+            .order_by("-stddev")
 
         page = self.paginate_queryset(images)
         if page is not None:

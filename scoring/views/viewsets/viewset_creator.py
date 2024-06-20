@@ -34,7 +34,7 @@ class ViewSetCreateModel(object):
         score.save()
 
         if score.check_completed():
-            image_file.calc_variance()
+            image_file.calc_std_dev()
 
         return created
 

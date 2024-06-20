@@ -18,4 +18,4 @@ class Command(BaseCommand):
             user.set_password(self.reset)
             user.save()
 
-        ilog(f"Reset pws to '{self.reset}'")
+        ilog(f"Reset pws to '{self.reset}'", tag="[DONE]")

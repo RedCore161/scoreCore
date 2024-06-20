@@ -1,7 +1,6 @@
 import io
 import os
 import datetime
-import os
 from collections import Counter
 
 import pandas as pd
@@ -10,7 +9,6 @@ from scoring.helper import dlog, find_object_by_id, get_project_evaluation_dir, 
 from scoring.helper import elog, get_backend_url
 import matplotlib
 matplotlib.use("TkAgg")
-import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -64,8 +62,8 @@ def get_header(user_ids, features):
 
     # BLOCK D
     header.extend([{"name": "", "bck": 4}])
-    header.extend([{"name": f"Variance {ft}", "bck": 4} for ft in features])
-    header.extend([{"name": "Variance (Σ)", "bck": 4, "end": True}])
+    header.extend([{"name": f"Std-Dev {ft}", "bck": 4} for ft in features])
+    header.extend([{"name": "Std-Dev (Σ)", "bck": 4, "end": True}])
 
     dlog("Header:", header)
 
@@ -115,7 +113,7 @@ def create_xlsx(project, _data, _image_files):
         line = 1
         for image_file in _image_files:
             queryset = image_file.get_scores_save(project).order_by("user__pk")
-            variances = image_file.data
+            stddevs = image_file.data
 
             if len(queryset) == 0:
                 continue
@@ -159,13 +157,13 @@ def create_xlsx(project, _data, _image_files):
 
             pos += 1 + BL_C
 
-            # BLOCK D - Write variance
+            # BLOCK D - Write stddev
             _sum = 0
             for j, ft in enumerate(features):
-                _variance = variances.get(f"variance_{ft}")
-                if _variance:
-                    _sum += _variance
-                ws.write(line, pos + j, _variance)
+                _stddev = stddevs.get(f"stddev_{ft}")
+                if _stddev:
+                    _sum += _stddev
+                ws.write(line, pos + j, _stddev)
 
             pos_var = BL_A + BL_B + BL_C + BL_D - 1
             ws.write(line, pos_var, _sum, format_OK if _sum == 0 else None)
@@ -190,7 +188,7 @@ def create_xlsx(project, _data, _image_files):
     return target
 
 
-def data_to_image(data, title, max_score, x_axis, y_axis, figsize=(10, 8)):
+def data_to_image(data, title, max_score, x_axis, y_axis, x_label="Users", y_label="Users", figsize=(10, 8)):
 
     # Create a colormap that transitions from green to red
     cmap = LinearSegmentedColormap.from_list("green_red", ["green", "yellow", "red"])
@@ -207,8 +205,8 @@ def data_to_image(data, title, max_score, x_axis, y_axis, figsize=(10, 8)):
             plt.text(j, i, f"{data[i, j]:.1f}", ha="center", va="center", color="black")
 
     plt.title(title)
-    plt.xlabel("Users")
-    plt.ylabel("Users")
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
     plt.xticks(range(data.shape[1]), x_axis)
     plt.yticks(range(data.shape[0]), y_axis)
 

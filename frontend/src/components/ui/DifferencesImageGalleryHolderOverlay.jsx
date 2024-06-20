@@ -13,11 +13,11 @@ const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
 
   function getElements() {
     let currentId = 10;
-    let variances = []
+    let stddevs = []
     for (let key in imagefile.data) {
       if (imagefile.data.hasOwnProperty(key)) {
         let val = imagefile.data[key]
-        variances.push({
+        stddevs.push({
           id: currentId++,
           name: key,
           value: val ? val.toFixed(2) : 0,
@@ -29,8 +29,8 @@ const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
     return [
       { id: 1, name: "File", value: imagefile.filename, format: false},
       { id: 2, name: "Scorers", value: imagefile.scores.length, format: false },
-      ...variances,
-      { id: 1000, name: "∑ Std.-Dev.", value: imagefile.variance ? imagefile.variance.toFixed(2) : 0 , format: true },
+      ...stddevs,
+      { id: 1000, name: "∑ Std.-Dev.", value: imagefile.stddev ? imagefile.stddev.toFixed(2) : 0 , format: true },
     ];
   }
 
@@ -39,7 +39,7 @@ const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
 
     const _header = authHeader();
     axiosConfig.updateToken(_header);
-    axiosConfig.holder.get(`/api/project/${imagefile.project}/cross-variance/?file_id=${imagefile.id}`, { responseType: "blob"}).then((response) => {
+    axiosConfig.holder.get(`/api/project/${imagefile.project}/cross-stddev/?file_id=${imagefile.id}`, { responseType: "blob"}).then((response) => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const newTab = window.open();
       newTab.location = url;
@@ -76,7 +76,7 @@ const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
 
         { elements.map((element) =>
           <Row className={ `${ getDifferences(element) }` } key={`diff-row-${element.name}`}>
-            <Col md={ 6 }>{ element.name.replace(/^variance_/, '') }:</Col>
+            <Col md={ 6 }>{ element.name.replace(/^stddev_/, '') }:</Col>
             <Col>{ element.value }</Col>
           </Row>
         ) }
