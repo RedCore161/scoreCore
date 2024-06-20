@@ -59,7 +59,7 @@ class ViewSetCreateModel(object):
             .exclude(hidden=True) \
             .exclude(useless=True)
         score_started = score_request.count()
-        score_finished = score_request.filter(scores__is_completed=True).count()
+        score_finished = score_request.filter(scores__user=user, scores__is_completed=True).count()
         image_files = len(base_request)
         count = project.wanted_scores_per_user - max(score_started, score_finished)
 
@@ -71,22 +71,18 @@ class ViewSetCreateModel(object):
                    "score_started": score_started,
                    "score_finished": score_finished}
 
-        if len(done_request) == 0:
-            return respond
-
-        if score_started == image_files:
-            return respond
-
-        scores_ratio = done_request.order_by("scores_ratio")[0].scores_ratio
-        respond.update({"scores_ratio": scores_ratio})
-
-        images = done_request.filter(scores_ratio=scores_ratio)
+        if len(done_request) > 0:
+            scores_ratio = done_request.order_by("scores_ratio")[0].scores_ratio
+            respond.update({"scores_ratio": scores_ratio})
+            images = done_request.filter(scores_ratio=scores_ratio)
+        else:
+            images = []
 
         if file:
             image_file = ImageFile.objects.get(pk=file, project=pk)
         elif autoload:
             req = score_request.exclude(scores__is_completed=True)
-            image_file = req[0] if len(req) else None
+            image_file = random.choice(req) if len(req) else None
         else:
             image_file = None
 

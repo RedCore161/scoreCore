@@ -192,7 +192,7 @@ const ScoreView = () => {
   return (
     <>
       { loadingDone ? (
-        images.files_left === 0 || images.score_finished === images.score_desired ? (
+        images.score_finished >= images.score_desired ? (
             <>
               <h1 className={ "pt-3" }>
                 { "is_finished" in images ?
@@ -211,7 +211,7 @@ const ScoreView = () => {
               <Col md={ 8 }>
                 <Row className="mt-4">
                   <Col>
-                    <img src={ getImagePath() } alt="Score-Image"/>
+                    <img src={ getImagePath() } alt={ `Missing Score-Image` } />
                   </Col>
                 </Row>
 
