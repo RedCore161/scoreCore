@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from scoring.basics import parse_int
 from scoring.excel import data_to_image
 from scoring.helper import build_abs_path, get_path_projects, count_images_in_folder, get_rel_path, get_fields_from_bit, \
-    dlog
+    dlog, get_project_evaluation_dir, delete_file
 from scoring.models import Project, ImageFile, ImageScore, ScoreFeature
 from scoring.serializers import ProjectSerializer, ImageFileSerializer, ImageScoreSerializer, ScoreFeaturesSerializer
 from scoring.views.viewsets.base_viewset import StandardResultsSetPagination, BasisViewSet
@@ -54,7 +54,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         max_score = score / (fts * DUMPING_MAX_SCORE)
 
         buf = data_to_image(matrix, f'Heatmap for "{project.name}" and "{_user}"',
-                            max_score=max_score, x_axis=x_axis, y_axis=y_axis)
+                            max_score=max_score, x_axis=x_axis, y_axis=y_axis, y_label="Images")
 
         return HttpResponse(buf, content_type="image/png")
 
@@ -86,7 +86,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         axis = [usr.username[:3] for usr in users]
         title = f'Heatmap for Scores on image "{file_name}"'
-        buf = data_to_image(matrix, title, max_score=max_score, x_axis=axis, y_axis=axis, y_label="Images")
+        buf = data_to_image(matrix, title, max_score=max_score, x_axis=axis, y_axis=axis)
 
         return HttpResponse(buf, content_type="image/png")
 
@@ -245,6 +245,16 @@ class ProjectViewSet(viewsets.ModelViewSet):
         project.evaluate_data_as_xlsx({"project": project_serializer.data,
                                        "imagefiles": serializer.data
                                        })
+
+        return RequestSuccess(project.get_existing_evaluations())
+
+    @action(detail=True, url_path="export/clear", methods=["POST"], permission_classes=[IsAdminUser])
+    def clear_xlsx_files(self, request, pk):
+        project = Project.objects.get(pk=pk)
+        _path = get_project_evaluation_dir(str(project.pk))
+
+        for _file in os.listdir(_path):
+            delete_file(os.path.join(_path, _file), True)
 
         return RequestSuccess(project.get_existing_evaluations())
 

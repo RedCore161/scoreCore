@@ -1,4 +1,5 @@
 import io
+import math
 import os
 import datetime
 from collections import Counter
@@ -188,7 +189,13 @@ def create_xlsx(project, _data, _image_files):
     return target
 
 
-def data_to_image(data, title, max_score, x_axis, y_axis, x_label="Users", y_label="Users", figsize=(10, 8)):
+def data_to_image(data, title, max_score, x_axis, y_axis, x_label="Users", y_label="Users", figsize=None):
+
+    if not figsize:
+        cx = len(x_axis)
+        cy = len(y_axis)
+        figsize = (math.floor(cx*1.7), math.floor(cy*0.6))
+        dlog("figsize", figsize)
 
     # Create a colormap that transitions from green to red
     cmap = LinearSegmentedColormap.from_list("green_red", ["green", "yellow", "red"])

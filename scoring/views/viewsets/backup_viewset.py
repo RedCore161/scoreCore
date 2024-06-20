@@ -30,7 +30,7 @@ class BackupViewSet(viewsets.ModelViewSet):
                 backup = Backup.objects.create(name=_f)
                 backup.date = extract_date_from_filename(_f)
                 backup.save()
-                change_file_owner(os.path.join(_path, _f))
+                #change_file_owner(os.path.join(_path, _f))
 
         return RequestSuccess()
 

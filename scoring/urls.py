@@ -10,14 +10,14 @@ from scoring.views.viewsets.backup_viewset import BackupViewSet
 from scoring.views.viewsets.user_viewset import UserViewSet
 
 router = DefaultRouter()
-router.register(r'project', ProjectViewSet, basename='project')
-router.register(r'imagescore', ImageScoreViewSet, basename='scoreimage')
-router.register(r'backup', BackupViewSet, basename='backup')
-router.register(r'docker', DockerViewSet, basename='docker')
-router.register(r'user', UserViewSet, basename='user')
+router.register(r"project", ProjectViewSet, basename="project")
+router.register(r"imagescore", ImageScoreViewSet, basename="scoreimage")
+router.register(r"backup", BackupViewSet, basename="backup")
+router.register(r"docker", DockerViewSet, basename="docker")
+router.register(r"user", UserViewSet, basename="user")
 
 urlpatterns = [
-    re_path(r'^api/token/refresh/$', TokenRefreshView.as_view(), name='token_refresh'),
-    re_path(r'^api/token/$', ExtendedTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    re_path(r'^api/', include(router.urls)),
+    re_path(r"^api/token/refresh/$", TokenRefreshView.as_view(), name="token_refresh"),
+    re_path(r"^api/token/$", ExtendedTokenObtainPairView.as_view(), name="token_obtain_pair"),
+    re_path(r"^api/", include(router.urls)),
 ]

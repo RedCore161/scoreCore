@@ -32,19 +32,26 @@ const ProjectEvaluateView = () => {
     setEvaluations(selected.evaluations.files)
   }
 
+  async function deleteExports() {
+    await _export("clear", "Deleted all files", "Couldn't delete files")
+  }
   async function exportAsExcel() {
+    await _export("xlsx", "Evaluation File was created!", "Couldn't create evaluation File")
+  }
+
+  async function _export(url_sub, msg, err) {
     axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.post(`/api/project/${ selectedProject.id }/export/xlsx/`, {
+    await axiosConfig.holder.post(`/api/project/${ selectedProject.id }/export/${url_sub}/`, {
       "project": selectedProject.id
     }).then((response) => {
       if (response.data) {
         if (response.data.success) {
-          showSuccessBar(enqueueSnackbar, "Evaluation File was created!");
+          showSuccessBar(enqueueSnackbar, msg);
           console.log(response.data.files);
           setEvaluations(response.data.files);
         }
       } else {
-        showErrorBar(enqueueSnackbar, "Couldn't create evaluation File");
+        showErrorBar(enqueueSnackbar, err);
       }
     }, (error) => {
       if (error.response) {
@@ -97,6 +104,7 @@ const ProjectEvaluateView = () => {
             {/*</Col>*/}
             <Col>
               <Button onClick={ () => exportAsExcel() }>Export as Xlsx</Button>
+              <Button className={"ms-3"} variant={"danger"} onClick={ () => deleteExports() }>Delete existing files</Button>
             </Col>
           </Row>
         </BoxContainer>
