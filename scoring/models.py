@@ -365,6 +365,7 @@ class ImageScore(models.Model):
 
 class Backup(models.Model):
     name = models.CharField(max_length=100, null=False)
+    date = models.DateTimeField(null=True, blank=True)
 
     def get_file(self):
         return get_path_backup(self.name)

@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
 from scoring.helper import delete_file, get_path_backup
+from scoring.linux import change_file_owner, extract_date_from_filename
 from scoring.models import Backup
 from scoring.serializers import BackupSerializer
 from scoring.views.viewsets.base_viewset import StandardResultsSetPagination
@@ -20,13 +21,16 @@ class BackupViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, url_path="readin", methods=["POST"])
     def read_backups(self, request):
-        _files = os.listdir(get_path_backup())
+        _path = get_path_backup()
+        _files = os.listdir(_path)
         for _f in _files:
             try:
                 Backup.objects.get(name=_f)
             except Backup.DoesNotExist:
                 backup = Backup.objects.create(name=_f)
+                backup.date = extract_date_from_filename(_f)
                 backup.save()
+                change_file_owner(os.path.join(_path, _f))
 
         return RequestSuccess()
 
