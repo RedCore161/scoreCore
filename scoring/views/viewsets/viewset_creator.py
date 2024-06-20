@@ -81,8 +81,8 @@ class ViewSetCreateModel(object):
         if file:
             image_file = ImageFile.objects.get(pk=file, project=pk)
         elif autoload:
-            req = ImageScore.objects.filter(project=pk, user=user, is_completed=False)
-            image_score = random.choice(req) if len(req) else None
+            req = ImageScore.objects.filter(project=pk, user=user, is_completed=False).order_by("date")
+            image_score = req[0] if len(req) else None
             image_file = image_score.file if image_score else None
         else:
             image_file = None
@@ -96,7 +96,6 @@ class ViewSetCreateModel(object):
                 serializer_score = ImageScoreSerializer(score, read_only=True)
                 response.update({"score": serializer_score.data})
 
-            print("XXX", response)
             return response
 
         if count <= 0:
