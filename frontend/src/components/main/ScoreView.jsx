@@ -50,7 +50,7 @@ const ScoreView = () => {
 
   function findSelectNextActive(data, init = undefined) {
     let keys = init ? Object.keys(init) : Object.keys(state).filter(s => s[0] !== "_");
-    let next = data.features.filter(ft => !keys.some(s => s === ft.name));
+    let next = data?.features.filter(ft => !keys.some(s => s === ft.name));
 
     if (next && next.length > 0) {
       dispatch({ type: actionTypes.SET_ACTIVE, payload: next[0].name });
@@ -76,7 +76,7 @@ const ScoreView = () => {
         dispatch({ type: actionTypes.SET_INIT, payload: init });
         findSelectNextActive(data, init);
       } else {
-        dispatch({ type: actionTypes.SET_ACTIVE, payload: data.features[0].name });
+        data?.features && dispatch({ type: actionTypes.SET_ACTIVE, payload: data.features[0].name });
       }
     });
   };
@@ -192,7 +192,7 @@ const ScoreView = () => {
   return (
     <>
       { loadingDone ? (
-        images.score_finished >= images.score_desired ? (
+        images?.is_finished || images.score_finished >= images.score_desired ? (
             <>
               <h1 className={ "pt-3" }>
                 { "is_finished" in images ?
