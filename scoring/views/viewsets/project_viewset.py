@@ -36,7 +36,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         images = ImageFile.objects.filter(project=pk, useless=False, hidden=False)
         project = Project.objects.get(pk=pk)
         _user = request.user
-        users = project.users.exclude(username=_user.username).order_by("pk")
+        users = project.get_scoring_users(_exclude=_user)
         cx = len(images)
         cy = len(users)
 
@@ -47,7 +47,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
                     continue
                 matrix[y, x] = image.calc_std_dev(False, users=[a, _user])
 
-        y_axis = [img.filename for img in images]
+        column_sums = np.sum(matrix, axis=0)
+
+        # Add the sums as a new row to the matrix
+        matrix = np.vstack([matrix, column_sums])
+
+        y_axis = [img.filename for img in images] + ["Sum"]
         x_axis = [usr.username[:3] for usr in users]
 
         score, fts = project.get_max_score()
@@ -67,7 +72,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             images = ImageFile.objects.filter(project=pk, useless=False, hidden=False)
 
         project = Project.objects.get(pk=pk)
-        users = project.users.filter(scores__is_completed=True).distinct().order_by("pk")
+        users = project.get_scoring_users()
         count = len(users)
 
         matrix = np.zeros((count, count))

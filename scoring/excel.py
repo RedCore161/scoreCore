@@ -194,7 +194,7 @@ def data_to_image(data, title, max_score, x_axis, y_axis, x_label="Users", y_lab
     if not figsize:
         cx = len(x_axis)
         cy = len(y_axis)
-        figsize = (math.floor(cx*1.7), math.floor(cy*0.6))
+        figsize = (math.floor(cx*1.7), math.floor(cy*0.4))
         dlog("figsize", figsize)
 
     # Create a colormap that transitions from green to red

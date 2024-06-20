@@ -59,6 +59,10 @@ class Project(models.Model):
             data = json.load(_file)
             dlog("evaluate_data", data.get("imagefiles"))
 
+    def get_scoring_users(self, _exclude=None):
+        req = self.users.exclude(username=_exclude) if _exclude else self.users.all()
+        return req.filter(scores__project__pk=self.pk, scores__is_completed=True).distinct().order_by("pk")
+
     def get_max_score(self):
         score = 0
         features = self.features.all()
