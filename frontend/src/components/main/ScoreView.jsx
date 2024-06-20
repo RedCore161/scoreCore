@@ -262,7 +262,7 @@ const ScoreView = () => {
                       Mark as Useless
                     </Button>
                     <Button className={ "ms-2" } size="lg" variant={ "outline-primary" } onClick={ () => resetPage() }>
-                      Load random Image
+                      Load {images.count === 0 ? "latest" : "random"} Image
                     </Button>
                   </Col>
                 </Row>
