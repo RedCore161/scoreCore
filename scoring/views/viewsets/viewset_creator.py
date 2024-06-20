@@ -43,7 +43,6 @@ class ViewSetCreateModel(object):
 
         user = request.user
         file = request.GET.get("file")
-        autoload = parse_boolean(request.GET.get("autoload", True))
         project = Project.objects.get(pk=pk)
 
         base_request = ImageFile.objects.filter(project=pk) \
@@ -63,7 +62,8 @@ class ViewSetCreateModel(object):
         image_files = len(base_request)
         count = project.wanted_scores_per_user - max(score_started, score_finished)
 
-        dlog(f"done={len(done_request)}, {file=}, {autoload=}, {count=}, {open_scores=}, {score_started=}, {score_finished=}, {image_files=}")
+        dlog(f"done={len(done_request)}, {file=}, {open_scores=}, {score_started=},"
+             f" {score_finished=}, {count=}, score_desired={project.wanted_scores_per_user}, {image_files=}")
         response = {"files_left": image_files - score_started,
                    "image_files": image_files,
                    "count": count,
@@ -80,12 +80,12 @@ class ViewSetCreateModel(object):
 
         if file:
             image_file = ImageFile.objects.get(pk=file, project=pk)
-        elif autoload:
+        elif count > 0:
+            image_file = None
+        else:
             req = ImageScore.objects.filter(project=pk, user=user, is_completed=False).order_by("date")
             image_score = req[0] if len(req) else None
             image_file = image_score.file if image_score else None
-        else:
-            image_file = None
 
         if image_file:
             score = ImageScore.objects.get(user=user, file=image_file)

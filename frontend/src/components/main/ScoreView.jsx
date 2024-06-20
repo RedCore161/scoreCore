@@ -45,7 +45,7 @@ const ScoreView = () => {
 
   const resetPage = () => {
     navigate(`/project/${ id }/score/`);
-    setSearchParams({ reload: Date.now(), autoload: searchParams.get("autoload") });
+    setSearchParams({ reload: Date.now() });
   };
 
   function findSelectNextActive(data, init = undefined) {
@@ -267,13 +267,7 @@ const ScoreView = () => {
                   </Col>
                 </Row>
               </Col>
-            ) : ( <Col md={ 8 }>
-              <h3 className={"mt-3"}>
-                You did your duty by reaching the desired "Scores per User".<br/>
-                Please finish the remaining images! 👉</h3>
-              <img src={"/assets/left.webp"} width={344} className={"mt-3 pe-2"}/>
-              <img src={"/assets/right.webp"} width={200} className={"mt-3 pe-2"}/>
-            </Col> ) }
+            ) : <Row><LoadingIcon/></Row> }
 
             <Col className={ "mt-2" }>
               {/* History-Side-Panel */ }
