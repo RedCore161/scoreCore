@@ -59,6 +59,13 @@ class Project(models.Model):
             data = json.load(_file)
             dlog("evaluate_data", data.get("imagefiles"))
 
+    def get_max_score(self):
+        score = 0
+        features = self.features.all()
+        for ft in features:
+            score += ft.option_count
+        return score, len(features)
+
     def get_features_flat(self):
         return self.features.all().values_list("name", flat=True)
 
@@ -318,7 +325,7 @@ class ImageFile(models.Model):
 
 
 class ImageScore(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name="scores", on_delete=models.CASCADE)
     file = models.ForeignKey(ImageFile, related_name="scores", on_delete=models.CASCADE)
     project = models.ForeignKey(Project, related_name="scores", on_delete=models.CASCADE)
     comment = models.CharField(max_length=255, null=True, default="", blank=True)

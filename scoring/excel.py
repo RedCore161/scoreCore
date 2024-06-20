@@ -1,3 +1,4 @@
+import io
 import os
 import datetime
 import os
@@ -7,6 +8,11 @@ import pandas as pd
 
 from scoring.helper import dlog, find_object_by_id, get_project_evaluation_dir, save_check_dir
 from scoring.helper import elog, get_backend_url
+import matplotlib
+matplotlib.use("TkAgg")
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 
 
 def get_cell(value) -> str:
@@ -182,3 +188,34 @@ def create_xlsx(project, _data, _image_files):
             line += 1
 
     return target
+
+
+def data_to_image(data, title, max_score, x_axis, y_axis, figsize=(10, 8)):
+
+    # Create a colormap that transitions from green to red
+    cmap = LinearSegmentedColormap.from_list("green_red", ["green", "yellow", "red"])
+
+    # Plot the heatmap
+    plt.switch_backend("Agg")
+    plt.figure(figsize=figsize)
+    plt.imshow(data, cmap=cmap, aspect="auto", vmax=max_score)
+    plt.colorbar()
+
+    # Annotate the heatmap with the values
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            plt.text(j, i, f"{data[i, j]:.1f}", ha="center", va="center", color="black")
+
+    plt.title(title)
+    plt.xlabel("Users")
+    plt.ylabel("Users")
+    plt.xticks(range(data.shape[1]), x_axis)
+    plt.yticks(range(data.shape[0]), y_axis)
+
+    # Save the plot to a BytesIO object
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png")
+    plt.close()
+    buf.seek(0)
+
+    return buf

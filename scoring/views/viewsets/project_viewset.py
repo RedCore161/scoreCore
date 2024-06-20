@@ -1,11 +1,14 @@
+import json
 import os
 
+from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from scoring.basics import parse_int, parse_boolean
+from scoring.excel import data_to_image
 from scoring.helper import build_abs_path, get_path_projects, count_images_in_folder, get_rel_path, get_fields_from_bit, \
     dlog
 from scoring.models import Project, ImageFile, ImageScore, ScoreFeature
@@ -13,6 +16,7 @@ from scoring.serializers import ProjectSerializer, ImageFileSerializer, ImageSco
 from scoring.views.viewsets.base_viewset import StandardResultsSetPagination, BasisViewSet
 from scoring.views.viewsets.viewset_creator import ViewSetCreateModel
 from server.views import RequestSuccess, RequestFailed
+import numpy as np
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -27,29 +31,63 @@ class ProjectViewSet(viewsets.ModelViewSet):
                                                               context={"user": request.user.pk}, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, url_path="cross-variance", methods=["GET"])
-    def cross_variance(self, request, pk):
+    @action(detail=True, url_path="cross-variance-all", methods=["GET"], permission_classes=[IsAdminUser])
+    def cross_variance_all(self, request, pk):
         images = ImageFile.objects.filter(project=pk, useless=False, hidden=False)
         project = Project.objects.get(pk=pk)
-        users = project.users.all().order_by("pk")
-        data = {}
-        for image in images[1:2]:
-            perm_images = []
-            for a in users:
-                perm_users = []
-                for b in users:
+        _user = request.user
+        users = project.users.exclude(username=_user.username).order_by("pk")
+        cx = len(images)
+        cy = len(users)
+
+        matrix = np.zeros((cx, cy))
+        for y, image in enumerate(images):
+            for x, a in enumerate(users):
+                if _user.pk == a.pk:
+                    continue
+                variance = image.calc_variance(False, users=[a, _user])
+                matrix[y, x] = variance
+
+        y_axis = [img.filename for img in images]
+        x_axis = [usr.username[:3] for usr in users]
+
+        score, fts = project.get_max_score()
+        max_score = score / fts
+
+        buf = data_to_image(matrix, f"Heatmap for '{project.name}' and '{_user}'",
+                            max_score=max_score, x_axis=x_axis, y_axis=y_axis)
+
+        return HttpResponse(buf, content_type="image/png")
+
+    @action(detail=True, url_path="cross-variance", methods=["GET"], permission_classes=[IsAdminUser])
+    def cross_variance(self, request, pk):
+        file_id = request.GET.get("file_id")
+        if file_id:
+            images = ImageFile.objects.filter(pk=file_id)
+        else:
+            images = ImageFile.objects.filter(project=pk, useless=False, hidden=False)
+
+        project = Project.objects.get(pk=pk)
+        users = project.users.filter(scores__is_completed=True).distinct().order_by("pk")
+        count = len(users)
+
+        matrix = np.zeros((count, count))
+        file_name = "Error"
+        for image in images:
+            file_name = image.filename
+            for x, a in enumerate(users):
+                for y, b in enumerate(users):
                     if b.pk >= a.pk:
                         continue
 
                     variance = image.calc_variance(False, users=[a, b])
-                    perm_users.append(variance)
+                    matrix[x, y] = matrix[y, x] = variance
+            break
 
-                if len(perm_users):
-                    perm_images.append(perm_users)
+        axis = [usr.username[:3] for usr in users]
+        buf = data_to_image(matrix, file_name, x_axis=axis, y_axis=axis)
 
-            data.update({image.pk: perm_images})
-
-        return RequestSuccess(data)
+        return HttpResponse(buf, content_type="image/png")
 
     @action(detail=True, url_path="recalculate-variance", methods=["GET"])
     def recalculate_variance(self, request, pk):
