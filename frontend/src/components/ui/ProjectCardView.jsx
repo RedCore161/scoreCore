@@ -63,6 +63,24 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
     });
   }
 
+  function openHeatMap(event) {
+    event.stopPropagation();
+
+    const _header = authHeader();
+    axiosConfig.updateToken(_header);
+    axiosConfig.holder.get(`/api/project/${id}/cross-variance-all/`, { responseType: "blob"}).then((response) => {
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const newTab = window.open();
+      newTab.location = url;
+    }, (error) => {
+      if (error.response) {
+        console.log(error.response.data);
+      } else {
+        console.error(error);
+      }
+    });
+  }
+
   function advNavigate(event, url) {
     event.stopPropagation();
     navigate(url);
@@ -93,6 +111,7 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
             <span className={ "project-Card-Header-Content" }>{ icon }{ name }</span>
             { isAuth.is_superuser && (
               <div className={ "float-end" }>
+                <span className="project-Card-Header-Content me-2" onClick={(e) => openHeatMap(e)}>🔥</span>
                 <i className="project-Card-Header-Content bi bi-pencil-fill me-2"
                    onClick={ (e) => loginForwardTo(e, `${ process.env.REACT_APP_BACKEND_URL }/admin/scoring/project/${ id }/change/`) }/>
                 <i className="project-Card-Header-Content bi bi-arrow-repeat me-2" onClick={ (e) => readImages(e) }/>

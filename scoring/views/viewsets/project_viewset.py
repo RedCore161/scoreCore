@@ -18,6 +18,8 @@ from scoring.views.viewsets.viewset_creator import ViewSetCreateModel
 from server.views import RequestSuccess, RequestFailed
 import numpy as np
 
+DUMPING_MAX_SCORE = .9
+
 
 class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
@@ -27,9 +29,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, url_path="list", methods=["GET"])
     def list_projects(self, request):
-        serializer = ProjectSerializer(Project.objects.filter(users=request.user),
-                                                              context={"user": request.user.pk}, many=True)
-        return Response(serializer.data)
+        ser = ProjectSerializer(Project.objects.filter(users=request.user), context={"user": request.user.pk}, many=True)
+        return Response(ser.data)
 
     @action(detail=True, url_path="cross-variance-all", methods=["GET"], permission_classes=[IsAdminUser])
     def cross_variance_all(self, request, pk):
@@ -52,9 +53,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
         x_axis = [usr.username[:3] for usr in users]
 
         score, fts = project.get_max_score()
-        max_score = score / fts
+        max_score = score / (fts * DUMPING_MAX_SCORE)
 
-        buf = data_to_image(matrix, f"Heatmap for '{project.name}' and '{_user}'",
+        buf = data_to_image(matrix, f'Heatmap for "{project.name}" and "{_user}"',
                             max_score=max_score, x_axis=x_axis, y_axis=y_axis)
 
         return HttpResponse(buf, content_type="image/png")
@@ -79,13 +80,16 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 for y, b in enumerate(users):
                     if b.pk >= a.pk:
                         continue
-
                     variance = image.calc_variance(False, users=[a, b])
                     matrix[x, y] = matrix[y, x] = variance
             break
 
+        score, fts = project.get_max_score()
+        max_score = score / (fts * DUMPING_MAX_SCORE)
+
         axis = [usr.username[:3] for usr in users]
-        buf = data_to_image(matrix, file_name, x_axis=axis, y_axis=axis)
+        title = f'Heatmap for Scores on image "{file_name}"'
+        buf = data_to_image(matrix, title, max_score=max_score, x_axis=axis, y_axis=axis)
 
         return HttpResponse(buf, content_type="image/png")
 

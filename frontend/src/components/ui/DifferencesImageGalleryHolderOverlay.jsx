@@ -1,12 +1,15 @@
 import React from "react";
-import { Col, Container, Row } from "react-bootstrap";
+import { Button, Col, Container, Row } from "react-bootstrap";
 
 import "./css/DifferencesImageGalleryHolderOverlay.css";
+import axiosConfig from "../../axiosConfig";
+import { useAuthHeader } from "react-auth-kit";
 
 
 const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
 
   const elements = getElements()
+  const authHeader = useAuthHeader();
 
   function getElements() {
     let currentId = 10;
@@ -29,6 +32,24 @@ const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
       ...variances,
       { id: 1000, name: "∑ Std.-Dev.", value: imagefile.variance ? imagefile.variance.toFixed(2) : 0 , format: true },
     ];
+  }
+
+  function openHeatMap(event, ) {
+    event.stopPropagation();
+
+    const _header = authHeader();
+    axiosConfig.updateToken(_header);
+    axiosConfig.holder.get(`/api/project/${imagefile.project}/cross-variance/?file_id=${imagefile.id}`, { responseType: "blob"}).then((response) => {
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const newTab = window.open();
+      newTab.location = url;
+    }, (error) => {
+      if (error.response) {
+        console.log(error.response.data);
+      } else {
+        console.error(error);
+      }
+    });
   }
 
   function getDifferences(element) {
@@ -59,6 +80,11 @@ const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
             <Col>{ element.value }</Col>
           </Row>
         ) }
+        <Row className={"mt-2"}>
+          <Col>
+            <Button variant={"outline-success"} onClick={(e) => openHeatMap(e)}>Open 🔥-Map</Button>
+          </Col>
+        </Row>
 
       </Container>
     </div>
