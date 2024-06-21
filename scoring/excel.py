@@ -5,7 +5,7 @@ import datetime
 from collections import Counter
 
 import pandas as pd
-
+import numpy as np
 from scoring.helper import dlog, find_object_by_id, get_project_evaluation_dir, save_check_dir
 from scoring.helper import elog, get_backend_url
 import matplotlib
@@ -194,28 +194,42 @@ def data_to_image(data, title, max_score, x_axis, y_axis, x_label="Users", y_lab
     if not figsize:
         cx = len(x_axis)
         cy = len(y_axis)
-        figsize = (math.floor(cx*1.7), math.floor(cy*0.4))
-        dlog("figsize", figsize)
+        figsize = (math.ceil(cx*1.8), math.ceil(cy*0.4))
 
     # Create a colormap that transitions from green to red
     cmap = LinearSegmentedColormap.from_list("green_red", ["green", "yellow", "red"])
 
-    # Plot the heatmap
+    # Plot the heatmap using pcolormesh
     plt.switch_backend("Agg")
     plt.figure(figsize=figsize)
-    plt.imshow(data, cmap=cmap, aspect="auto", vmax=max_score)
+    plt.pcolormesh(data, cmap=cmap, vmax=max_score, edgecolors='k', linewidth=0.2)
     plt.colorbar()
 
     # Annotate the heatmap with the values
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
-            plt.text(j, i, f"{data[i, j]:.1f}", ha="center", va="center", color="black")
+            plt.text(j + 0.5, i + 0.5, f"{data[i, j]:.1f}", ha="center", va="center", color="black")
 
-    plt.title(title)
+    plt.title(title, pad=20)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
-    plt.xticks(range(data.shape[1]), x_axis)
-    plt.yticks(range(data.shape[0]), y_axis)
+
+    # Move x-axis labels to top and center them
+    ax = plt.gca()
+    ax.xaxis.set_ticks_position('top')
+    ax.xaxis.set_label_position('top')
+    ax.set_xticks(np.arange(data.shape[1]) + 0.5)
+    ax.set_xticklabels(x_axis)
+    ax.tick_params(axis='x', rotation=0, pad=10)
+
+    # Center the x-axis labels
+    trans = ax.get_xaxis_transform()
+    for i, label in enumerate(ax.get_xticklabels()):
+        label.set_horizontalalignment('center')
+        label.set_x((i + 0.5) / data.shape[1])
+
+    ax.set_yticks(np.arange(data.shape[0]) + 0.5)
+    ax.set_yticklabels(y_axis)
 
     # Save the plot to a BytesIO object
     buf = io.BytesIO()
