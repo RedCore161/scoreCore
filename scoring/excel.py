@@ -194,7 +194,7 @@ def data_to_image(data, title, max_score, x_axis, y_axis, x_label="Users", y_lab
     if not figsize:
         cx = len(x_axis)
         cy = len(y_axis)
-        figsize = (math.ceil(cx*1.8), math.ceil(cy*0.4))
+        figsize = (math.ceil(cx*1.8), math.ceil(cy*0.4) + 3)
 
     # Create a colormap that transitions from green to red
     cmap = LinearSegmentedColormap.from_list("green_red", ["green", "yellow", "red"])
@@ -216,20 +216,26 @@ def data_to_image(data, title, max_score, x_axis, y_axis, x_label="Users", y_lab
 
     # Move x-axis labels to top and center them
     ax = plt.gca()
-    ax.xaxis.set_ticks_position('top')
-    ax.xaxis.set_label_position('top')
+    ax.xaxis.set_ticks_position("top")
+    ax.xaxis.set_label_position("top")
     ax.set_xticks(np.arange(data.shape[1]) + 0.5)
-    ax.set_xticklabels(x_axis)
-    ax.tick_params(axis='x', rotation=0, pad=10)
+    ax.set_xticklabels(x_axis)  #[::-1]
+
+    ax.tick_params(axis="x", rotation=0, pad=10)
 
     # Center the x-axis labels
     trans = ax.get_xaxis_transform()
     for i, label in enumerate(ax.get_xticklabels()):
-        label.set_horizontalalignment('center')
+        label.set_horizontalalignment("center")
         label.set_x((i + 0.5) / data.shape[1])
 
+    # Reverse the y-axis
     ax.set_yticks(np.arange(data.shape[0]) + 0.5)
     ax.set_yticklabels(y_axis)
+    ax.invert_yaxis()
+
+    # Adjust layout to ensure title is visible
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
 
     # Save the plot to a BytesIO object
     buf = io.BytesIO()
