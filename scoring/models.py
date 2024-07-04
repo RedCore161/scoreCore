@@ -104,6 +104,49 @@ class Project(models.Model):
     def is_finished(self):
         return self.get_score_count() >= self.get_files_count() * self.wanted_scores_per_image
 
+    def calc_fleiss_kappa(self):
+        import numpy as np
+        from statsmodels.stats.inter_rater import fleiss_kappa
+
+        scoring_fields = self.get_features_flat()
+        summed = {}
+        result = {}
+
+        for _file in self.get_all_files_save():
+            scores = _file.get_scores_save(self)
+            #sums = np.zeros(len(scoring_fields) + 1)
+            matrix = []
+            counts = [{"0": 0, "1": 0, "2": 0, "X": 0} for _ in range(len(scores))]
+
+            for score in scores:
+                row = score.as_row(scoring_fields)
+                matrix.append(row)
+
+                for idx, value in enumerate(row):
+                    if value == 0:
+                        counts[idx]["0"] += 1
+                    elif value == 1:
+                        counts[idx]["1"] += 1
+                    elif value == 2:
+                        counts[idx]["2"] += 1
+                    else:
+                        counts[idx]["X"] += 1
+
+            print(f"{_file.filename} => {matrix}")
+
+            for idx, feature in enumerate(scoring_fields):
+                elements = summed.get(feature, [])
+                elements.append(list(counts[idx].values()))
+                summed.update({feature: elements})
+        print("SUMMED", summed)
+
+        for idx, feature in enumerate(scoring_fields):
+            data = summed.get(feature)
+            kappa = fleiss_kappa(data)
+            result.update({feature: f"{kappa:.4f}"})
+
+        return result
+
     def evaluate_data_as_xlsx(self, data):
         _image_files = self.get_all_files_save()
         dlog(f"Recalculate Std-Deviation for {len(_image_files)} ImageFiles...")
@@ -272,8 +315,7 @@ class ImageFile(models.Model):
     date = models.DateTimeField(blank=True, null=True)
 
     def get_scores_save(self, project: Project):
-        return self.scores.exclude(file__useless=True) \
-            .filter(user__in=project.users.all())
+        return self.scores.exclude(file__useless=True).filter(user__in=project.users.all())
 
     @count_calls
     def calc_std_dev(self, save=True, users=None):
@@ -347,6 +389,12 @@ class ImageScore(models.Model):
         self.is_completed = True
         self.save()
         return True
+
+    def as_row(self, _fields):
+        row = []
+        for _field in _fields:
+            row.append(self.data.get(_field))
+        return row
 
     def __str__(self):
         def readable(_field):
