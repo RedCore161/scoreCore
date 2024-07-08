@@ -8,6 +8,8 @@ export const getAcceptesTypes = (_type) => {
       return { "image/*": [], "application/pdf": [".pdf"], "text/*": [".csv"]}
     case "template":
       return {"application/*": [".odt", ".ods"]}
+    case "scoring":
+      return {"image/*": [], "text/*": [".txt"]}
     default:
       return { "image/*": []}
   }

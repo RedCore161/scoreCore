@@ -12,6 +12,7 @@ const UploadFileModal = ({enqueueSnackbar, accept = "video", callBackData = () =
   const [show, setShow] = useContext(CoreModalContext);
   const [dirName, setDirName] = useState(undefined);
   const [folders, setFolders] = useState([]);
+  const [error, setError] = useState(undefined);
 
   const _types = getAcceptesTypes(accept);
 
@@ -97,9 +98,11 @@ const UploadFileModal = ({enqueueSnackbar, accept = "video", callBackData = () =
         callBackData(response.data);
         handleClose();
       } else {
+        setError("An Error occurred. Please contact an admin!")
         showErrorBar(enqueueSnackbar, "Failed uploading!");
       }
     }, (error) => {
+      setError("An Error occurred. Please contact an admin!")
       if (error.response) {
         console.error(error.response.data);
       } else {

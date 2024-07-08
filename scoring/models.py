@@ -217,19 +217,24 @@ class Project(models.Model):
             self.create_script()
             self.check_create_infofiles()
 
+        info_files = []
         for root, _, files in os.walk(_path):
             if len(files):
                 if enabled_log:
                     logger.info(f"Read Images for '{root}' => {files}")
                 for _file in files:
                     if _file.endswith(".txt"):
-                        self.parse_info_file(os.path.join(BASE_DIR, root), enabled_log)
+                        info_files.append(os.path.join(BASE_DIR, root))
+
+        for info_file in info_files:
+            self.parse_info_file(info_file, enabled_log)
 
         return True
 
     def parse_info_file(self, _path, enabled_log=True, get_or_create_amount=2):
         set_logging_file()
         _path_infofile = os.path.join(_path, INFO_FILE_NAME)
+        dlog(f"Parse Infofile! {_path=}, {get_or_create_amount=}")
 
         if os.path.exists(_path_infofile):
             with open(_path_infofile, "r") as f:
@@ -242,6 +247,10 @@ class Project(models.Model):
                         break
 
                     full_path = os.path.join(_path, _file)
+
+                    if not os.path.exists(full_path):
+                        elog(full_path, tag="[MISSING]")
+                        continue
 
                     if not filetype.is_image(full_path):
                         continue

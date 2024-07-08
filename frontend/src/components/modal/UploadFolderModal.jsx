@@ -6,12 +6,15 @@ import { useDropzone } from "react-dropzone";
 import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
 import { getAcceptesTypes } from "../datatables/configs";
 import { fetchFolders } from "../../helper";
+import LoadingIcon from "../ui/LoadingIcon";
 
-const UploadFolderModal = ({enqueueSnackbar, accept = "image", callBackData = () => {} }) => {
+const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = () => {} }) => {
 
   const [show, setShow] = useContext(CoreModalContext);
   const [dirName, setDirName] = useState(undefined);
   const [folders, setFolders] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(undefined);
 
   const _types = getAcceptesTypes(accept);
 
@@ -24,7 +27,14 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "image", callBackData = ()
   };
 
   let acceptedFiles, getRootProps, getInputProps, isFocused, isDragAccept, isDragReject;
-  ( { acceptedFiles, getRootProps, getInputProps, isFocused, isDragAccept, isDragReject } = useDropzone(dropzoneOptions) );
+  ( {
+    acceptedFiles,
+    getRootProps,
+    getInputProps,
+    isFocused,
+    isDragAccept,
+    isDragReject
+  } = useDropzone(dropzoneOptions) );
 
   const baseStyle = {
     flex: 1,
@@ -89,17 +99,23 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "image", callBackData = ()
       formData.append(`files${ index }`, file, file.name);
     });
 
+    setUploading(true);
+
     await axiosConfig.holder.post("/api/project/upload/", formData, {
       headers: { "Content-Type": "multipart/form-data" }
     }).then((response) => {
+      setUploading(false);
       if (response.data.success) {
         showSuccessBar(enqueueSnackbar, "Successfully uploaded File(s)");
         callBackData(response.data);
         handleClose();
       } else {
+        setError("An Error occurred. Please contact an admin!");
         showErrorBar(enqueueSnackbar, "Failed uploading!");
       }
     }, (error) => {
+      setUploading(false);
+      setError("An Error occurred. Please contact an admin!");
       if (error.response) {
         console.error(error.response.data);
       } else {
@@ -119,29 +135,32 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "image", callBackData = ()
           <Modal.Title>{ show.title } to '&lt;upload-dir&gt;/projects/{ dirName }'</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-
-          <Row className={ "pb-3" }>
-            <Col>
-              <Form.Control type="text" placeholder={ "Directory-name..." }
-                            value={ dirName }
-                            onChange={ (e) => setDirName(e.target.value) }/>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              { dirName?.length > 0 && (
-                folders?.data?.map(e => e.name).includes(dirName) ? (
-                  <div className={ "modalErrors" }>Folder already exists</div>
-                ) : (
-                  <Form.Group controlId="formValue">
-                    <div { ...getRootProps({ style }) }>
-                      <input { ...getInputProps() } webkitdirectory="true" directory="true" multiple/>
-                      <p>Drag 'n' drop some files here, or click to select files</p>
-                    </div>
-                  </Form.Group>
-                ) ) }
-            </Col>
-          </Row>
+          { uploading ? <Row><LoadingIcon/></Row> :
+            ( <>
+              <Row className={ "pb-3" }>
+                <Col>
+                  { error && <h3 className={ "text-danger" }>{ error }</h3> }
+                  <Form.Control type="text" placeholder={ "Directory-name..." }
+                                value={ dirName }
+                                onChange={ (e) => setDirName(e.target.value) }/>
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  { dirName?.length > 0 && (
+                    folders?.data?.map(e => e.name).includes(dirName) ? (
+                      <div className={ "modalErrors" }>Folder already exists</div>
+                    ) : (
+                      <Form.Group controlId="formValue">
+                        <div { ...getRootProps({ style }) }>
+                          <input { ...getInputProps() } webkitdirectory="true" directory="true" multiple/>
+                          <p>Drag 'n' drop some files here, or click to select files</p>
+                        </div>
+                      </Form.Group>
+                    ) ) }
+                </Col>
+              </Row>
+            </> ) }
         </Modal.Body>
 
         <Modal.Footer>
