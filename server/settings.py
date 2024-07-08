@@ -235,6 +235,7 @@ STATIC_URL = "/static/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
+DATA_UPLOAD_MAX_NUMBER_FILES = 10000
 
 DEFAULT_DIRS = {_dir.strip(): os.path.join(MEDIA_ROOT, _dir.strip())
                     for _dir in os.getenv("DEFAULT_DIRS", "").split(',')}
