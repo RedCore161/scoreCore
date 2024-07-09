@@ -13,7 +13,6 @@ ENV_FILE_PATH = os.path.join(BASE_DIR, "django.env")
 
 read_env(ENV_FILE_PATH)
 
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -56,7 +55,6 @@ CELERY_TASK_SOFT_TIME_LIMIT = None
 CELERY_TASK_TIME_LIMIT = None
 
 outtime = 60 * 60 * 4
-
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -216,7 +214,6 @@ CACHES = {
     },
 }
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -236,9 +233,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
 DATA_UPLOAD_MAX_NUMBER_FILES = 10000
+DATA_UPLOAD_MAX_MEMORY_SIZE = 26843545600  # 5GB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 26843545600  # 5GB
 
 DEFAULT_DIRS = {_dir.strip(): os.path.join(MEDIA_ROOT, _dir.strip())
-                    for _dir in os.getenv("DEFAULT_DIRS", "").split(',')}
+                for _dir in os.getenv("DEFAULT_DIRS", "").split(',')}
 
 DBBACKUP_STORAGE = "django.core.files.storage.FileSystemStorage"
 DBBACKUP_STORAGE_OPTIONS = {"location": DEFAULT_DIRS.get("backup")}
@@ -250,6 +249,11 @@ DBBACKUP_CONNECTORS = {
         "CONNECTOR": "dbbackup.db.postgresql.PgDumpConnector"
     }
 }
+
+FILE_UPLOAD_HANDLERS = [
+    "django.core.files.uploadhandler.TemporaryFileUploadHandler",
+    "django.core.files.uploadhandler.MemoryFileUploadHandler",
+]
 
 # Security
 

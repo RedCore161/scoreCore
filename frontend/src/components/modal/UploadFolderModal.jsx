@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useReducer, useState } from "react";
 import { Button, Col, Form, Modal, Row } from "react-bootstrap";
 import { CoreModalContext } from "./coreModalContext";
 import axiosConfig from "../../axiosConfig";
@@ -7,14 +7,15 @@ import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
 import { getAcceptesTypes } from "../datatables/configs";
 import { fetchFolders } from "../../helper";
 import LoadingIcon from "../ui/LoadingIcon";
+import { defaultStateUpload, reducerUpload } from "../reducer/reducerUpload";
+import * as actionTypes from "../reducer/reducerTypes";
 
 const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = () => {} }) => {
 
   const [show, setShow] = useContext(CoreModalContext);
-  const [dirName, setDirName] = useState(undefined);
+  const [dirName, setDirName] = useState("");
   const [folders, setFolders] = useState([]);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState(undefined);
+  const [state, dispatch] = useReducer(reducerUpload, defaultStateUpload);
 
   const _types = getAcceptesTypes(accept);
 
@@ -83,7 +84,7 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = 
 
   useEffect(() => {
     if (acceptedFiles.length) {
-      uploadFile();
+      uploadFiles();
     }
   }, [acceptedFiles]);
 
@@ -92,36 +93,64 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = 
     }
   }, [show]);
 
-  async function uploadFile() {
+  async function uploadFiles() {
     let formData = new FormData();
-    dirName && formData.append("projectName", dirName);
+    let chunks = []
+    let split_after = 15
+    let current_counter = 0
+
     acceptedFiles.map((file, index) => {
       formData.append(`files${ index }`, file, file.name);
-    });
-
-    setUploading(true);
-
-    await axiosConfig.holder.post("/api/project/upload/", formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    }).then((response) => {
-      setUploading(false);
-      if (response.data.success) {
-        showSuccessBar(enqueueSnackbar, "Successfully uploaded File(s)");
-        callBackData(response.data);
-        handleClose();
-      } else {
-        setError("An Error occurred. Please contact an admin!");
-        showErrorBar(enqueueSnackbar, "Failed uploading!");
+      if (file.name === "infofile.txt") {
+        current_counter += 1
       }
-    }, (error) => {
-      setUploading(false);
-      setError("An Error occurred. Please contact an admin!");
-      if (error.response) {
-        console.error(error.response.data);
-      } else {
-        console.error(error);
+      if (current_counter >= split_after) {
+        chunks.push(formData)
+        formData = new FormData();
+        current_counter = 0
       }
     });
+
+    dispatch({ type: actionTypes.START_UPLOADS, payload: chunks.length });
+
+    let pos = 0;
+
+    const result = await Promise.all(chunks.map(async (data, _id) => {
+      dirName && data.append("projectName", dirName);
+      data.append("pos", pos);
+
+      for (let [_, value] of data.entries()) {
+        if (value?.name === "infofile.txt") {
+          pos++;
+        }
+      }
+
+      return await axiosConfig.holder.post("/api/project/upload/", data, {
+        headers: { "Content-Type": "multipart/form-data" }
+      }).then((response) => {
+        dispatch({ type: actionTypes.FINISH_UPLOAD });
+        if (response.data.success) {
+          showSuccessBar(enqueueSnackbar, `Successfully uploaded ${response.data.files} File(s)`);
+          return true
+
+        } else {
+          dispatch({ type: actionTypes.FAILED_UPLOAD, payload: "An Error occurred. Please contact an admin!" });
+          showErrorBar(enqueueSnackbar, "Failed uploading!");
+          return false
+        }
+      }, (error) => {
+        dispatch({ type: actionTypes.FAILED_UPLOAD, payload: "An Error occurred. Please contact an admin!" });
+        if (error.response) {
+          console.error(error.response.data);
+        } else {
+          console.error(error);
+        }
+      });
+    }))
+
+    showSuccessBar(enqueueSnackbar, `Upload completed!`);
+    handleClose();
+    dispatch({ type: actionTypes.SET_RESET });
   }
 
   const handleClose = () => {
@@ -135,11 +164,11 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = 
           <Modal.Title>{ show.title } to '&lt;upload-dir&gt;/projects/{ dirName }'</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          { uploading ? <Row><LoadingIcon/></Row> :
+          { state.uploading ? <Row><LoadingIcon/></Row> :
             ( <>
               <Row className={ "pb-3" }>
                 <Col>
-                  { error && <h3 className={ "text-danger" }>{ error }</h3> }
+                  { state.error && <h3 className={ "text-danger" }>{ state.error }</h3> }
                   <Form.Control type="text" placeholder={ "Directory-name..." }
                                 value={ dirName }
                                 onChange={ (e) => setDirName(e.target.value) }/>

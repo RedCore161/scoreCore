@@ -30,6 +30,7 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
   const [show, setShow] = useContext(CoreModalContext)
   const [folders, setFolders] = useState([]);
   const [folder, setFolder] = useState([]);
+  const [busy, setBusy] = useState(false);
 
   const handleClose = () => {
     setShow((show) => ( { ...show, modalProjectModal: false } ))
@@ -49,6 +50,8 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
     if (folder.length > 0) {
       additonal["folder"] = folder[0].name
     }
+    setBusy(true)
+
     axiosConfig.holder.post(`/api/project/create/`, {
       ...data,
       ...additonal
@@ -137,7 +140,8 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
 
         <Modal.Footer>
           <Button variant="secondary" onClick={ handleClose }>Close</Button>
-          <Button variant="success" onClick={ handleSubmit(onSubmit) }>Create</Button>
+          <Button variant="success" onClick={ handleSubmit(onSubmit) } disabled={ busy }>
+            {busy && <div className="spinner-border spinner-border-sm text-light" role="status" />} Create</Button>
         </Modal.Footer>
       </Modal>
     </Form>
