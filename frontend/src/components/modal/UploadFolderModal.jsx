@@ -124,6 +124,7 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = 
           pos++;
         }
       }
+      console.log("Uploading:", data);
 
       return await axiosConfig.holder.post("/api/project/upload/", data, {
         headers: { "Content-Type": "multipart/form-data" }
@@ -135,7 +136,7 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = 
 
         } else {
           dispatch({ type: actionTypes.FAILED_UPLOAD, payload: "An Error occurred. Please contact an admin!" });
-          showErrorBar(enqueueSnackbar, "Failed uploading!");
+          showErrorBar(enqueueSnackbar, "Error while uploading!");
           return false
         }
       }, (error) => {
@@ -147,8 +148,8 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = 
         }
       });
     }))
-
-    showSuccessBar(enqueueSnackbar, `Upload completed!`);
+    console.log("Upload-Result", result);
+    showSuccessBar(enqueueSnackbar, `Upload finished!`);
     handleClose();
     dispatch({ type: actionTypes.SET_RESET });
   }

@@ -15,7 +15,7 @@ from rest_framework import serializers
 from scoring.decorators import count_calls
 from scoring.excel import create_xlsx
 from scoring.helper import get_project_evaluation_dir, save_check_dir, get_path_backup, dlog, \
-    set_logging_file, INFO_FILE_NAME, is_image, elog, get_rel_path, get_path_projects
+    set_logging_file, INFO_FILE_NAME, is_image, elog, get_rel_path, get_path_projects, ilog
 from server.settings import BASE_DIR
 
 
@@ -372,11 +372,18 @@ class ImageFile(models.Model):
     def get_scored_users(self):
         return list(self.scores.order_by("user__username").values_list("user__username", flat=True))
 
+    def fix_path(self):
+        if '\\' in self.path:
+            self.path = self.path.replace('\\', '/')
+            self.save()
+            ilog(f"Fixxed", self, tag="[DONE]")
+
     def __str__(self):
         _id = ""
         if os.getenv("DEBUG"):
             _id = f"[{self.pk}] "
-        return f"{_id} File: {self.filename} for project {self.project.name}"
+        add_0 = "🗑 " if self.useless else ""
+        return f"{add_0}{_id} File: {self.filename} for '{self.project.name}'"
 
 
 class ImageScore(models.Model):

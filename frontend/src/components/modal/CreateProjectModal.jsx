@@ -36,6 +36,7 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
     setShow((show) => ( { ...show, modalProjectModal: false } ))
     reset(defaultForm)
     setFolder([])
+    setBusy(false)
   }
 
   useEffect(() => {
