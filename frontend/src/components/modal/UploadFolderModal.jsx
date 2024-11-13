@@ -93,7 +93,7 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = 
     }
   }, [show]);
 
-  async function _uploadFiles(chunks, dirName, pos, dispatch, enqueueSnackbar) {
+  async function _uploadFiles(chunks, dirName, dispatch, enqueueSnackbar) {
       const maxConcurrent = 5;
       const results = [];
       let pos = 0;
@@ -162,7 +162,7 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = 
 
     dispatch({ type: actionTypes.START_UPLOADS, payload: chunks.length });
 
-    const results = await _uploadFiles(chunks, dirName, pos, dispatch, enqueueSnackbar)
+    const results = await _uploadFiles(chunks, dirName, dispatch, enqueueSnackbar)
 
     console.log("Upload-Result", results);
     showSuccessBar(enqueueSnackbar, `Upload finished!`);
