@@ -1,6 +1,5 @@
-import axios from 'axios'
-import { createRefresh } from "react-auth-kit";
-
+import axios from "axios"
+import createRefresh from "react-auth-kit/createRefresh";
 const intervalMin = 5
 
 const refreshApi = createRefresh({
@@ -14,8 +13,8 @@ const refreshApi = createRefresh({
       authUserState
     }) => {
     try {
-      const response = await axios.post(`${ process.env.REACT_APP_BACKEND_URL }/api/token/refresh/`, {'refresh': refreshToken}, {
-        headers: {'Authorization': `Bearer ${authToken}`}}
+      const response = await axios.post(`${ process.env.REACT_APP_BACKEND_URL }/api/token/refresh/`, {"refresh": refreshToken}, {
+        headers: {"Authorization": `Bearer ${authToken}`}}
       )
       console.log("refreshApi", authTokenExpireAt, refreshTokenExpiresAt);
       return {
@@ -35,5 +34,4 @@ const refreshApi = createRefresh({
     }
   }
 })
-
 export default refreshApi

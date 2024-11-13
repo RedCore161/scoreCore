@@ -8,6 +8,8 @@ venv
 media/*
 
 frontend/node_moduless
+frontend/dist
+frontend/package-lock.json
 
 docker/backend/django.env
 
@@ -15,8 +17,8 @@ docker-compose.yml
 
 django.env
 dev.py
-
 .env
+
 /docker/deeplab/detector/mgs_frames_leftright/*
 /docker/deeplab/detector/detectors_blackmice_v2/*
 /docker/deeplab/detector/face_detector/*

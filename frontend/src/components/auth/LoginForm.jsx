@@ -1,48 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { Button, Col, Container, Form, InputGroup, Row } from "react-bootstrap";
-import { useForm } from "react-hook-form";
 import axios from "axios";
-import { useNavigate } from "react-router";
-import { useSignIn } from "react-auth-kit";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import useSignIn from "react-auth-kit/hooks/useSignIn";
+import { useForm } from "react-hook-form";
 import { jwtDecode } from "jwt-decode";
-import { useSearchParams } from "react-router-dom";
-import { useSnackbar } from "notistack";
 import { showErrorBar } from "../ui/Snackbar";
+import { useSnackbar } from "notistack";
 
-const LoginForm = () => {
 
-  const liveTime = process.env.REACT_APP_LOGIN_TIME | 3600
+const LoginForm = (_) => {
 
   const signIn = useSignIn()
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [showPasswd, setShowPasswd] = useState(false);
 
   const { enqueueSnackbar } = useSnackbar();
   const { register, handleSubmit } = useForm();
+  const [showPasswd, setShowPasswd] = useState(false);
 
   const onSubmit = async (data) => {
-    try {
-      const response = await axios.post(
-        `${ process.env.REACT_APP_BACKEND_URL }/api/token/`,
-        data
-      );
-      signIn({
-        token: response.data.access,
-        expiresIn: liveTime,
-        tokenType: "Bearer",
-        refreshToken: response.data.refresh,
-        refreshTokenExpireIn: liveTime * 2,
-        authState: jwtDecode(response.data.access),
-      });
-
-      const forward = searchParams.get("forward") || "/";
-      navigate(forward);
-
-    } catch (err) {
-      console.log("Error: ", err);
+    const forward = searchParams.get("forward") || "/";
+    await axios.post(
+      `${ process.env.REACT_APP_BACKEND_URL }/api/token/`,
+      data
+    ).then((response) => {
+      if (signIn({
+        auth: {
+          token: response.data.access,
+          type: "Bearer"
+        },
+        refresh: response.data.refresh,
+        userState: jwtDecode(response.data.access)
+      })) {
+        navigate(forward);
+      } else {
+        showErrorBar(enqueueSnackbar, "Login failed!");
+      }
+    }, (error) => {
       showErrorBar(enqueueSnackbar, "Login failed!");
-    }
+    });
   };
 
   return (
@@ -65,7 +62,7 @@ const LoginForm = () => {
               </InputGroup>
             </Form.Group>
 
-            <Button variant="primary" type="submit" className={ "mt-5" }>
+            <Button variant="primary" type="submit" className={ "mt-5" } >
               Login
             </Button>
 
@@ -76,4 +73,3 @@ const LoginForm = () => {
   );
 };
 export default LoginForm;
-

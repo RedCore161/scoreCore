@@ -20,7 +20,7 @@
     "allowImportingTsExtensions": true
   },
   "include": [
-    "src/**/*.ts",
+    "src/*",
     "test/**/*.spec.ts"
   ],
   "exclude": [

@@ -11,7 +11,6 @@ export default ({mode}) => {
   return defineConfig({
     base: "/",
     plugins: [
-      visualizer({open: true}),
       react()
     ],
     build: {
