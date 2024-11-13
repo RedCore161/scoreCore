@@ -7,7 +7,7 @@ import BoxContainer from "../ui/BoxContainer";
 import UselessImageGalleryHolder from "../ui/UselessImageGalleryHolder";
 
 import axiosConfig from "../../axiosConfig";
-import { useAuthHeader } from "react-auth-kit";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 const UselessImageFilesView = () => {
 

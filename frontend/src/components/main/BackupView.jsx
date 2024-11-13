@@ -7,7 +7,7 @@ import { showSuccessBar } from "../ui/Snackbar";
 import { useSnackbar } from "notistack";
 import CorePaginator from "../ui/CorePaginator";
 import BackupButton from "../ui/BackupButton";
-import { useAuthHeader } from "react-auth-kit";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 const BackupView = () => {
 

@@ -6,8 +6,8 @@ import BoxContainer from "../ui/BoxContainer";
 import LoadingIcon from "../ui/LoadingIcon";
 import axiosConfig from "../../axiosConfig";
 import { Link, Tooltip } from "@mui/material";
-import { useAuthHeader } from "react-auth-kit";
-
+import useAuthUser from "react-auth-kit/hooks/useAuthUser";
+import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 
 const ScoreFileLink = ({id, filename, path, users}) => {
   function getImagePath() {

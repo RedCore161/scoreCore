@@ -5,7 +5,7 @@ import { useSnackbar } from "notistack";
 
 import axiosConfig from "../../axiosConfig";
 import "./css/ImageGalleryHolder.css"
-import { useAuthHeader } from "react-auth-kit";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 
 const UselessImageGalleryHolderOverlay = ({ imageId, reloadCallback }) => {

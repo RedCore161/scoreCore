@@ -3,7 +3,7 @@ import { Button, Col, Container, Row } from "react-bootstrap";
 
 import "./css/DifferencesImageGalleryHolderOverlay.css";
 import axiosConfig from "../../axiosConfig";
-import { useAuthHeader } from "react-auth-kit";
+import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 
 
 const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {

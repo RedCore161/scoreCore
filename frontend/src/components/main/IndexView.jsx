@@ -4,13 +4,14 @@ import LoadingIcon from "../ui/LoadingIcon";
 import BoxContainer from "../ui/BoxContainer";
 import ProjectCardView from "../ui/ProjectCardView";
 import { fetchProjects, updateOrAppend } from "../../helper";
-import { useAuthHeader, useAuthUser } from "react-auth-kit";
+import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import axiosConfig from "../../axiosConfig";
 import { CoreModalContext } from "../modal/coreModalContext";
 import CreateProjectModal from "../modal/CreateProjectModal";
 import UploadFolderModal from "../modal/UploadFolderModal";
 import { useSnackbar } from "notistack";
 import UploadFileModal from "../modal/UploadFileModal";
+import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 
 const IndexView = () => {
 

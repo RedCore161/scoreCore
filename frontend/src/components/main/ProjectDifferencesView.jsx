@@ -12,7 +12,7 @@ import LoadingIcon from "../ui/LoadingIcon";
 import CorePaginator from "../ui/CorePaginator";
 import { showSuccessBar } from "../ui/Snackbar";
 import { useSnackbar } from "notistack";
-import { useAuthHeader } from "react-auth-kit";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 const ProjectDifferencesView = () => {
 

@@ -6,7 +6,7 @@ import axiosConfig from "../../axiosConfig";
 import { fetchProjects, SelectListened } from "../../helper";
 import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
 import { useSnackbar } from "notistack";
-import { useAuthHeader } from "react-auth-kit";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 const ProjectEvaluateView = () => {
 

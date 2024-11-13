@@ -2,7 +2,8 @@ import { Col, Row } from "react-bootstrap";
 import React from "react";
 import "../ui/css/ProjectCardView.css";
 import { useNavigate } from "react-router-dom";
-import { useAuthHeader, useAuthUser } from "react-auth-kit";
+import useAuthUser from "react-auth-kit/hooks/useAuthUser";
+import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import axiosConfig from "../../axiosConfig";
 
 

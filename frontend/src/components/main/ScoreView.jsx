@@ -15,9 +15,9 @@ import ScoreGroup from "../ui/ScoreGroup";
 import ScorePanel from "../ui/ScorePanel";
 import * as actionTypes from "../reducer/reducerTypes";
 import axiosConfig from "../../axiosConfig";
-import { useAuthHeader } from "react-auth-kit";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "../ui/css/ScoreView.css";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 
 const ScoreView = () => {

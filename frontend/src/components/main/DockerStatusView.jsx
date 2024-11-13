@@ -9,7 +9,7 @@ import { WebSocketContext } from "../ws/websocketContext";
 
 import "../ui/css/DockerStatusView.css"
 import LoadingIcon from "../ui/LoadingIcon";
-import { useAuthHeader } from "react-auth-kit";
+import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
 
 const DockerStatusView = () => {
 
