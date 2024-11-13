@@ -10,6 +10,7 @@ class Command(BaseCommand):
 
         images = ImageFile.objects.all()
         for image in images:
+            image.calc_hash()
             image.fix_path()
 
         ilog(f"Fixxing paths", tag="[DONE]")

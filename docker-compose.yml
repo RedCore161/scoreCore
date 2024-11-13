@@ -75,21 +75,6 @@ services:
         aliases:
           - scoring-frontend
 
-  # python3 batch_extract.py -m /wd/detectors/UZH_mouseface/config.yaml -n 10 -l 0.75 /wd/videos/
-#  scoring-deeplab:
-#    container_name: scoring-deeplab
-#    restart: unless-stopped
-#    build:
-#      context: .
-#      dockerfile: docker/deeplab/Dockerfile
-#    volumes:
-#      - ${MEDIA_VOLUME}/detectors:/wd/detectors
-#      - ${MEDIA_VOLUME}/videos:/wd/videos
-#    networks:
-#      defaultnet:
-#        aliases:
-#          - scoring-deeplab
-
 
   scoring-nginx:
     build:
@@ -109,6 +94,20 @@ services:
         aliases:
           - scoring.local
           - api.scoring.local
+
+#  scoring-deeplab:
+#    container_name: scoring-deeplab
+#    restart: unless-stopped
+#    build:
+#      context: .
+#      dockerfile: docker/deeplab/Dockerfile
+#    volumes:
+#      - ${MEDIA_VOLUME}/detectors:/wd/detectors
+#      - ${MEDIA_VOLUME}/videos:/wd/videos
+#    networks:
+#      defaultnet:
+#        aliases:
+#          - scoring-deeplab
 
 networks:
   defaultnet:

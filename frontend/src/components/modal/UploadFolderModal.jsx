@@ -93,6 +93,55 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = 
     }
   }, [show]);
 
+  async function _uploadFiles(chunks, dirName, pos, dispatch, enqueueSnackbar) {
+      const maxConcurrent = 5;
+      const results = [];
+      let pos = 0;
+
+      for (let i = 0; i < chunks.length; i += maxConcurrent) {
+        // Process a batch of 5 chunks at a time
+        const batch = chunks.slice(i, i + maxConcurrent).map(async (data, _id) => {
+          if (dirName) {
+            data.append("projectName", dirName);
+          }
+          data.append("pos", pos);
+          for (let [_, value] of data.entries()) {
+            if (value?.name === "infofile.txt") {
+              pos++;
+            }
+          }
+          return await axiosConfig.holder.post("/api/project/upload/", data, {
+            headers: { "Content-Type": "multipart/form-data" }
+          }).then((response) => {
+            dispatch({ type: actionTypes.FINISH_UPLOAD });
+            if (response.data.success) {
+              showSuccessBar(enqueueSnackbar, `Successfully uploaded ${response.data.files} File(s)`);
+              return true;
+            } else {
+              dispatch({ type: actionTypes.FAILED_UPLOAD, payload: "An Error occurred. Please contact an admin!" });
+              showErrorBar(enqueueSnackbar, "Error while uploading!");
+              return false;
+            }
+          }).catch((error) => {
+            dispatch({ type: actionTypes.FAILED_UPLOAD, payload: "An Error occurred. Please contact an admin!" });
+            if (error.response) {
+              console.error(error.response.data);
+            } else {
+              console.error(error);
+            }
+            return false;
+          });
+        });
+
+        // Wait for the batch to complete before starting the next one
+        const batchResults = await Promise.all(batch);
+        results.push(...batchResults);
+      }
+
+      return results;
+  }
+
+
   async function uploadFiles() {
     let formData = new FormData();
     let chunks = []
@@ -113,42 +162,9 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = 
 
     dispatch({ type: actionTypes.START_UPLOADS, payload: chunks.length });
 
-    let pos = 0;
+    const results = await _uploadFiles(chunks, dirName, pos, dispatch, enqueueSnackbar)
 
-    const result = await Promise.all(chunks.map(async (data, _id) => {
-      dirName && data.append("projectName", dirName);
-      data.append("pos", pos);
-
-      for (let [_, value] of data.entries()) {
-        if (value?.name === "infofile.txt") {
-          pos++;
-        }
-      }
-      console.log("Uploading:", data);
-
-      return await axiosConfig.holder.post("/api/project/upload/", data, {
-        headers: { "Content-Type": "multipart/form-data" }
-      }).then((response) => {
-        dispatch({ type: actionTypes.FINISH_UPLOAD });
-        if (response.data.success) {
-          showSuccessBar(enqueueSnackbar, `Successfully uploaded ${response.data.files} File(s)`);
-          return true
-
-        } else {
-          dispatch({ type: actionTypes.FAILED_UPLOAD, payload: "An Error occurred. Please contact an admin!" });
-          showErrorBar(enqueueSnackbar, "Error while uploading!");
-          return false
-        }
-      }, (error) => {
-        dispatch({ type: actionTypes.FAILED_UPLOAD, payload: "An Error occurred. Please contact an admin!" });
-        if (error.response) {
-          console.error(error.response.data);
-        } else {
-          console.error(error);
-        }
-      });
-    }))
-    console.log("Upload-Result", result);
+    console.log("Upload-Result", results);
     showSuccessBar(enqueueSnackbar, `Upload finished!`);
     handleClose();
     dispatch({ type: actionTypes.SET_RESET });

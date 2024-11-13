@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
 from scoring.helper import delete_file, get_path_backup
-from scoring.linux import change_file_owner, extract_date_from_filename
+from scoring.linux import extract_date_from_filename
 from scoring.models import Backup
 from scoring.serializers import BackupSerializer
 from scoring.views.viewsets.base_viewset import StandardResultsSetPagination

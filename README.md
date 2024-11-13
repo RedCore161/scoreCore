@@ -1,11 +1,18 @@
 # Scoring-Tool
 Welcome to the **Scoring-Tool** repository! This README will guide you through the setup and usage of the project. Follow these steps to get your development environment up and running smoothly.
 
-This project is a fully-dockerized tool to score images by different users for scientific purpose. It's a [redcore](https://github.com/RedCore161/redcore "redcore")-derivative. It connects:
+This project is a fully-dockerized tool to score images by different users for scientific purpose. It's a [redcore](https://github.com/RedCore161/redcore "redcore")-derivative.
 
+### Capabilities
+* Creating projects and uploading Images to Score
+* Configure how many scores are needed for each image
+* Mark images as useless (if they are not suitable)
+* Check some metrics like fleiss-kapa to see if your scorers agree
+
+### Specs
 * Backend: Django using rest_framework
 * Frontend: React
-* Database: Postgres
+* Database: Postgres:16
 * Reverse-Proxy: Nginx
 
 ## Getting Started
@@ -33,7 +40,7 @@ Add some URLs to your hosts-file, so they are locally available!
    ```
 
 **Windows:**
-1. Shame on you for using should a bad OS!
+1. Shame on you for using such a bad OS!
 2. Your host-file is at:
    ```sh
    %windir%\System32\drivers\etc
@@ -98,6 +105,7 @@ This will open a browser with the frontend visible.
 [comment]: <> (## License)
 [comment]: <> (This project is licensed under the MIT License. See the LICENSE file for more details.)
 
+# Bonus
 ## Securing your webserver with firewall (off-topic)
 If you run this on an accessible webserver (aka without VPN), you should secure it by only allowing the needed ports. i got you covered!
 

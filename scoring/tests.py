@@ -34,6 +34,7 @@ class GeneralTestCase(TestCase):
                                                   filename=f"{i}.png",
                                                   path="",
                                                   date=timezone.now())
+            image_file.calc_hash()
             image_file.save()
 
     def test_calculate_similarity(self):

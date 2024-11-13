@@ -272,3 +272,18 @@ def find_object_by_id(data, _id, _field="id"):
         if obj.get(_field) == _id:
             return obj
     return {}
+
+
+def calculate_md5_hash(_path):
+    """
+    Calculate the MD5 hash of a file.
+    """
+    import hashlib
+    if not os.path.exists(_path):
+        return "FILE_NOT_FOUND"
+
+    hash_md5 = hashlib.md5()
+    with open(_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()

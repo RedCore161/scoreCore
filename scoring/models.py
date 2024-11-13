@@ -15,8 +15,11 @@ from rest_framework import serializers
 from scoring.decorators import count_calls
 from scoring.excel import create_xlsx
 from scoring.helper import get_project_evaluation_dir, save_check_dir, get_path_backup, dlog, \
-    set_logging_file, INFO_FILE_NAME, is_image, elog, get_rel_path, get_path_projects, ilog
+    set_logging_file, INFO_FILE_NAME, is_image, elog, get_rel_path, get_path_projects, ilog, calculate_md5_hash, \
+    build_abs_path
 from server.settings import BASE_DIR
+
+KEY_LEN = 32
 
 
 class TimestampField(serializers.Field):
@@ -260,6 +263,7 @@ class Project(models.Model):
 
                     image_file, created = ImageFile.objects.get_or_create(project=self, filename=_file,
                                                                           path=get_rel_path(_path))
+
                     dlog(f"=> {_file=}, {full_path}, {created=}, Useless={image_file.useless}")
 
                     if created:
@@ -271,7 +275,7 @@ class Project(models.Model):
                                 w, h = im.size
                                 image_file.width = w
                                 image_file.height = h
-
+                        image_file.calc_hash()
                         image_file.date = timezone.now()
                         image_file.save()
                         get_or_create_amount -= 1
@@ -308,6 +312,7 @@ class ImageFile(models.Model):
     filename = models.CharField(max_length=50, null=False)
     path = models.CharField(max_length=500, null=False)
     useless = models.BooleanField(default=False)
+    raw_hash = models.CharField(max_length=KEY_LEN, null=True, blank=True)
     hidden = models.BooleanField(default=False)
     stddev = models.FloatField(default=0, null=True, blank=True)
 
@@ -325,6 +330,9 @@ class ImageFile(models.Model):
 
     def get_scores_save(self, project: Project):
         return self.scores.exclude(file__useless=True).filter(user__in=project.users.all())
+
+    def calc_hash(self):
+        self.raw_hash = calculate_md5_hash(self.get_path())
 
     @count_calls
     def calc_std_dev(self, save=True, users=None):
@@ -366,8 +374,20 @@ class ImageFile(models.Model):
             return self.stddev
         return 0
 
+    def get_path(self):
+        _abs_path = os.path.abspath(BASE_DIR)
+        return os.path.join(_abs_path, *[self.path, self.filename])
+
     def get_rel_path(self):
         return get_rel_path(self.path)
+
+    def get_video_source(self):
+        _path_infofile = os.path.join(self.path, INFO_FILE_NAME)
+        if os.path.exists(_path_infofile):
+            with open(_path_infofile, "r") as f:
+                for line in f.readlines():
+                    if line.startswith("video:"):
+                        return line[7:].rstrip()
 
     def get_scored_users(self):
         return list(self.scores.order_by("user__username").values_list("user__username", flat=True))

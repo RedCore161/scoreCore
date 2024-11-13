@@ -3,7 +3,6 @@ import random
 from django.db.models import Count
 from django.utils import timezone
 
-from scoring.basics import parse_boolean
 from scoring.helper import dlog
 from scoring.models import ImageFile, ImageScore, Project
 from scoring.serializers import ImageFileSerializer, ImageScoreSerializer
