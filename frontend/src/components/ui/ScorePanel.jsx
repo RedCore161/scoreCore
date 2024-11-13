@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { FormControlLabel, Switch } from "@mui/material";
 import DataTable from "react-data-table-component";
 import { Col, Form, Row } from "react-bootstrap";
-import { columnScores, conditionalScoreRowStyles } from "../../helper";
+import { conditionalScoreRowStyles } from "../../helper";
+import { columnScores } from "../../unfinishColumns";
 
 const ScorePanel = ({ images, callback }) => {
 
