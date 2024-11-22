@@ -10,11 +10,15 @@ import LoadingIcon from "../ui/LoadingIcon";
 import { defaultStateUpload, reducerUpload } from "../reducer/reducerUpload";
 import * as actionTypes from "../reducer/reducerTypes";
 
-const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = () => {} }) => {
+const UploadFolderModal = ({
+                             enqueueSnackbar, accept = "scoring", callBackData = () => {
+  }
+                           }) => {
 
   const [show, setShow] = useContext(CoreModalContext);
   const [dirName, setDirName] = useState("");
   const [folders, setFolders] = useState([]);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const [state, dispatch] = useReducer(reducerUpload, defaultStateUpload);
 
   const _types = getAcceptesTypes(accept);
@@ -24,6 +28,7 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = 
     maxSize: 1024 * 1024 * 5, // 5 MB
     onDrop: (acceptedFiles) => {
       console.log("Files dropped:", acceptedFiles);
+      setUploadedFiles(acceptedFiles)
     }
   };
 
@@ -83,90 +88,91 @@ const UploadFolderModal = ({enqueueSnackbar, accept = "scoring", callBackData = 
   }, []);
 
   useEffect(() => {
-    if (acceptedFiles.length) {
+    if (uploadedFiles.length) {
       uploadFiles();
     }
-  }, [acceptedFiles]);
+  }, [uploadedFiles]);
 
   useEffect(() => {
     if (show.modalUploadFolder) {
     }
   }, [show]);
 
-  async function _uploadFiles(chunks, dirName, dispatch, enqueueSnackbar) {
-      const maxConcurrent = 5;
-      const results = [];
-      let pos = 0;
 
-      for (let i = 0; i < chunks.length; i += maxConcurrent) {
-        // Process a batch of 5 chunks at a time
-        const batch = chunks.slice(i, i + maxConcurrent).map(async (data, _id) => {
-          if (dirName) {
-            data.append("projectName", dirName);
-          }
-          data.append("pos", pos);
-          for (let [_, value] of data.entries()) {
-            if (value?.name === "infofile.txt") {
-              pos++;
-            }
-          }
-          return await axiosConfig.holder.post("/api/project/upload/", data, {
-            headers: { "Content-Type": "multipart/form-data" }
-          }).then((response) => {
-            dispatch({ type: actionTypes.FINISH_UPLOAD });
-            if (response.data.success) {
-              showSuccessBar(enqueueSnackbar, `Successfully uploaded ${response.data.files} File(s)`);
-              return true;
-            } else {
-              dispatch({ type: actionTypes.FAILED_UPLOAD, payload: "An Error occurred. Please contact an admin!" });
-              showErrorBar(enqueueSnackbar, "Error while uploading!");
-              return false;
-            }
-          }).catch((error) => {
-            dispatch({ type: actionTypes.FAILED_UPLOAD, payload: "An Error occurred. Please contact an admin!" });
-            if (error.response) {
-              console.error(error.response.data);
-            } else {
-              console.error(error);
-            }
-            return false;
-          });
-        });
+  async function _uploadFiles(chunks, target_infofiles, dirName, dispatch, enqueueSnackbar) {
 
-        // Wait for the batch to complete before starting the next one
-        const batchResults = await Promise.all(batch);
-        results.push(...batchResults);
+    for (let i = 0; i < chunks.length; i++) {
+      if (dirName) {
+        chunks[i].append("projectName", dirName);
       }
-
-      return results;
+      chunks[i].append("pos", i * target_infofiles);
+      await axiosConfig.holder.post("/api/project/upload/", chunks[i], {
+        headers: { "Content-Type": "multipart/form-data" }
+      }).then((response) => {
+        dispatch({ type: actionTypes.FINISH_UPLOAD });
+        if (response.data.success) {
+          showSuccessBar(enqueueSnackbar, `Successfully uploaded ${ response.data.files } File(s)`);
+          return true
+        } else {
+          dispatch({ type: actionTypes.FAILED_UPLOAD, payload: "An Error occurred. Please contact an admin!" });
+          showErrorBar(enqueueSnackbar, "Error while uploading!");
+          return false
+        }
+      }).catch((error) => {
+        dispatch({ type: actionTypes.FAILED_UPLOAD, payload: "An Error occurred. Please contact an admin!" });
+        if (error.response) {
+          console.error(error.response.data);
+        } else {
+          console.error(error);
+        }
+        return false
+      });
+      console.log(i, "=>", chunks[i])
+    }
+    return true
   }
 
-
-  async function uploadFiles() {
+  // Function to find chunks based on "infofile.txt" occurrences
+  const chunkFiles = (files, occurrence = 15) => {
+    let chunks = [];
     let formData = new FormData();
-    let chunks = []
-    let split_after = 15
-    let current_counter = 0
+    let infoFileCount = 0;
 
     acceptedFiles.map((file, index) => {
       formData.append(`files${ index }`, file, file.name);
       if (file.name === "infofile.txt") {
-        current_counter += 1
+        infoFileCount++;
       }
-      if (current_counter >= split_after) {
-        chunks.push(formData)
+
+      if (infoFileCount === occurrence) {
+        chunks.push(formData);
         formData = new FormData();
-        current_counter = 0
+        infoFileCount = 0; // Reset for the next chunk
       }
     });
 
+    let keys = 0
+    for (const key of formData.keys()) {
+      keys += 1;
+    }
+    if (keys > 0) {
+      chunks.push(formData);
+    }
+
+    return chunks;
+  };
+
+  async function uploadFiles() {
+    const target_infofiles = 15
+    let chunks = chunkFiles(acceptedFiles, target_infofiles);
+
     dispatch({ type: actionTypes.START_UPLOADS, payload: chunks.length });
 
-    const results = await _uploadFiles(chunks, dirName, dispatch, enqueueSnackbar)
+    await _uploadFiles(chunks, target_infofiles, dirName, dispatch, enqueueSnackbar);
 
-    console.log("Upload-Result", results);
     showSuccessBar(enqueueSnackbar, `Upload finished!`);
     handleClose();
+    setUploadedFiles([])
     dispatch({ type: actionTypes.SET_RESET });
   }
 

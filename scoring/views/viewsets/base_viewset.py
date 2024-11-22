@@ -13,7 +13,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from scoring.basics import parse_file_name, parse_int
-from scoring.helper import save_check_dir, get_path_projects, dlog, is_video, is_image, get_path_videos, elog
+from scoring.helper import save_check_dir, get_path_projects, dlog, is_video, is_image, get_path_videos, elog, okaylog
 from scoring.serializers import RedcoreTokenObtainPairSerializer
 from server.settings import DEFAULT_DIRS
 from server.views import RequestFailed, RequestSuccess
@@ -66,6 +66,7 @@ class BasisViewSet:
 
         project_name = request.data.get("projectName")
         pos = parse_int(request.data.get("pos", 0))
+        okaylog(pos, project_name, len(request.FILES))
 
         response = {}
         fs = FileSystemStorage(location=DEFAULT_DIRS.get("projects"))
@@ -76,38 +77,40 @@ class BasisViewSet:
 
         for file in request.FILES:
             _file = request.FILES.get(file)
-            if _file:
-                incr_count = False
-                files_count += 1
-                name = parse_file_name(str(_file))
-                if not name:
-                    return {"reason": f"No valid file-name: {name}"}
+            if not _file:
+                elog(f"Error with file {_file}")
 
-                if is_video(name):
-                    some_dir = get_path_videos(project_name)
-                elif is_image(name):
-                    some_dir = get_path_projects(project_name)
-                elif name == "infofile.txt":
-                    some_dir = get_path_projects(project_name)
-                    incr_count = True
-                else:
-                    elog(f"Unknown file-type: {name}", tag="[UPLOAD]")
-                    continue
+            incr_count = False
+            files_count += 1
+            name = parse_file_name(str(_file))
+            if not name:
+                return {"reason": f"No valid file-name: {name}"}
 
-                if not without_infofiles:
-                    some_dir = os.path.join(some_dir, str(folder_counter))
+            if is_video(name):
+                some_dir = get_path_videos(project_name)
+            elif is_image(name):
+                some_dir = get_path_projects(project_name)
+            elif name == "infofile.txt":
+                some_dir = get_path_projects(project_name)
+                incr_count = True
+            else:
+                elog(f"Unknown file-type: {name}", tag="[UPLOAD]")
+                continue
 
-                save_check_dir(some_dir)
-                _path = os.path.join(some_dir, name)
-                _new_file = fs.save(_path, _file)
+            if not without_infofiles:
+                some_dir = os.path.join(some_dir, str(folder_counter))
 
-                if incr_count:
-                    folder_counter += 1
+            save_check_dir(some_dir)
+            _path = os.path.join(some_dir, name)
+            _new_file = fs.save(_path, _file)
 
-                dlog(f"{_new_file=}", tag="[UPLOAD]")
+            if incr_count:
+                folder_counter += 1
 
-                # response.update({name: {"created": 1, "cached": 0, "name": name,
-                #                         "error": None, "path": _new_path[len(DEFAULT_DIRS.get("projects")) + 1:]}})
+            # dlog(f"{_new_file=}", tag="[UPLOAD]")
+
+            # response.update({name: {"created": 1, "cached": 0, "name": name,
+            #                         "error": None, "path": _new_path[len(DEFAULT_DIRS.get("projects")) + 1:]}})
 
         response.update({"files": files_count, "pos": pos})
         return response

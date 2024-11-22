@@ -8,6 +8,9 @@ services:
       - "${LIMITED_ACCESS}${POSTGRES_PORT}:${POSTGRES_PORT}"
     env_file:
       - django.env
+    environment:
+      TZ: "Europe/Berlin"
+      PGPORT: ${POSTGRES_PORT}
     networks:
       defaultnet:
         aliases:
