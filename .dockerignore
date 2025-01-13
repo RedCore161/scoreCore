@@ -1,5 +1,5 @@
 .idea
-.git
+.git*
 .ruff_cache
 
 venv
@@ -10,3 +10,6 @@ frontend/node_modules
 frontend/.env.local
 
 Dockerfile
+docker-compose.yml
+
+./scoring/__pycache__

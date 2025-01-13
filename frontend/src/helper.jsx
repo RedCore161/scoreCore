@@ -10,42 +10,48 @@ export function range(start, end) {
   return Array.apply(0, Array(end)).map((element, index) => index + start);
 }
 
-export async function fetchProjects() {
-  const result = await axiosConfig.holder.get("/api/project/list/");
-  console.log("Found Projects:", result.data);
+export async function fetchProjects(auth, setter) {
+  await axiosConfig.perform_get(auth, "/api/project/list/", (response) => {
+    setter(response.data);
+    console.log("Found Projects:", response.data);
+  });
+}
+
+export async function fetchEvaluations(auth) {
+  const result = await axiosConfig.perform_get(auth, "/api/project/evaluations/", (response) => {
+    console.log("Found Evaluations:", response.data);
+  });
   return result.data;
 }
 
-export async function fetchEvaluations() {
-  const result = await axiosConfig.holder.get("/api/project/evaluations/");
-  console.log("Found Evaluations:", result.data);
-  return result.data;
-}
-
-export async function fetchImage(id, params) {
+export async function fetchImage(auth, id, params) {
   const url = params ? `/api/project/${ id }/image/?${ params }` :
     `/api/project/${ id }/image/`;
-  const result = await axiosConfig.holder.get(url);
-  console.log("Found Image:", result.data);
-  return result.data;
-}
-
-export async function fetchImagesAll(id, page = 1) {
-  const result = await axiosConfig.holder.get(`/api/project/${ id }/images/all?page=${ page }`);
-  console.log("Found All Images:", result.data);
-  return result.data;
-}
-
-export async function fetchFolders(setter) {
-  await axiosConfig.holder.get(`/api/project/available/`).then((response) => {
-    setter(response.data);
-  }, (error) => {
-    if (error.response) {
-      console.error(error.response.data);
-    } else {
-      console.error(error);
-    }
+  const result = await axiosConfig.perform_get(auth, url, (response) => {
+    console.log("Found Image:", response.data);
   });
+  return result.data;
+}
+
+export async function fetchImagesAll(auth, id, page = 1) {
+  const result = await axiosConfig.perform_get(auth, `/api/project/${ id }/images/all?page=${ page }`,
+    (response) => {
+      console.log("Found All Images:", response.data);
+    });
+  return result.data;
+}
+
+export async function fetchFolders(auth, setter) {
+  await axiosConfig.perform_get(auth, `/api/project/available/`,
+    (response) => {
+      setter(response.data);
+    }, (error) => {
+      if (error.response) {
+        console.error(error.response.data);
+      } else {
+        console.error(error);
+      }
+    });
 }
 
 export function updateOrAppend(elements, newData, field = "id") {

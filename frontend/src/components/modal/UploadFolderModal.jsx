@@ -9,6 +9,7 @@ import { fetchFolders } from "../../helper";
 import LoadingIcon from "../ui/LoadingIcon";
 import { defaultStateUpload, reducerUpload } from "../reducer/reducerUpload";
 import * as actionTypes from "../reducer/reducerTypes";
+import { useAuth } from "../../../hooks/CoreAuthProvider";
 
 const UploadFolderModal = ({
                              enqueueSnackbar, accept = "scoring", callBackData = () => {
@@ -20,6 +21,7 @@ const UploadFolderModal = ({
   const [folders, setFolders] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [state, dispatch] = useReducer(reducerUpload, defaultStateUpload);
+  const auth = useAuth();
 
   const _types = getAcceptesTypes(accept);
 
@@ -28,7 +30,7 @@ const UploadFolderModal = ({
     maxSize: 1024 * 1024 * 5, // 5 MB
     onDrop: (acceptedFiles) => {
       console.log("Files dropped:", acceptedFiles);
-      setUploadedFiles(acceptedFiles)
+      setUploadedFiles(acceptedFiles);
     }
   };
 
@@ -83,7 +85,7 @@ const UploadFolderModal = ({
 
   useEffect(() => {
     if (show.modalUploadFolder && folders.length === 0) {
-      fetchFolders(setFolders);
+      fetchFolders(auth, setFolders);
     }
   }, []);
 
@@ -106,30 +108,33 @@ const UploadFolderModal = ({
         chunks[i].append("projectName", dirName);
       }
       chunks[i].append("pos", i * target_infofiles);
-      await axiosConfig.holder.post("/api/project/upload/", chunks[i], {
-        headers: { "Content-Type": "multipart/form-data" }
-      }).then((response) => {
-        dispatch({ type: actionTypes.FINISH_UPLOAD });
-        if (response.data.success) {
-          showSuccessBar(enqueueSnackbar, `Successfully uploaded ${ response.data.files } File(s)`);
-          return true
-        } else {
+      await axiosConfig.perform_post(auth, "/api/project/upload/", chunks[i],
+        (response) => {
+          dispatch({ type: actionTypes.FINISH_UPLOAD });
+          if (response.data.success) {
+            showSuccessBar(enqueueSnackbar, `Successfully uploaded ${ response.data.files } File(s)`);
+            return true;
+          } else {
+            dispatch({ type: actionTypes.FAILED_UPLOAD, payload: "An Error occurred. Please contact an admin!" });
+            showErrorBar(enqueueSnackbar, "Error while uploading!");
+            return false;
+          }
+        },
+        (error) => {
           dispatch({ type: actionTypes.FAILED_UPLOAD, payload: "An Error occurred. Please contact an admin!" });
-          showErrorBar(enqueueSnackbar, "Error while uploading!");
-          return false
-        }
-      }).catch((error) => {
-        dispatch({ type: actionTypes.FAILED_UPLOAD, payload: "An Error occurred. Please contact an admin!" });
-        if (error.response) {
-          console.error(error.response.data);
-        } else {
-          console.error(error);
-        }
-        return false
-      });
-      console.log(i, "=>", chunks[i])
+          if (error.response) {
+            console.error(error.response.data);
+          } else {
+            console.error(error);
+          }
+          return false;
+        },
+        {
+          headers: { "Content-Type": "multipart/form-data" }
+        })
+      console.log(i, "=>", chunks[i]);
     }
-    return true
+    return true;
   }
 
   // Function to find chunks based on "infofile.txt" occurrences
@@ -151,7 +156,7 @@ const UploadFolderModal = ({
       }
     });
 
-    let keys = 0
+    let keys = 0;
     for (const key of formData.keys()) {
       keys += 1;
     }
@@ -163,7 +168,7 @@ const UploadFolderModal = ({
   };
 
   async function uploadFiles() {
-    const target_infofiles = 15
+    const target_infofiles = 15;
     let chunks = chunkFiles(acceptedFiles, target_infofiles);
 
     dispatch({ type: actionTypes.START_UPLOADS, payload: chunks.length });
@@ -172,7 +177,7 @@ const UploadFolderModal = ({
 
     showSuccessBar(enqueueSnackbar, `Upload finished!`);
     handleClose();
-    setUploadedFiles([])
+    setUploadedFiles([]);
     dispatch({ type: actionTypes.SET_RESET });
   }
 

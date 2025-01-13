@@ -6,8 +6,8 @@ import BoxContainer from "../ui/BoxContainer";
 import LoadingIcon from "../ui/LoadingIcon";
 import axiosConfig from "../../axiosConfig";
 import { Link, Tooltip } from "@mui/material";
-import useAuthUser from "react-auth-kit/hooks/useAuthUser";
-import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
+
+import { useAuth } from "../../../hooks/CoreAuthProvider";
 
 const ScoreFileLink = ({id, filename, path, users}) => {
   function getImagePath() {
@@ -28,17 +28,15 @@ const ProjectInvestigateView = () => {
 
   const [data, setData] = useState({});
   const [collapsed, setCollapsed] = useState({ });
-  const authHeader = useAuthHeader();
+  const auth = useAuth();
 
   useEffect(() => {
     investigateProject();
   }, []);
 
   async function investigateProject() {
-    axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.get(`/api/project/${ id }/investigate/`, {
-      "project": id
-    }).then((response) => {
+    await axiosConfig.perform_get(auth, `/api/project/${ id }/investigate/`,
+      (response) => {
       if (response.data) {
         if (response.data.success) {
           setData(response.data);
@@ -50,6 +48,9 @@ const ProjectInvestigateView = () => {
       } else {
         console.error(error);
       }
+    },
+      {
+      "project": id
     });
   }
 

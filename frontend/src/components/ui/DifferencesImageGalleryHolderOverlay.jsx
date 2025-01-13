@@ -3,20 +3,20 @@ import { Button, Col, Container, Row } from "react-bootstrap";
 
 import "./css/DifferencesImageGalleryHolderOverlay.css";
 import axiosConfig from "../../axiosConfig";
-import useAuthUser from "react-auth-kit/hooks/useAuthUser";
+import { useAuth } from "../../../hooks/CoreAuthProvider";
 
 
 const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
 
-  const elements = getElements()
-  const authHeader = useAuthHeader();
+  const elements = getElements();
+  const auth = useAuth();
 
   function getElements() {
     let currentId = 10;
-    let stddevs = []
+    let stddevs = [];
     for (let key in imagefile.data) {
       if (imagefile.data.hasOwnProperty(key)) {
-        let val = imagefile.data[key]
+        let val = imagefile.data[key];
         stddevs.push({
           id: currentId++,
           name: key,
@@ -27,29 +27,30 @@ const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
     }
 
     return [
-      { id: 1, name: "File", value: imagefile.filename, format: false},
+      { id: 1, name: "File", value: imagefile.filename, format: false },
       { id: 2, name: "Scorers", value: imagefile.scores.length, format: false },
       ...stddevs,
-      { id: 1000, name: "∑ Std.-Dev.", value: imagefile.stddev ? imagefile.stddev.toFixed(2) : 0 , format: true },
+      { id: 1000, name: "∑ Std.-Dev.", value: imagefile.stddev ? imagefile.stddev.toFixed(2) : 0, format: true },
     ];
   }
 
-  function openHeatMap(event, ) {
+  function openHeatMap(event,) {
     event.stopPropagation();
 
-    const _header = authHeader();
-    axiosConfig.updateToken(_header);
-    axiosConfig.holder.get(`/api/project/${imagefile.project}/cross-stddev/?file_id=${imagefile.id}`, { responseType: "blob"}).then((response) => {
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const newTab = window.open();
-      newTab.location = url;
-    }, (error) => {
-      if (error.response) {
-        console.log(error.response.data);
-      } else {
-        console.error(error);
-      }
-    });
+    
+    axiosConfig.perform_get(auth, `/api/project/${ imagefile.project }/cross-stddev/?file_id=${ imagefile.id }`,
+      (response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const newTab = window.open();
+        newTab.location = url;
+      }, (error) => {
+        if (error.response) {
+          console.log(error.response.data);
+        } else {
+          console.error(error);
+        }
+      },
+      { responseType: "blob" });
   }
 
   function getDifferences(element) {
@@ -66,7 +67,7 @@ const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
         return "text-warning";
       }
     }
-    return ""
+    return "";
   }
 
   return (
@@ -75,14 +76,14 @@ const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
       <Container className={ "hiddenContent imageOverLay pt-5" }>
 
         { elements.map((element) =>
-          <Row className={ `${ getDifferences(element) }` } key={`diff-row-${element.name}`}>
+          <Row className={ `${ getDifferences(element) }` } key={ `diff-row-${ element.name }` }>
             <Col md={ 6 }>{ element.name.replace(/^stddev_/, '') }:</Col>
             <Col>{ element.value }</Col>
           </Row>
         ) }
-        <Row className={"mt-2"}>
+        <Row className={ "mt-2" }>
           <Col>
-            <Button variant={"outline-success"} onClick={(e) => openHeatMap(e)}>Open 🔥-Map</Button>
+            <Button variant={ "outline-success" } onClick={ (e) => openHeatMap(e) }>Open 🔥-Map</Button>
           </Col>
         </Row>
 

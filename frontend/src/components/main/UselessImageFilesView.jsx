@@ -7,18 +7,18 @@ import BoxContainer from "../ui/BoxContainer";
 import UselessImageGalleryHolder from "../ui/UselessImageGalleryHolder";
 
 import axiosConfig from "../../axiosConfig";
-import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+
+import { useAuth } from "../../../hooks/CoreAuthProvider";
 
 const UselessImageFilesView = () => {
 
   const { id } = useParams();
   const [imageFiles, setImageFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const authHeader = useAuthHeader();
+  const auth = useAuth();
 
   async function fetchData() {
-    axiosConfig.updateToken(authHeader());
-    const result = await axiosConfig.holder.get(`/api/project/${ id }/get-useless/`);
+    const result = await axiosConfig.perform_get(auth, `/api/project/${ id }/get-useless/`);
     setImageFiles(result.data);
     setIsLoading(false);
     console.log("Found Images:", result.data);

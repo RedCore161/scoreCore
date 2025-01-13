@@ -7,19 +7,20 @@ import { showSuccessBar } from "../ui/Snackbar";
 import { useSnackbar } from "notistack";
 import CorePaginator from "../ui/CorePaginator";
 import BackupButton from "../ui/BackupButton";
-import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+
+import { useAuth } from "../../../hooks/CoreAuthProvider";
 
 const BackupView = () => {
 
   const [data, setData] = useState([]);
   const { enqueueSnackbar } = useSnackbar();
-  const [urls, setUrls] = useState({"backup": "/api/backup/?page=1"});
-  const authHeader = useAuthHeader();
+  const [urls, setUrls] = useState({ "backup": "/api/backup/?page=1" });
+  const auth = useAuth();
 
   async function fetchBackups() {
-    axiosConfig.updateToken(authHeader());
-    const result = await axiosConfig.holder.get(urls.backup);
-    console.log("Found Backups:", result.data);
+    const result = await axiosConfig.perform_get(auth, urls.backup, (response) => {
+      console.log("Found Backups:", response.data);
+    });
     return result.data;
   }
 
@@ -32,77 +33,77 @@ const BackupView = () => {
   }, [urls]);
 
   async function reloadBackup() {
-    axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.post(`/api/backup/reload/`).then((response) => {
-      setData(response.data);
-      showSuccessBar(enqueueSnackbar, "Successfully reloaded Backups!");
-    }, (error) => {
-      if (error.response) {
-        console.log(error.response.data);
-      } else {
-        console.error(error);
-      }
-    });
+    await axiosConfig.perform_post(auth, `/api/backup/reload/`, {},
+      (response) => {
+        setData(response.data);
+        showSuccessBar(enqueueSnackbar, "Successfully reloaded Backups!");
+      }, (error) => {
+        if (error.response) {
+          console.log(error.response.data);
+        } else {
+          console.error(error);
+        }
+      });
   }
 
   async function createBackup() {
-    axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.post(`/api/backup/create/`).then((response) => {
-      setData(response.data);
-      showSuccessBar(enqueueSnackbar, "Successfully created Backup!");
-    }, (error) => {
-      if (error.response) {
-        console.log(error.response.data);
-      } else {
-        console.error(error);
-      }
-    });
+    await axiosConfig.perform_post(auth, `/api/backup/create/`, {},
+      (response) => {
+        setData(response.data);
+        showSuccessBar(enqueueSnackbar, "Successfully created Backup!");
+      }, (error) => {
+        if (error.response) {
+          console.log(error.response.data);
+        } else {
+          console.error(error);
+        }
+      });
   }
 
   async function deleteAllBackups() {
-    axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.post(`/api/backup/deleteAll/`).then((response) => {
-      setData(response.data);
-      showSuccessBar(enqueueSnackbar, "Successfully deleted all Backups!");
-    }, (error) => {
-      if (error.response) {
-        console.log(error.response.data);
-      } else {
-        console.error(error);
-      }
-    });
+    await axiosConfig.perform_post(auth, `/api/backup/deleteAll/`, {},
+      (response) => {
+        setData(response.data);
+        showSuccessBar(enqueueSnackbar, "Successfully deleted all Backups!");
+      }, (error) => {
+        if (error.response) {
+          console.log(error.response.data);
+        } else {
+          console.error(error);
+        }
+      });
   }
 
   async function deleteBackup(id) {
-    axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.post(`/api/backup/${id}/delete/`).then((response) => {
-      setData(response.data);
-      showSuccessBar(enqueueSnackbar, "Successfully deleted Backup!");
-    }, (error) => {
-      if (error.response) {
-        console.log(error.response.data);
-      } else {
-        console.error(error);
-      }
-    });
+    await axiosConfig.perform_post(auth, `/api/backup/${ id }/delete/`, {},
+      (response) => {
+        setData(response.data);
+        showSuccessBar(enqueueSnackbar, "Successfully deleted Backup!");
+      }, (error) => {
+        if (error.response) {
+          console.log(error.response.data);
+        } else {
+          console.error(error);
+        }
+      });
   }
 
   async function restoreBackup(id, name) {
-    axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.post(`/api/backup/${ id }/restore/`).then((response) => {
-      setData(response.data);
-      showSuccessBar(enqueueSnackbar, `Successfully restored "${ name }"!`);
-    }, (error) => {
-      if (error.response) {
-        console.log(error.response.data);
-      } else {
-        console.error(error);
-      }
-    });
+    await axiosConfig.perform_post(auth, `/api/backup/${ id }/restore/`, {},
+      (response) => {
+        setData(response.data);
+        showSuccessBar(enqueueSnackbar, `Successfully restored "${ name }"!`);
+      }, (error) => {
+        if (error.response) {
+          console.log(error.response.data);
+        } else {
+          console.error(error);
+        }
+      });
   }
 
   const handlePaginator = ({ selected }) => {
-    setUrls({...urls, "backup": `/api/backup/?page=${ selected + 1 }`});
+    setUrls({ ...urls, "backup": `/api/backup/?page=${ selected + 1 }` });
   };
 
   return (
@@ -125,12 +126,12 @@ const BackupView = () => {
           { "elements" in data && (
             <>
               { <CorePaginator pages={ data.pages }
-                               handleChangePage={ handlePaginator } /> }
+                               handleChangePage={ handlePaginator }/> }
 
               { data.elements.map((backup) => {
-                return <BackupButton key={backup.id}
-                                     callbackRestore={restoreBackup} callbackDelete={deleteBackup}
-                                     {...backup} />;
+                return <BackupButton key={ backup.id }
+                                     callbackRestore={ restoreBackup } callbackDelete={ deleteBackup }
+                                     { ...backup } />;
 
               }) }
             </>

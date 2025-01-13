@@ -2,18 +2,15 @@ import { Col, Row } from "react-bootstrap";
 import React from "react";
 import "../ui/css/ProjectCardView.css";
 import { useNavigate } from "react-router-dom";
-import useAuthUser from "react-auth-kit/hooks/useAuthUser";
-import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import axiosConfig from "../../axiosConfig";
+import { useAuth } from "../../../hooks/CoreAuthProvider";
 
 
 const ProjectCardView = ({ id, name, features, icon, data, users,
                            wanted_scores_per_user, wanted_scores_per_image, isFinished }) => {
 
   const navigate = useNavigate();
-  const auth = useAuthUser();
-  const isAuth = auth();
-  const authHeader = useAuthHeader();
+  const auth = useAuth();
 
   const { imagesTotal, scoresCount, scoresOwn, uselessCount } = data
 
@@ -49,9 +46,9 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
   function loginForwardTo(event, url) {
     event.stopPropagation();
 
-    const _header = authHeader();
-    axiosConfig.updateToken(_header);
-    axiosConfig.holder.post(`/api/user/login/`, { token: _header.substring(7) }).then((response) => {
+    
+    axiosConfig.perform_post(auth, `/api/user/login/`, { token: _header.substring(7) },
+      (response) => {
       if (response.data.success) {
         window.open(url, "_blank");
       }
@@ -67,9 +64,9 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
   function openHeatMap(event) {
     event.stopPropagation();
 
-    const _header = authHeader();
-    axiosConfig.updateToken(_header);
-    axiosConfig.holder.get(`/api/project/${id}/cross-stddev-all/`, { responseType: "blob"}).then((response) => {
+    
+    axiosConfig.perform_get(auth, `/api/project/${id}/cross-stddev-all/`,
+      (response) => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const newTab = window.open();
       newTab.location = url;
@@ -79,7 +76,8 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
       } else {
         console.error(error);
       }
-    });
+    },
+      { responseType: "blob"});
   }
 
   function advNavigate(event, url) {
@@ -89,8 +87,8 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
 
   async function readImages(event) {
     event.stopPropagation();
-    axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.get(`/api/project/${ id }/read-images/`).then((response) => {
+    await axiosConfig.perform_get(auth, `/api/project/${ id }/read-images/`,
+      (response) => {
       if (response.data.success) {
         window.location.reload(true);
       }

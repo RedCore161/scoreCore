@@ -9,7 +9,7 @@ class NumberValidator(object):
         self.min_digits = min_digits
 
     def validate(self, password, user=None):
-        if not len(re.findall('\d', password)) >= self.min_digits:
+        if not len(re.findall("\\d", password)) >= self.min_digits:
             raise ValidationError(
                 _("The password must contain at least %(min_digits)d digit(s), 0-9."),
                 code='password_no_number',

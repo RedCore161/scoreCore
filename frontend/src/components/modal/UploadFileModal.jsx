@@ -6,13 +6,18 @@ import { useDropzone } from "react-dropzone";
 import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
 import { getAcceptesTypes } from "../datatables/configs";
 import { fetchFolders } from "../../helper";
+import { useAuth } from "../../../hooks/CoreAuthProvider";
 
-const UploadFileModal = ({enqueueSnackbar, accept = "video", callBackData = () => {} }) => {
+const UploadFileModal = ({
+                           enqueueSnackbar, accept = "video", callBackData = () => {
+  }
+                         }) => {
 
   const [show, setShow] = useContext(CoreModalContext);
   const [dirName, setDirName] = useState(undefined);
   const [folders, setFolders] = useState([]);
   const [error, setError] = useState(undefined);
+  const auth = useAuth();
 
   const _types = getAcceptesTypes(accept);
 
@@ -25,7 +30,14 @@ const UploadFileModal = ({enqueueSnackbar, accept = "video", callBackData = () =
   };
 
   let acceptedFiles, getRootProps, getInputProps, isFocused, isDragAccept, isDragReject;
-  ( { acceptedFiles, getRootProps, getInputProps, isFocused, isDragAccept, isDragReject } = useDropzone(dropzoneOptions) );
+  ( {
+    acceptedFiles,
+    getRootProps,
+    getInputProps,
+    isFocused,
+    isDragAccept,
+    isDragReject
+  } = useDropzone(dropzoneOptions) );
 
   const baseStyle = {
     flex: 1,
@@ -68,7 +80,7 @@ const UploadFileModal = ({enqueueSnackbar, accept = "video", callBackData = () =
 
   useEffect(() => {
     if (show.modalUploadFiles && folders.length === 0) {
-      fetchFolders(setFolders);
+      fetchFolders(auth, setFolders);
     }
   }, []);
 
@@ -90,25 +102,27 @@ const UploadFileModal = ({enqueueSnackbar, accept = "video", callBackData = () =
       formData.append(`files${ index }`, file, file.name);
     });
 
-    await axiosConfig.holder.post("/api/project/upload/", formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    }).then((response) => {
-      if (response.data.success) {
-        showSuccessBar(enqueueSnackbar, "Successfully uploaded File(s)");
-        callBackData(response.data);
-        handleClose();
-      } else {
-        setError("An Error occurred. Please contact an admin!")
-        showErrorBar(enqueueSnackbar, "Failed uploading!");
-      }
-    }, (error) => {
-      setError("An Error occurred. Please contact an admin!")
-      if (error.response) {
-        console.error(error.response.data);
-      } else {
-        console.error(error);
-      }
-    });
+    await axiosConfig.perform_post(auth, "/api/project/upload/", formData,
+      (response) => {
+        if (response.data.success) {
+          showSuccessBar(enqueueSnackbar, "Successfully uploaded File(s)");
+          callBackData(response.data);
+          handleClose();
+        } else {
+          setError("An Error occurred. Please contact an admin!");
+          showErrorBar(enqueueSnackbar, "Failed uploading!");
+        }
+      }, (error) => {
+        setError("An Error occurred. Please contact an admin!");
+        if (error.response) {
+          console.error(error.response.data);
+        } else {
+          console.error(error);
+        }
+      },
+      {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
   }
 
   const handleClose = () => {
@@ -138,7 +152,7 @@ const UploadFileModal = ({enqueueSnackbar, accept = "video", callBackData = () =
                 ) : (
                   <Form.Group controlId="formValue">
                     <div { ...getRootProps({ style }) }>
-                      <input { ...getInputProps() } multiple />
+                      <input { ...getInputProps() } multiple/>
                       <p>Drag 'n' drop some files here, or click to select files</p>
                     </div>
                   </Form.Group>

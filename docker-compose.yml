@@ -12,7 +12,7 @@ services:
       TZ: "Europe/Berlin"
       PGPORT: ${POSTGRES_PORT}
     networks:
-      defaultnet:
+      database_net:
         aliases:
           - scoring-database
 
@@ -24,7 +24,7 @@ services:
     ports:
       - "6380:6379"
     networks:
-      defaultnet:
+      default_net:
         aliases:
           - scoring-redis
 
@@ -53,11 +53,15 @@ services:
     volumes:
       - ${MEDIA_VOLUME}:/usr/src/app/media
       - /var/run/docker.sock:/var/run/docker.sock:rw
+    user: "1003:1004"
+    security_opt:
+      - label:user:scoring
+      - label:role:scoring
     networks:
-      defaultnet:
+      default_net:
         aliases:
           - scoring-backend
-
+      database_net:
 
   scoring-frontend:
     container_name: scoring-frontend
@@ -74,7 +78,7 @@ services:
     ports:
       - "3000:80"
     networks:
-      defaultnet:
+      default_net:
         aliases:
           - scoring-frontend
 
@@ -93,7 +97,7 @@ services:
       - scoring-frontend
       - scoring-backend
     networks:
-      defaultnet:
+      default_net:
         aliases:
           - scoring.local
           - api.scoring.local
@@ -108,9 +112,10 @@ services:
 #      - ${MEDIA_VOLUME}/detectors:/wd/detectors
 #      - ${MEDIA_VOLUME}/videos:/wd/videos
 #    networks:
-#      defaultnet:
+#      default_net:
 #        aliases:
 #          - scoring-deeplab
 
 networks:
-  defaultnet:
+  default_net:
+  database_net:

@@ -17,7 +17,8 @@ import * as actionTypes from "../reducer/reducerTypes";
 import axiosConfig from "../../axiosConfig";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "../ui/css/ScoreView.css";
-import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+
+import { useAuth } from "../../../hooks/CoreAuthProvider";
 
 
 const ScoreView = () => {
@@ -31,7 +32,7 @@ const ScoreView = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { enqueueSnackbar } = useSnackbar();
   const { width, height } = useWindowSize();
-  const authHeader = useAuthHeader();
+  const auth = useAuth();
   const navigate = useNavigate();
 
   useLayoutEffect(() => {
@@ -59,8 +60,7 @@ const ScoreView = () => {
 
   const loadData = (params) => {
     console.log("loadData", params);
-    axiosConfig.updateToken(authHeader());
-    fetchImage(id, params).then((data) => {
+    fetchImage(auth, id, params).then((data) => {
       setImages(data);
       setLoadingDone(true);
       let init = data?.score?.data;
@@ -98,34 +98,35 @@ const ScoreView = () => {
       return;
     }
     setUILock(true);
-    axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.post(`/api/imagescore/${ image.id }/confirm/`, {
-      ...state,
-      "project": id,
-    }).then((response) => {
-      setUILock(false);
-      if (response.data) {
-        if (response.data.success) {
-          showSuccessBar(enqueueSnackbar, "Scoring confirmed!");
-          setImages(response.data);
-          findSelectNextActive(response.data);
-          resetPage();
+    await axiosConfig.perform_post(auth, `/api/imagescore/${ image.id }/confirm/`, {
+        ...state,
+        "project": id,
+      },
 
-        } else {
-          if (response.data.is_finished) {
-            showErrorBar(enqueueSnackbar, "Project is already finished!");
+      (response) => {
+        setUILock(false);
+        if (response.data) {
+          if (response.data.success) {
+            showSuccessBar(enqueueSnackbar, "Scoring confirmed!");
+            setImages(response.data);
+            findSelectNextActive(response.data);
+            resetPage();
+
+          } else {
+            if (response.data.is_finished) {
+              showErrorBar(enqueueSnackbar, "Project is already finished!");
+            }
           }
+        } else {
+          showErrorBar(enqueueSnackbar, "Couldn't confirm Score!");
         }
-      } else {
-        showErrorBar(enqueueSnackbar, "Couldn't confirm Score!");
-      }
-    }, (error) => {
-      if (error.response) {
-        console.error(error.response.data);
-      } else {
-        console.error(error);
-      }
-    });
+      }, (error) => {
+        if (error.response) {
+          console.error(error.response.data);
+        } else {
+          console.error(error);
+        }
+      });
   }
 
   async function markAsUseless() {
@@ -135,28 +136,28 @@ const ScoreView = () => {
       return;
     }
     setUILock(true);
-    axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.post(`/api/imagescore/${ image.id }/useless/`, {
-      "project": id
-    }).then((response) => {
-      setUILock(false);
-      if (response.data) {
-        if (response.data.success) {
-          showSuccessBar(enqueueSnackbar, "Image marked as Useless!");
-          setImages(response.data);
-          setUpdateUi(!updateUi);
-          dispatch({ type: actionTypes.SET_RESET });
+    await axiosConfig.perform_post(auth, `/api/imagescore/${ image.id }/useless/`, {
+        "project": id
+      },
+      (response) => {
+        setUILock(false);
+        if (response.data) {
+          if (response.data.success) {
+            showSuccessBar(enqueueSnackbar, "Image marked as Useless!");
+            setImages(response.data);
+            setUpdateUi(!updateUi);
+            dispatch({ type: actionTypes.SET_RESET });
+          }
+        } else {
+          showErrorBar(enqueueSnackbar, "Couldn't mark Image!");
         }
-      } else {
-        showErrorBar(enqueueSnackbar, "Couldn't mark Image!");
-      }
-    }, (error) => {
-      if (error.response) {
-        console.error(error.response.data);
-      } else {
-        console.error(error);
-      }
-    });
+      }, (error) => {
+        if (error.response) {
+          console.error(error.response.data);
+        } else {
+          console.error(error);
+        }
+      });
   }
 
   function getImagePath() {
@@ -211,7 +212,8 @@ const ScoreView = () => {
               <Col md={ 8 }>
                 <Row className="mt-4">
                   <Col>
-                    <img src={ getImagePath() } style={{maxWidth: "850px", maxHeight: "600px"}} alt={ `Missing Score-Image ${images?.image.filename}` } />
+                    <img src={ getImagePath() } style={ { maxWidth: "850px", maxHeight: "600px" } }
+                         alt={ `Missing Score-Image ${ images?.image.filename }` }/>
                   </Col>
                 </Row>
 
@@ -262,7 +264,7 @@ const ScoreView = () => {
                       Mark as Useless
                     </Button>
                     <Button className={ "ms-2" } size="lg" variant={ "outline-primary" } onClick={ () => resetPage() }>
-                      Load {images.count === 0 ? "last image from list" : "random image"}
+                      Load { images.count === 0 ? "last image from list" : "random image" }
                     </Button>
                   </Col>
                 </Row>

@@ -4,14 +4,12 @@ import LoadingIcon from "../ui/LoadingIcon";
 import BoxContainer from "../ui/BoxContainer";
 import ProjectCardView from "../ui/ProjectCardView";
 import { fetchProjects, updateOrAppend } from "../../helper";
-import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
-import axiosConfig from "../../axiosConfig";
 import { CoreModalContext } from "../modal/coreModalContext";
 import CreateProjectModal from "../modal/CreateProjectModal";
 import UploadFolderModal from "../modal/UploadFolderModal";
 import { useSnackbar } from "notistack";
 import UploadFileModal from "../modal/UploadFileModal";
-import useAuthUser from "react-auth-kit/hooks/useAuthUser";
+import { useAuth } from "../../../hooks/CoreAuthProvider";
 
 const IndexView = () => {
 
@@ -19,15 +17,10 @@ const IndexView = () => {
   const [modalState, setModalState] = useContext(CoreModalContext);
   const { enqueueSnackbar } = useSnackbar();
 
-  const authHeader = useAuthHeader();
-  const auth = useAuthUser();
-  const isAuth = auth();
+  const auth = useAuth();
 
   useLayoutEffect(() => {
-    axiosConfig.updateToken(authHeader());
-    fetchProjects().then((projects) => {
-      setData(projects);
-    });
+    fetchProjects(auth, setData)
   }, []);
 
   const callBackData = (response) => {
@@ -47,7 +40,7 @@ const IndexView = () => {
         <UploadFileModal enqueueSnackbar={ enqueueSnackbar } callBackData={ callBackUpload } />
 
         <BoxContainer title="Available Projects">
-          { isAuth.is_superuser && (
+          { auth?.user?.is_superuser && (
             <Row className={"pb-3"}>
               <Col>
                 <Button className={"me-2"} variant={"warning"} onClick={() => setModalState({ ...modalState, modalUploadFolder: true, title: "Upload folder" })}>1a. Upload Folder</Button>

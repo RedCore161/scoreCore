@@ -9,18 +9,19 @@ import { WebSocketContext } from "../ws/websocketContext";
 
 import "../ui/css/DockerStatusView.css"
 import LoadingIcon from "../ui/LoadingIcon";
-import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+
+import { useAuth } from "../../../hooks/CoreAuthProvider";
 
 const DockerStatusView = () => {
 
   const [status, setStatus] = useState({  });
   const [modalState, setModalState] = useContext(CoreModalContext)
   const { sendMessage, wsMessage } = useContext(WebSocketContext);
-  const authHeader = useAuthHeader();
+  const auth = useAuth();
 
   useEffect(() => {
     console.log("fetchDockerStatus")
-    fetchDockerStatus();
+    fetchDockerStatus(auth);
   }, []);
 
   useEffect(() => {
@@ -61,8 +62,7 @@ const DockerStatusView = () => {
 
 
   async function fetchDockerStatus() {
-    axiosConfig.updateToken(authHeader());
-    const result = await axiosConfig.holder.get("/api/docker/status");
+    const result = await axiosConfig.perform_get(auth, "/api/docker/status");
     setStatus(result.data);
   }
 

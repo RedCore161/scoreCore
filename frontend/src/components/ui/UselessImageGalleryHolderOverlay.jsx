@@ -5,18 +5,17 @@ import { useSnackbar } from "notistack";
 
 import axiosConfig from "../../axiosConfig";
 import "./css/ImageGalleryHolder.css"
-import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+import { useAuth } from "../../../hooks/CoreAuthProvider";
 
 
 const UselessImageGalleryHolderOverlay = ({ imageId, reloadCallback }) => {
 
   const { enqueueSnackbar } = useSnackbar();
-  const authHeader = useAuthHeader();
+  const auth = useAuth();
 
   async function removeUseless(imageId) {
-    axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.post(`/api/imagescore/${ imageId }/restore/`,)
-      .then((response) => {
+    await axiosConfig.perform_post(auth, `/api/imagescore/${ imageId }/restore/`, {},
+      (response) => {
         if (response.data) {
           if (response.data.success) {
             showSuccessBar(enqueueSnackbar, "Useless-Marking removed!");
@@ -35,9 +34,8 @@ const UselessImageGalleryHolderOverlay = ({ imageId, reloadCallback }) => {
   }
 
   async function acceptAsUseless(imageId) {
-    axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.post(`/api/imagescore/${ imageId }/hide/`,)
-      .then((response) => {
+    await axiosConfig.perform_post(auth, `/api/imagescore/${ imageId }/hide/`, {},
+      (response) => {
         if (response.data) {
           if (response.data.success) {
             showSuccessBar(enqueueSnackbar, "Image was Deleted!");

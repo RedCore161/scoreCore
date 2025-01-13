@@ -12,7 +12,8 @@ import LoadingIcon from "../ui/LoadingIcon";
 import CorePaginator from "../ui/CorePaginator";
 import { showSuccessBar } from "../ui/Snackbar";
 import { useSnackbar } from "notistack";
-import useAuthHeader from "react-auth-kit/hooks/useAuthHeader";
+
+import { useAuth } from "../../../hooks/CoreAuthProvider";
 
 const ProjectDifferencesView = () => {
 
@@ -21,12 +22,11 @@ const ProjectDifferencesView = () => {
   const [data, setData] = useState({});
   const [pages, setPages] = useState({ "stddevs": 1 });
   const { enqueueSnackbar } = useSnackbar();
-  const authHeader = useAuthHeader();
+  const auth = useAuth();
 
   useEffect(() => {
     if ("stddevs" in pages) {
-      axiosConfig.updateToken(authHeader());
-      fetchImagesAll(id, pages.stddevs).then((data) => {
+      fetchImagesAll(auth, id, pages.stddevs).then((data) => {
         setData(data);
       });
     }
@@ -37,13 +37,12 @@ const ProjectDifferencesView = () => {
   };
 
   async function recalcuateStdDev() {
-    axiosConfig.updateToken(authHeader());
-    await axiosConfig.holder.get(`/api/project/${ id }/recalculate-stddev/`)
-      .then((response) => {
+    await axiosConfig.perform_get(auth, `/api/project/${ id }/recalculate-stddev/`,
+      (response) => {
         if (response.data) {
           if (response.data.success) {
             showSuccessBar(enqueueSnackbar, "Successfully recalculated!");
-            fetchImagesAll(id, pages.stddevs).then((data) => {
+            fetchImagesAll(auth, id, pages.stddevs).then((data) => {
               setData(data);
             });
           }

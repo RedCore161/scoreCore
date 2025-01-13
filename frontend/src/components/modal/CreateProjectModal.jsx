@@ -7,17 +7,18 @@ import { useForm } from "react-hook-form";
 import { Typeahead } from "react-bootstrap-typeahead";
 import axiosConfig from "../../axiosConfig";
 import { configText, configTextNeeded } from "../form/config";
-import "../ui/css/CustomModal.css"
+import "../ui/css/CustomModal.css";
 import { fetchFolders } from "../../helper";
+import { useAuth } from "../../../hooks/CoreAuthProvider";
 
 const suggestions = [
-  {icon: "🐵"},
-  {icon: "🐶"},
-  {icon: "🐱"},
-  {icon: "🐷"},
-  {icon: "🐭", txt: "Eyes, Nose, Cheeks, Ears, Whiskers"},
-  {icon: "🐰"}
-  ]
+  { icon: "🐵" },
+  { icon: "🐶" },
+  { icon: "🐱" },
+  { icon: "🐷" },
+  { icon: "🐭", txt: "Eyes, Nose, Cheeks, Ears, Whiskers" },
+  { icon: "🐰" }
+];
 
 const defaultForm = {
   name: "",
@@ -25,60 +26,72 @@ const defaultForm = {
   features: "",
 };
 
-const CreateProjectModal = ( {callBackData = () => {}} ) => {
-  const { register, formState: { errors }, setValue, setFocus, handleSubmit, reset } = useForm({ defaultValues: defaultForm });
-  const [show, setShow] = useContext(CoreModalContext)
+const CreateProjectModal = ({
+                              callBackData = () => {
+                              }
+                            }) => {
+  const {
+    register,
+    formState: { errors },
+    setValue,
+    setFocus,
+    handleSubmit,
+    reset
+  } = useForm({ defaultValues: defaultForm });
+  const [show, setShow] = useContext(CoreModalContext);
   const [folders, setFolders] = useState([]);
   const [folder, setFolder] = useState([]);
   const [busy, setBusy] = useState(false);
+  const auth = useAuth();
 
   const handleClose = () => {
-    setShow((show) => ( { ...show, modalProjectModal: false } ))
-    reset(defaultForm)
-    setFolder([])
-    setBusy(false)
-  }
+    setShow((show) => ( { ...show, modalProjectModal: false } ));
+    reset(defaultForm);
+    setFolder([]);
+    setBusy(false);
+  };
 
   useEffect(() => {
     if (show.modalProjectModal) {
-      fetchFolders(setFolders);
+      fetchFolders(auth, setFolders);
     }
   }, [show]);
 
 
   const onSubmit = (data) => {
-    let additonal = {}
+    let additonal = {};
     if (folder.length > 0) {
-      additonal["folder"] = folder[0].name
+      additonal["folder"] = folder[0].name;
     }
-    setBusy(true)
+    setBusy(true);
 
-    axiosConfig.holder.post(`/api/project/create/`, {
-      ...data,
-      ...additonal
-    }).then((response) => {
-      if (response.data.success) {
-        callBackData(response.data.model);
-        handleClose();
-      }
-    }, (error) => {
-      if (error.response) {
-        console.log(error.response.data);
-      } else {
-        console.error(error);
-      }
-    });
+    axiosConfig.perform_post(auth, `/api/project/create/`, {
+        ...data,
+        ...additonal
+      },
+      (response) => {
+        if (response.data.success) {
+          callBackData(response.data.model);
+          handleClose();
+        }
+      }, (error) => {
+        if (error.response) {
+          console.log(error.response.data);
+        } else {
+          console.error(error);
+        }
+      });
   };
 
 
   function advSetValue(_field, _val) {
-    setValue(_field, _val,{ shouldTouch: false })
-    setFocus(_field, undefined)
+    setValue(_field, _val, { shouldTouch: false });
+    setFocus(_field, undefined);
   }
 
   return (
     <Form>
-      <Modal show={ show.modalProjectModal } onHide={ handleClose } dialogClassName={ "wide-modal" } >
+      <Modal show={ show.modalProjectModal } onHide={ handleClose } dialogClassName={ "wide-modal" }>
         <Modal.Header>
           <Modal.Title>Create New Project</Modal.Title>
         </Modal.Header>
@@ -94,11 +107,11 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
             <Form.Control type="text" placeholder="Project name" { ...register("name", configTextNeeded) } />
           </Form.Group>
 
-          <Form.Group controlId="formIcon" className={"mt-3"}>
+          <Form.Group controlId="formIcon" className={ "mt-3" }>
             <Form.Label>
-              Icon 📷 (Suggestions: {suggestions.map(({ icon }, _i) => {
-                return <span key={`sug-sp-${_i}`} onClick={() => advSetValue("icon", icon)}>{icon}</span>
-              })})
+              Icon 📷 (Suggestions: { suggestions.map(({ icon }, _i) => {
+              return <span key={ `sug-sp-${ _i }` } onClick={ () => advSetValue("icon", icon) }>{ icon }</span>;
+            }) })
               <div className={ "modalErrors" }>
                 { errors.icon?.type === "required" && errors.icon?.message }
               </div>
@@ -108,12 +121,13 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
 
           <Form.Group controlId="formFeature" className={ "mt-3" }>
             <Form.Label>
-              Features (Suggestions: {suggestions.map((icon, _i) => {
-                if (!icon.txt) {
-                  return
-                }
-                return <span key={`sug-fe-${_i}`} onClick={() => advSetValue("features", icon.txt)}>{icon.icon}</span>
-              })})
+              Features (Suggestions: { suggestions.map((icon, _i) => {
+              if (!icon.txt) {
+                return;
+              }
+              return <span key={ `sug-fe-${ _i }` }
+                           onClick={ () => advSetValue("features", icon.txt) }>{ icon.icon }</span>;
+            }) })
               <div className={ "modalErrors" }>
                 { errors.features?.type === "required" && errors.features?.message }
                 { errors.features?.type === "minLength" && errors.features?.message }
@@ -127,7 +141,7 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
             <Form.Label>Folder 📂 (optional)</Form.Label>
             <Typeahead
               id="folder-chooser"
-              labelKey={ opt => `${opt.name} Images: ${opt.images} ${opt.in_use === true && ", 📌"}` }
+              labelKey={ opt => `${ opt.name } Images: ${ opt.images } ${ opt.in_use === true && ", 📌" }` }
               onChange={ setFolder }
               selected={ folder }
               options={ folders?.data ? folders.data : [] }
@@ -142,7 +156,7 @@ const CreateProjectModal = ( {callBackData = () => {}} ) => {
         <Modal.Footer>
           <Button variant="secondary" onClick={ handleClose }>Close</Button>
           <Button variant="success" onClick={ handleSubmit(onSubmit) } disabled={ busy }>
-            {busy && <div className="spinner-border spinner-border-sm text-light" role="status" />} Create</Button>
+            { busy && <div className="spinner-border spinner-border-sm text-light" role="status"/> } Create</Button>
         </Modal.Footer>
       </Modal>
     </Form>
