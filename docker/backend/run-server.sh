@@ -31,7 +31,7 @@ python manage.py clear_token
 
 if [ "$CELERY_ON_BOOT" = "1" ]; then
   pprint "[6] celery worker"
-  celery -A scoring.celery worker --loglevel=info --logfile "${PROJECT_ROOT}/celery.log" -E -P eventlet --uid=1001 &
+  celery -A scoring.celery worker --loglevel=info --logfile "${PROJECT_ROOT}/celery.log" -E -P eventlet --uid=1312 &
 fi
 
 pprint "### Starting Webserver"

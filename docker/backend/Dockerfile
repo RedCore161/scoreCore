@@ -1,6 +1,6 @@
 FROM python:3.13-alpine AS python
 
-RUN addgroup -S scoring && adduser -S -G scoring -h /home/scoring scoring
+RUN addgroup -S sudo && adduser -S -G sudo -h /home/scoring -g root -u 1312 scoring
 
 ARG CONTROL_BACKEND_PORT
 ARG DB_HOST
