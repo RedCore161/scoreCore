@@ -25,6 +25,3 @@ class Command(BaseCommand):
                 user.objects.create_superuser(username, mail, pw)
                 self.stdout.write(self.style.SUCCESS('Created Admin!'))
 
-        for _dir in DEFAULT_DIRS.keys():
-            save_check_dir(_dir)
-
