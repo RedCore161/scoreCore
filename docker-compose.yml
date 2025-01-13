@@ -53,10 +53,10 @@ services:
     volumes:
       - ${MEDIA_VOLUME}:/usr/src/app/media
       - /var/run/docker.sock:/var/run/docker.sock:rw
-    user: "1312:1313"
-    security_opt:
-      - label:user:scoring
-      - label:role:scoring
+#    user: "1312:1313"
+#    security_opt:
+#      - label:user:scoring
+#      - label:role:scoring
     networks:
       default_net:
         aliases:

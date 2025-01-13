@@ -22,7 +22,7 @@ RUN sed -i -r "s/URL-TEMPLATE-WITH-PORT/${CONTROL_BACKEND_URL}:${CONTROL_BACKEND
 
 RUN npm run build
 
-FROM nginx:stable-alpine
+FROM nginx:1.27.3
 RUN adduser -S -D -h /home/scoring scoring
 
 RUN rm /etc/nginx/conf.d/default.conf

@@ -1,4 +1,4 @@
-FROM nginx:1.21.3
+FROM nginx:1.27.3
 
 WORKDIR /etc/nginx/
 COPY ./docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
