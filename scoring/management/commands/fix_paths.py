@@ -13,4 +13,4 @@ class Command(BaseCommand):
             image.calc_hash()
             image.fix_path()
 
-        ilog(f"Fixxing paths", tag="[DONE]")
+        ilog("Fixxing paths", tag="[DONE]")

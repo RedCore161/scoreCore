@@ -21,7 +21,6 @@
 
 import cv2
 import os
-from shutil import rmtree
 import argparse
 from video_to_frames import video_to_frames as get_frames
 from detect_blur import detect_blur_fft

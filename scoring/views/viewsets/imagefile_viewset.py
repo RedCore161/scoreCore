@@ -1,13 +1,8 @@
-import os
 
-from django.core.management import call_command
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 
-from scoring.basics import parse_boolean
-from scoring.helper import delete_file, get_path_backup
-from scoring.linux import extract_date_from_filename
 from scoring.models import ImageFile
 from scoring.serializers import ImageFileSerializer
 from scoring.views.viewsets.base_viewset import StandardResultsSetPagination

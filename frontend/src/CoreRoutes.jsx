@@ -1,7 +1,7 @@
 import React from "react";
 import LoginForm from "./components/auth/LoginForm";
 import { WebSocketProvider } from "./components/ws/websocketContext";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router";
 import Navbar from "./components/navbar/Navbar";
 import "photoswipe/dist/photoswipe.css";
 
@@ -31,7 +31,7 @@ const CoreRoutes = () => {
       {/*Default-Route*/ }
       <Route path="/*" element={ <Navigate exact from="/" to="/project/overview/"/> } />
 
-      <Route path={ `/login` } element={ <LoginForm/> }/>
+      <Route path={ `/login` } element={ <LoginForm /> }/>
 
     </Routes>
   );

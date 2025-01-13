@@ -1,4 +1,4 @@
-import React, { useContext, useLayoutEffect, useState } from "react";
+import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
 import { Button, Col, Row } from "react-bootstrap";
 import LoadingIcon from "../ui/LoadingIcon";
 import BoxContainer from "../ui/BoxContainer";
@@ -7,9 +7,9 @@ import { fetchProjects, updateOrAppend } from "../../helper";
 import { CoreModalContext } from "../modal/coreModalContext";
 import CreateProjectModal from "../modal/CreateProjectModal";
 import UploadFolderModal from "../modal/UploadFolderModal";
-import { useSnackbar } from "notistack";
 import UploadFileModal from "../modal/UploadFileModal";
 import { useAuth } from "../../../hooks/CoreAuthProvider";
+import { useSnackbar } from "notistack";
 
 const IndexView = () => {
 
@@ -19,7 +19,7 @@ const IndexView = () => {
 
   const auth = useAuth();
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     fetchProjects(auth, setData)
   }, []);
 
@@ -37,7 +37,7 @@ const IndexView = () => {
       <div>
         <CreateProjectModal callBackData={ callBackData } />
         <UploadFolderModal enqueueSnackbar={ enqueueSnackbar } callBackData={ callBackUpload } />
-        <UploadFileModal enqueueSnackbar={ enqueueSnackbar } callBackData={ callBackUpload } />
+        <UploadFileModal callBackData={ callBackUpload } />
 
         <BoxContainer title="Available Projects">
           { auth?.user?.is_superuser && (

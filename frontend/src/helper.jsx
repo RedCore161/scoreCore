@@ -1,6 +1,5 @@
 import React from "react";
 import axiosConfig from "./axiosConfig";
-import ReactTimeAgo from "react-time-ago";
 
 export function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -11,10 +10,11 @@ export function range(start, end) {
 }
 
 export async function fetchProjects(auth, setter) {
-  await axiosConfig.perform_get(auth, "/api/project/list/", (response) => {
-    setter(response.data);
-    console.log("Found Projects:", response.data);
-  });
+  await axiosConfig.perform_get(auth, "/api/project/list/",
+    (response) => {
+      setter(response.data);
+      console.log("Found Projects:", response.data);
+    });
 }
 
 export async function fetchEvaluations(auth) {

@@ -1,7 +1,7 @@
 import { Col, Row } from "react-bootstrap";
 import React from "react";
 import "../ui/css/ProjectCardView.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import axiosConfig from "../../axiosConfig";
 import { useAuth } from "../../../hooks/CoreAuthProvider";
 
@@ -26,7 +26,7 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
   const score_ratio = get_score_ratio();
 
   function navigateToUselessImages() {
-    if (isAuth.is_superuser) {
+    if (auth?.user?.is_superuser) {
       navigate(`/project/${ id }/useless`);
     }
   }
@@ -46,7 +46,6 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
   function loginForwardTo(event, url) {
     event.stopPropagation();
 
-    
     axiosConfig.perform_post(auth, `/api/user/login/`, { token: _header.substring(7) },
       (response) => {
       if (response.data.success) {
@@ -64,7 +63,6 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
   function openHeatMap(event) {
     event.stopPropagation();
 
-    
     axiosConfig.perform_get(auth, `/api/project/${id}/cross-stddev-all/`,
       (response) => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -108,7 +106,7 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
           <Col className={ `project-Card-Header ${ isFinished ? "bg-success" : "bg-info" }` }
                onClick={ (e) => advNavigate(e, `/project/${ id }/score`) }>
             <span className={ "project-Card-Header-Content" }>{ icon }{ name }</span>
-            { isAuth.is_superuser && (
+            { auth?.user?.is_superuser && (
               <div className={ "float-end" }>
                 <span className="project-Card-Header-Content me-2" onClick={(e) => openHeatMap(e)}>🔥</span>
                 <i className="project-Card-Header-Content bi bi-pencil-fill me-2"

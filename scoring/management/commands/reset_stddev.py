@@ -8,7 +8,6 @@ class Command(BaseCommand):
     help = "Resetting all imagefiles"
 
     def handle(self, *args, **options):
-        from django.contrib.auth.models import User
         if IS_PRODUCTION:
             elog("Can't reset in productive settings... Exiting!")
             return
@@ -19,4 +18,4 @@ class Command(BaseCommand):
             im.save()
             im.calc_std_dev()
 
-        ilog(f"Reset data", tag="[DONE]")
+        ilog("Reset data", tag="[DONE]")

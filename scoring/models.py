@@ -15,8 +15,7 @@ from rest_framework import serializers
 from scoring.decorators import count_calls
 from scoring.excel import create_xlsx
 from scoring.helper import get_project_evaluation_dir, save_check_dir, get_path_backup, dlog, \
-    set_logging_file, INFO_FILE_NAME, is_image, elog, get_rel_path, get_path_projects, ilog, calculate_md5_hash, \
-    build_abs_path
+    set_logging_file, INFO_FILE_NAME, is_image, elog, get_rel_path, get_path_projects, ilog, calculate_md5_hash
 from server.settings import BASE_DIR
 
 KEY_LEN = 32
@@ -108,7 +107,6 @@ class Project(models.Model):
         return self.get_score_count() >= self.get_files_count() * self.wanted_scores_per_image
 
     def calc_fleiss_kappa(self):
-        import numpy as np
         from statsmodels.stats.inter_rater import fleiss_kappa
 
         scoring_fields = self.get_features_flat()
@@ -396,7 +394,7 @@ class ImageFile(models.Model):
         if '\\' in self.path:
             self.path = self.path.replace('\\', '/')
             self.save()
-            ilog(f"Fixxed", self, tag="[DONE]")
+            ilog("Fixxed", self, tag="[DONE]")
 
     def __str__(self):
         _id = ""

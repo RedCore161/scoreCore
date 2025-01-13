@@ -15,7 +15,7 @@ import ScoreGroup from "../ui/ScoreGroup";
 import ScorePanel from "../ui/ScorePanel";
 import * as actionTypes from "../reducer/reducerTypes";
 import axiosConfig from "../../axiosConfig";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router";
 import "../ui/css/ScoreView.css";
 
 import { useAuth } from "../../../hooks/CoreAuthProvider";

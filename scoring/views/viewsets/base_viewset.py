@@ -3,7 +3,6 @@ import os
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -13,7 +12,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from scoring.basics import parse_file_name, parse_int
-from scoring.helper import save_check_dir, get_path_projects, dlog, is_video, is_image, get_path_videos, elog, okaylog
+from scoring.helper import save_check_dir, get_path_projects, is_video, is_image, get_path_videos, elog, okaylog
 from scoring.serializers import RedcoreTokenObtainPairSerializer
 from server.settings import DEFAULT_DIRS
 from server.views import RequestFailed, RequestSuccess

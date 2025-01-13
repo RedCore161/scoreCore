@@ -1,8 +1,5 @@
 import { Button, Col } from "react-bootstrap";
 import React from "react";
-
-import { useNavigate } from "react-router";
-import { useLocation } from "react-router-dom";
 import { useAuth } from "../../../hooks/CoreAuthProvider";
 
 const Navbar = ({ content, act }) => {

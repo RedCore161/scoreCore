@@ -1,7 +1,7 @@
 import React from "react";
 import { Container, Row } from "react-bootstrap";
 import { SnackbarProvider } from "notistack";
-import {BrowserRouter} from "react-router-dom";
+import { BrowserRouter } from 'react-router';
 import CoreAuthProvider from '../hooks/CoreAuthProvider';
 import CoreRoutes from './CoreRoutes'
 import { ModalProvider } from './components/modal/coreModalContext';

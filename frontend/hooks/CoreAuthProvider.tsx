@@ -97,12 +97,6 @@ const CoreAuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  // useEffect(() => {
-  //   if (user) {
-  //     console.log('USER', user);
-  //   }
-  // }, [user]);
-
   const getCurrentUrl = () => {
     return location.pathname;
   };
