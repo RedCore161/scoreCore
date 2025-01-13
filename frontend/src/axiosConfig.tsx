@@ -80,7 +80,7 @@ export default class axiosConfig {
     axiosConfig.updateToken();
     await axiosConfig.holder.get(url, config).then(
       (response) => callBackSuccess(response)
-    ) .catch(function (error) {
+    ).catch(function (error) {
       if (error.response) {
         callBackError(error);
         if (error.response.status === 401) {

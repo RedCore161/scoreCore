@@ -240,7 +240,7 @@ def data_to_image(data, title, max_score, x_axis, y_axis, x_label="Users", y_lab
     ax.invert_yaxis()
 
     # Adjust layout to ensure title is visible
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.tight_layout(rect=(0, 0, 1, 0.95))
 
     # Save the plot to a BytesIO object
     buf = io.BytesIO()

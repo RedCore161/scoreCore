@@ -1,6 +1,6 @@
 from django.urls import include, re_path
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView, TokenBlacklistView
 
 from scoring.views.viewsets.base_viewset import ExtendedTokenObtainPairView
 from scoring.views.viewsets.docker_viewset import DockerViewSet
@@ -21,5 +21,7 @@ router.register(r"user", UserViewSet, basename="user")
 urlpatterns = [
     re_path(r"^api/token/refresh/$", TokenRefreshView.as_view(), name="token_refresh"),
     re_path(r"^api/token/$", ExtendedTokenObtainPairView.as_view(), name="token_obtain_pair"),
+    re_path(r"^api/token/logout/$", TokenBlacklistView.as_view(), name='token_logout'),
+    re_path(r"^api/token/blacklist/$", TokenBlacklistView.as_view(), name='token_blacklist'),
     re_path(r"^api/", include(router.urls)),
 ]

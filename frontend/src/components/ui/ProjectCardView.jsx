@@ -6,13 +6,15 @@ import axiosConfig from "../../axiosConfig";
 import { useAuth } from "../../../hooks/CoreAuthProvider";
 
 
-const ProjectCardView = ({ id, name, features, icon, data, users,
-                           wanted_scores_per_user, wanted_scores_per_image, isFinished }) => {
+const ProjectCardView = ({
+                           id, name, features, icon, data, users,
+                           wanted_scores_per_user, wanted_scores_per_image, isFinished
+                         }) => {
 
   const navigate = useNavigate();
   const auth = useAuth();
 
-  const { imagesTotal, scoresCount, scoresOwn, uselessCount } = data
+  const { imagesTotal, scoresCount, scoresOwn, uselessCount } = data;
 
   const save_wanted_scores = get_save_wanted_scores();
 
@@ -40,42 +42,41 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
   }
 
   function get_project_percentage() {
-    return Math.min(( ( scoresCount / ( users.length * wanted_scores_per_user) ) * 100 ), 100).toFixed(2);
+    return Math.min(( ( scoresCount / ( users.length * wanted_scores_per_user ) ) * 100 ), 100).toFixed(2);
   }
 
   function loginForwardTo(event, url) {
     event.stopPropagation();
-
-    axiosConfig.perform_post(auth, `/api/user/login/`, { token: _header.substring(7) },
+    axiosConfig.perform_post(auth, `/api/user/login/`, {token: auth?.token},
       (response) => {
-      if (response.data.success) {
-        window.open(url, "_blank");
-      }
-    }, (error) => {
-      if (error.response) {
-        console.log(error.response.data);
-      } else {
-        console.error(error);
-      }
-    });
+        if (response.data.success) {
+          window.open(url, "_blank");
+        }
+      }, (error) => {
+        if (error.response) {
+          console.log(error.response.data);
+        } else {
+          console.error(error);
+        }
+      });
   }
 
   function openHeatMap(event) {
     event.stopPropagation();
-
-    axiosConfig.perform_get(auth, `/api/project/${id}/cross-stddev-all/`,
+    axiosConfig.perform_get(auth, `/api/project/${ id }/cross-stddev-all/`,
       (response) => {
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const newTab = window.open();
-      newTab.location = url;
-    }, (error) => {
-      if (error.response) {
-        console.log(error.response.data);
-      } else {
-        console.error(error);
-      }
-    },
-      { responseType: "blob"});
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const newTab = window.open();
+        newTab.location = url;
+      },
+      (error) => {
+        if (error.response) {
+          console.log(error.response.data);
+        } else {
+          console.error(error);
+        }
+      },
+      { responseType: "blob" });
   }
 
   function advNavigate(event, url) {
@@ -87,16 +88,16 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
     event.stopPropagation();
     await axiosConfig.perform_get(auth, `/api/project/${ id }/read-images/`,
       (response) => {
-      if (response.data.success) {
-        window.location.reload(true);
-      }
-    }, (error) => {
-      if (error.response) {
-        console.error(error.response.data);
-      } else {
-        console.error(error);
-      }
-    });
+        if (response.data.success) {
+          window.location.reload(true);
+        }
+      }, (error) => {
+        if (error.response) {
+          console.error(error.response.data);
+        } else {
+          console.error(error);
+        }
+      });
   }
 
   return (
@@ -108,7 +109,7 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
             <span className={ "project-Card-Header-Content" }>{ icon }{ name }</span>
             { auth?.user?.is_superuser && (
               <div className={ "float-end" }>
-                <span className="project-Card-Header-Content me-2" onClick={(e) => openHeatMap(e)}>🔥</span>
+                <span className="project-Card-Header-Content me-2" onClick={ (e) => openHeatMap(e) }>🔥</span>
                 <i className="project-Card-Header-Content bi bi-pencil-fill me-2"
                    onClick={ (e) => loginForwardTo(e, `${ process.env.REACT_APP_BACKEND_URL }/admin/scoring/project/${ id }/change/`) }/>
                 <i className="project-Card-Header-Content bi bi-arrow-repeat me-2" onClick={ (e) => readImages(e) }/>
@@ -121,7 +122,7 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
           </Col>
         </Row>
 
-        <Row className={"pt-2"}>
+        <Row className={ "pt-2" }>
           <Col md={ 6 } className={ "project-Card-Item" }>Features:</Col>
           <Col className={ "project-Card-Content" }>{ features.map(ft => ft.name).join(', ') }</Col>
         </Row>
@@ -139,7 +140,8 @@ const ProjectCardView = ({ id, name, features, icon, data, users,
             <div>Target Scores / Image:</div>
           </Col>
           <Col md={ 2 } className={ "project-Card-Content" }>
-            <div className={ wanted_scores_per_user > save_wanted_scores ? "text-warning" : ""}>{ wanted_scores_per_user }</div>
+            <div
+              className={ wanted_scores_per_user > save_wanted_scores ? "text-warning" : "" }>{ wanted_scores_per_user }</div>
             <div>{ wanted_scores_per_image }</div>
           </Col>
           <Col className={ "score-Info-Container" }>

@@ -20,7 +20,9 @@ const IndexView = () => {
   const auth = useAuth();
 
   useEffect(() => {
-    fetchProjects(auth, setData)
+    if (data.length === 0) {
+      fetchProjects(auth, setData)
+    }
   }, []);
 
   const callBackData = (response) => {
