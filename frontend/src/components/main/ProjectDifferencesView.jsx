@@ -26,9 +26,7 @@ const ProjectDifferencesView = () => {
 
   useEffect(() => {
     if ("stddevs" in pages) {
-      fetchImagesAll(auth, id, pages.stddevs).then((data) => {
-        setData(data);
-      });
+      fetchImagesAll(auth, setData, id, pages.stddevs)
     }
   }, [pages]);
 
@@ -42,9 +40,7 @@ const ProjectDifferencesView = () => {
         if (response.data) {
           if (response.data.success) {
             showSuccessBar(enqueueSnackbar, "Successfully recalculated!");
-            fetchImagesAll(auth, id, pages.stddevs).then((data) => {
-              setData(data);
-            });
+            fetchImagesAll(auth, setData, id, pages.stddevs)
           }
         }
       }, (error) => {

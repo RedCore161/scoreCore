@@ -24,21 +24,12 @@ export async function fetchEvaluations(auth) {
   return result.data;
 }
 
-export async function fetchImage(auth, id, params) {
-  const url = params ? `/api/project/${ id }/image/?${ params }` :
-    `/api/project/${ id }/image/`;
-  const result = await axiosConfig.perform_get(auth, url, (response) => {
-    console.log("Found Image:", response.data);
-  });
-  return result.data;
-}
-
-export async function fetchImagesAll(auth, id, page = 1) {
-  const result = await axiosConfig.perform_get(auth, `/api/project/${ id }/images/all?page=${ page }`,
+export async function fetchImagesAll(auth, setter, id, page = 1) {
+  await axiosConfig.perform_get(auth, `/api/project/${ id }/images/all?page=${ page }`,
     (response) => {
+      setter(response.data);
       console.log("Found All Images:", response.data);
     });
-  return result.data;
 }
 
 export async function fetchFolders(auth, setter) {

@@ -124,7 +124,7 @@ class ImageFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ImageFile
-        fields = "__all__"
+        exclude = ["data"]
 
     @staticmethod
     def get_clazz_name(_):

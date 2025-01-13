@@ -19,13 +19,11 @@ const ProjectEvaluateView = () => {
   const auth = useAuth();
 
   useLayoutEffect(() => {
-    fetchProjects(auth, setData).then((projects) => {
-      setData(projects);
-    });
+    fetchProjects(auth, setData)
   }, []);
 
   useEffect(() => {
-    if (data) {
+    if (data.length > 0) {
       setSelectedProject(data[0]);
       setEvaluations(data[0].evaluations.files);
     }

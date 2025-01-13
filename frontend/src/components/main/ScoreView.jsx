@@ -7,8 +7,7 @@ import { showErrorBar, showSuccessBar } from "../ui/Snackbar";
 import { useSnackbar } from "notistack";
 import { useParams } from "react-router";
 import {
-  capitalizeFirstLetter,
-  fetchImage
+  capitalizeFirstLetter
 } from "../../helper";
 import LoadingIcon from "../ui/LoadingIcon";
 import ScoreGroup from "../ui/ScoreGroup";
@@ -58,9 +57,14 @@ const ScoreView = () => {
     }
   }
 
-  const loadData = (params) => {
+  const loadData = async (params) => {
     console.log("loadData", params);
-    fetchImage(auth, id, params).then((data) => {
+
+    const url = params ? `/api/project/${ id }/image/?${ params }` :
+      `/api/project/${ id }/image/`;
+    await axiosConfig.perform_get(auth, url, (response) => {
+      console.log("Found Image:", response.data);
+      const data = response.data;
       setImages(data);
       setLoadingDone(true);
       let init = data?.score?.data;

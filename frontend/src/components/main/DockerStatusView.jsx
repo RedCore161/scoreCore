@@ -20,7 +20,6 @@ const DockerStatusView = () => {
   const auth = useAuth();
 
   useEffect(() => {
-    console.log("fetchDockerStatus")
     fetchDockerStatus(auth);
   }, []);
 
@@ -62,8 +61,9 @@ const DockerStatusView = () => {
 
 
   async function fetchDockerStatus() {
-    const result = await axiosConfig.perform_get(auth, "/api/docker/status");
-    setStatus(result.data);
+    await axiosConfig.perform_get(auth, "/api/docker/status", (response) => {
+      setStatus(response.data);
+    });
   }
 
   const columns = [

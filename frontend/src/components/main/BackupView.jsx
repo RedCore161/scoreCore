@@ -18,17 +18,15 @@ const BackupView = () => {
   const auth = useAuth();
 
   async function fetchBackups() {
-    const result = await axiosConfig.perform_get(auth, urls.backup, (response) => {
+    await axiosConfig.perform_get(auth, urls.backup, (response) => {
       console.log("Found Backups:", response.data);
+      setData(response.data);
     });
-    return result.data;
   }
 
   useEffect(() => {
     if ("backup" in urls) {
-      fetchBackups().then((response) => {
-        setData(response);
-      });
+      fetchBackups()
     }
   }, [urls]);
 

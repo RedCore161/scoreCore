@@ -46,9 +46,10 @@ def get_header(user_ids, features):
     header = [{"name": "ID", "bck": 1, "cell": "A"},
               {"name": "URL", "bck": 1, "cell": "B"},
               {"name": "Filename", "bck": 1, "cell": "C"},
-              {"name": "Useless", "bck": 1, "cell": "D"},
-              {"name": "Score-Count", "bck": 1, "cell": "E"},
-              {"name": "", "bck": 1, "cell": "F", "end": True}]
+              {"name": "Source", "bck": 1, "cell": "D"},
+              {"name": "Useless", "bck": 1, "cell": "E"},
+              {"name": "Score-Count", "bck": 1, "cell": "F"},
+              {"name": "", "bck": 1, "cell": "G", "end": True}]
 
     # BLOCK B
     for i, u_id in enumerate(user_ids):
@@ -115,6 +116,7 @@ def create_xlsx(project, _data, _image_files):
         for image_file in _image_files:
             queryset = image_file.get_scores_save(project).order_by("user__pk")
             stddevs = image_file.data
+            source = image_file.get_video_source()
 
             if len(queryset) == 0:
                 continue
@@ -123,9 +125,10 @@ def create_xlsx(project, _data, _image_files):
             ws.write(line, 0, line)
             ws.write_url(line, 1, os.path.join(get_backend_url(), image_file.path, image_file.filename), string="Link")
             ws.write(line, 2, image_file.filename)
-            ws.write(line, 3, image_file.useless)
-            ws.write(line, 4, image_file.scores.count())
-            ws.write(line, 5, "")
+            ws.write(line, 3, source)
+            ws.write(line, 4, image_file.useless)
+            ws.write(line, 5, image_file.scores.count())
+            ws.write(line, 6, "")
 
             # BLOCK B - Write Data
             for score in queryset:
@@ -180,10 +183,12 @@ def create_xlsx(project, _data, _image_files):
         # List useless images
         line += 2
         for image_file in project.get_all_useless_files():
+            source = image_file.get_video_source()
             ws.write(line, 0, line)
             ws.write(line, 1, image_file.path)
             ws.write(line, 2, image_file.filename)
-            ws.write(line, 3, image_file.useless)
+            ws.write(line, 3, source)
+            ws.write(line, 4, image_file.useless)
             line += 1
 
     return target
