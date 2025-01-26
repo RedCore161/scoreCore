@@ -25,7 +25,7 @@ export const reducerScore = (state, action) => {
       return { ...state, ...action.payload};
 
     case actionTypes.SET_RESET:
-      return defaultStateScore;
+      return { ...defaultStateScore, _active: action.payload ? action.payload : "" };
 
     default:
       throw new Error(`No matching action type: ${ action.type }`);

@@ -18,10 +18,11 @@ const UselessImageFilesView = () => {
   const auth = useAuth();
 
   async function fetchData() {
-    const result = await axiosConfig.perform_get(auth, `/api/project/${ id }/get-useless/`);
-    setImageFiles(result.data);
-    setIsLoading(false);
-    console.log("Found Images:", result.data);
+    await axiosConfig.perform_get(auth, `/api/project/${ id }/get-useless/`, (response) => {
+      setImageFiles(response.data);
+      setIsLoading(false);
+      console.log("Found Images:", response.data);
+    });
   }
 
   useEffect(() => {

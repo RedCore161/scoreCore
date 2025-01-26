@@ -235,55 +235,64 @@ class Project(models.Model):
     def parse_info_file(self, _path, enabled_log=True, get_or_create_amount=2):
         set_logging_file()
         _path_infofile = os.path.join(_path, INFO_FILE_NAME)
-        dlog(f"Parse Infofile! {_path=}, {get_or_create_amount=}")
+        files = []
+        dlog(f"\nParse Infofile! {_path=}, {get_or_create_amount=}")
 
-        if os.path.exists(_path_infofile):
-            with open(_path_infofile, "r") as f:
-                lines = f.readlines()
-                images = lines[3:]
+        if not os.path.exists(_path_infofile):
+            return None, files
 
-                for img in images:
-                    _file = img.rstrip("\n")
-                    if len(_file) == 0:
-                        break
+        with open(_path_infofile, "r") as f:
+            lines = f.readlines()
+            images = lines[3:]
 
-                    full_path = os.path.join(_path, _file)
+        for img in images:
+            _file = img.rstrip("\n")
+            if len(_file) == 0:
+                break
 
-                    if not os.path.exists(full_path):
-                        elog(full_path, tag="[MISSING]")
-                        continue
+            full_path = os.path.join(_path, _file)
 
-                    if not filetype.is_image(full_path):
-                        continue
+            if not os.path.exists(full_path):
+                elog(full_path, tag="[MISSING]")
+                continue
 
-                    if get_or_create_amount == 0:
-                        return True
+            if not filetype.is_image(full_path):
+                continue
 
-                    image_file, created = ImageFile.objects.get_or_create(project=self, filename=_file,
-                                                                          path=get_rel_path(_path))
+            if get_or_create_amount == 0:
+                return True, files
 
-                    dlog(f"=> {_file=}, {full_path}, {created=}, Useless={image_file.useless}")
+            image_file, created = ImageFile.objects.get_or_create(project=self, filename=_file,
+                                                                  path=get_rel_path(_path))
+            files.append(image_file)
 
-                    if created:
-                        if enabled_log:
-                            logger.info(f"Created ImageFile for {full_path} #{get_or_create_amount}")
+            dlog(f"=> {_file=}, {full_path}, {created=}, Useless={image_file.useless}")
+            if created:
+                if enabled_log:
+                    logger.info(f"Created ImageFile for {full_path} #{get_or_create_amount}")
 
-                        if is_image(full_path):
-                            with PilImage.open(full_path) as im:
-                                w, h = im.size
-                                image_file.width = w
-                                image_file.height = h
-                        image_file.calc_hash()
-                        image_file.date = timezone.now()
-                        image_file.save()
-                        get_or_create_amount -= 1
+                if is_image(full_path):
+                    with PilImage.open(full_path) as im:
+                        w, h = im.size
+                        image_file.width = w
+                        image_file.height = h
+                image_file.calc_hash()
+                image_file.date = timezone.now()
+                image_file.save()
+                get_or_create_amount -= 1
 
-                    else:
-                        if not image_file.useless:
-                            if enabled_log:
-                                logger.info(f"Existing ImageFile for {full_path} #{get_or_create_amount}")
-                            get_or_create_amount -= 1
-        return False
+            else:
+                if not image_file.useless:
+                    if enabled_log:
+                        logger.info(f"Existing ImageFile for {full_path} #{get_or_create_amount}")
+                    get_or_create_amount -= 1
+
+        # if len(files) >= 9:
+        #     okaylog("=>", files)
+
+        elog("Should never be reached...")
+        return False, files
+
 
     def __str__(self):
         _id = ""

@@ -34,9 +34,8 @@ const DifferencesImageGalleryHolderOverlay = ({ imagefile }) => {
     ];
   }
 
-  function openHeatMap(event,) {
+  function openHeatMap(event) {
     event.stopPropagation();
-
     
     axiosConfig.perform_get(auth, `/api/project/${ imagefile.project }/cross-stddev/?file_id=${ imagefile.id }`,
       (response) => {

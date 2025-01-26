@@ -4,8 +4,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
-from scoring.helper import save_check_dir
-from server.settings import DEFAULT_DIRS
 
 
 class Command(BaseCommand):

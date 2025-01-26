@@ -6,7 +6,7 @@ export function capitalizeFirstLetter(string) {
 }
 
 export function range(start, end) {
-  return Array.apply(0, Array(end)).map((element, index) => index + start);
+  return Array.apply(start, Array(end)).map((element, index) => index + start);
 }
 
 export async function fetchProjects(auth, setter) {
