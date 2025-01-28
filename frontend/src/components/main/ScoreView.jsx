@@ -108,7 +108,11 @@ const ScoreView = () => {
             return;
         }
         setUILock(true);
-        await axiosConfig.perform_post(auth, `/api/imagescore/${image.id}/confirm/`, {
+
+        const url = searchParams ? `/api/imagescore/${image.id}/confirm/?${searchParams}` :
+          `/api/imagescore/${image.id}/confirm/`;
+
+        await axiosConfig.perform_post(auth, url, {
                 ...state,
                 "project": id,
             },

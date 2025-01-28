@@ -43,6 +43,7 @@ class ViewSetCreateModel(object):
 
         user = request.user
         file = request.GET.get("file")
+        last = request.GET.get("last")
         reload = parse_int(request.GET.get("reload", 100))
 
         project = Project.objects.get(pk=pk)
@@ -92,12 +93,18 @@ class ViewSetCreateModel(object):
 
             return response
 
+
         # We want a random, open file
         if reload > 100:
             scores_ratio = open_request.order_by("scores_ratio")[0].scores_ratio
             images = open_request.filter(scores_ratio=scores_ratio)
             _image_file = random.choice(images)
             response.update({"scores_ratio": scores_ratio})
+
+        elif last: # Dirty-hotfix
+            req = ImageScore.objects.filter(project=pk, user=user, is_completed=False).order_by("date")
+            image_score = req[0] if len(req) else None
+            _image_file = image_score.file if image_score else None
 
         elif count > 0:
             scores_ratio = open_request.order_by("scores_ratio")[0].scores_ratio

@@ -32,6 +32,7 @@ RUN apk update && apk add git \
                       gcc
 
 RUN apk add python3-dev musl-dev linux-headers make automake g++ bash
+RUN apk add postgresql16-client
 
 RUN wget https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -O wait-for-it.sh
 RUN chmod +x wait-for-it.sh
