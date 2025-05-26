@@ -12,9 +12,9 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from scoring.basics import parse_file_name, parse_int
-from scoring.helper import save_check_dir, get_path_projects, is_video, is_image, get_path_videos, elog, okaylog
+from scoring.helper import dlog, save_check_dir, get_path_projects, is_video, is_image, get_path_videos, elog, okaylog
 from scoring.serializers import RedcoreTokenObtainPairSerializer
-from server.settings import DEFAULT_DIRS
+from server.settings import DEFAULT_DIRS, MEDIA_ROOT
 from server.views import RequestFailed, RequestSuccess
 
 
@@ -101,12 +101,15 @@ class BasisViewSet:
 
             save_check_dir(some_dir)
             _path = os.path.join(some_dir, name)
+            if _path.startswith(MEDIA_ROOT):
+                _path = _path[len(get_path_projects())+1:].replace("\\", "/")
+
             _new_file = fs.save(_path, _file)
 
             if incr_count:
                 folder_counter += 1
 
-            # dlog(f"{_new_file=}", tag="[UPLOAD]")
+            dlog(f"{_new_file=}", tag="[UPLOAD]")
 
             # response.update({name: {"created": 1, "cached": 0, "name": name,
             #                         "error": None, "path": _new_path[len(DEFAULT_DIRS.get("projects")) + 1:]}})

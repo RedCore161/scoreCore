@@ -214,7 +214,7 @@ class Project(models.Model):
             folders += len(dirs)
         dlog(f"Project has: {files} Files in {folders} Folders, {_path=}")
 
-        if folders == 0:
+        if folders <= 1:
             self.create_script()
             self.check_create_infofiles()
 
@@ -287,10 +287,10 @@ class Project(models.Model):
                         logger.info(f"Existing ImageFile for {full_path} #{get_or_create_amount}")
                     get_or_create_amount -= 1
 
-        # if len(files) >= 9:
-        #     okaylog("=>", files)
+        if get_or_create_amount == 0:
+            return True, files
 
-        elog("Should never be reached...")
+        elog(f"Should never be reached... | {get_or_create_amount=}")
         return False, files
 
 

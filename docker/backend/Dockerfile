@@ -49,14 +49,14 @@ RUN pip install -U setuptools pip wheel
 
 RUN . $VENV_ROOT/bin/activate
 
-COPY ./docker/backend/ .
-COPY ./scoring ./scoring
-COPY ./server ./server
-
 #Temp hotfix see https://github.com/pypa/setuptools/issues/4519
 RUN pip install -U certifi wheel setuptools pip
 COPY ./requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt
+
+COPY ./docker/backend/ .
+COPY ./scoring ./scoring
+COPY ./server ./server
 
 RUN sed -i -e 's/\r$//' ./*.sh
 RUN chmod +x ./*.sh
